@@ -12,6 +12,8 @@ Course detail is split into `Current` and `Historical` views. Current data comes
 
 The active term selector is generated from the current date in `data.js`, similar to Hydrant's rolling term picker. Users can still manually choose another term; do not hardcode stale semester labels or default active terms.
 
+Manual course search in the planner uses `FRDATA.fetchCurrentSearch(...)`, which calls `/api/current/search` and caches normalized current courses for schedule display. The chat agent's course lookup, search, recommendation, schedule summary, and UI action validation tools also use the server-side current catalog first. `shared/mock-data.js` remains only a fallback when current data cannot be loaded.
+
 ## Setup
 
 ```bash

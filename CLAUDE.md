@@ -60,6 +60,8 @@ The active term selector is generated in `data.js` from the current date, using 
 - `FRDATA.fetchCurrentCourse(id)` / `FRDATA.fetchCurrentSearch(q)` / `FRDATA.fetchCurrentCatalog()` — server-backed current catalog helpers with mock fallback
 - `FRDATA.getCourse(id)` / `FRDATA.getMatch(id)` — fallback lookup helpers
 
+The planner's manual course search path must call `FRDATA.fetchCurrentSearch(...)` and treat `/api/current/search` as the primary source. Cache current search results for schedule/detail display, but do not reintroduce mock catalog filtering as the main user path.
+
 Course `area` is computed from course ID prefix: `6.` → `cs`, `18.` → `math`, `8.` → `physics`, `7.` → `bio`, HASS-prefix numbers → `hass`.
 
 ### Current Catalog Generation
@@ -90,6 +92,7 @@ The app has a small real backend, while transcript parsing and some student-data
 - `server/current/*`: normalizes the local `data/courses.json` catalog snapshot for frontend current views, recommendations, and agent tools. Override with `CURRENT_CATALOG_PATH` when needed.
 - `server/history/*`: SQLite-backed read-only historical offerings/documents/policies.
 - `server/chat/prompt.js`: keep the agent focused on the active semester and reject cross-semester roadmap mutations unless explicitly requested.
+- `server/chat/tools.js`: search, course detail, recommendations, schedule summaries, suggestion sanitization, and UI action validation should resolve courses through `server/current/fireroad.js` first. Mock data is only a fallback when the current snapshot cannot load.
 - Match scores in `FRDATA.matchScores` should come from `POST /api/score-courses`
 - Transcript parsing in `Onboarding` Step 2 uses a `setTimeout` to simulate `POST /api/parse-transcript`
 - The workload estimate in `CourseDetail` uses `profile.calibration` (0–1 float) — calibration should eventually be computed server-side

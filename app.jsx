@@ -7,12 +7,14 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
   const [viewMode, setViewMode] = useState('list');
 
   const onAddCourse = async (id) => {
-    if (schedule.includes(id)) return;
-    const c = await FRDATA.fetchCurrentCourse(id);
+    const courseId = String(id || '').trim().toUpperCase();
+    if (!courseId || schedule.map((course) => String(course).toUpperCase()).includes(courseId)) return;
+    const c = await FRDATA.fetchCurrentCourse(courseId);
     if (!c) return;
-    const newUnits = schedule.reduce((s, x) => s + (FRDATA.getCourse(x)?.units || 0), 0) + c.units;
-    setSchedule((s) => [...s, id]);
-    setJustAddedId(id);
+    const existingCourses = await Promise.all(schedule.map((course) => FRDATA.fetchCurrentCourse(course)));
+    const newUnits = existingCourses.reduce((sum, course) => sum + (Number(course?.units) || 0), 0) + (Number(c.units) || 0);
+    setSchedule((s) => [...s, courseId]);
+    setJustAddedId(courseId);
     setTimeout(() => setJustAddedId(null), 800);
     setMessages((m) => [...m, {
       role: 'agent',

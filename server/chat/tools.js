@@ -65,6 +65,11 @@ function currentCourseSummary(course) {
   };
 }
 
+async function resolveCurrentCourseSummary(courseId) {
+  const course = await fetchCurrentCourse(courseId);
+  return course ? currentCourseSummary(course) : null;
+}
+
 function hasTime(course) {
   return course && Array.isArray(course.days) && course.days.length && course.time && course.time.end > course.time.start;
 }
@@ -168,11 +173,19 @@ async function recommendCourses(args = {}, context = {}) {
   const scheduledSet = new Set(schedule);
   const takenSet = new Set([...asArray(profile.taken).map(normalizeCourseId), ...schedule]);
 
-  const pool = await searchCurrentCourses({
+  let pool = await searchCurrentCourses({
     query: '',
     maxResults: Math.max(maxResults * 8, 40),
     maxWorkload,
+    requirements: targetRequirements,
   });
+  if (!pool.results.length && targetRequirements.length) {
+    pool = await searchCurrentCourses({
+      query: '',
+      maxResults: Math.max(maxResults * 8, 40),
+      maxWorkload,
+    });
+  }
 
   const recommendations = pool.results
     .filter((course) => !scheduledSet.has(course.id))
@@ -442,6 +455,9 @@ const toolSchemas = [
 ];
 
 const toolHandlers = {
+  search_courses: searchCurrentCoursesTool,
+  get_course: getCurrentCourseTool,
+  summarize_schedule: summarizeSemesterPlan,
   search_current_courses: searchCurrentCoursesTool,
   get_current_course: getCurrentCourseTool,
   summarize_semester_plan: summarizeSemesterPlan,
@@ -461,6 +477,7 @@ module.exports = {
   normalizeProfile,
   normalizeSchedule,
   recommendCourses,
+  resolveCurrentCourseSummary,
   sanitizeSuggestions,
   searchCurrentCoursesTool,
   summarizeSemesterPlan,

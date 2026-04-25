@@ -4,14 +4,17 @@ window.FRDATA = (function (source) {
     throw new Error('shared/mock-data.js must be loaded before data.js');
   }
 
+  const currentCache = new Map();
+  let catalogCache = null;
+
   const getCourse = (id) => {
     const normalized = String(id || '').trim().toLowerCase();
+    const cached = currentCache.get(normalized.toUpperCase());
+    if (cached) return cached;
     return source.catalog.find((c) => c.id.toLowerCase() === normalized);
   };
 
   const getMatch = (id) => source.matchScores[id] || { total: 0, interest: 0, workload: 0, reqValue: 0 };
-  const currentCache = new Map();
-  let catalogCache = null;
 
   const termDefinitions = [
     ['F', 'Fall'],
@@ -114,6 +117,54 @@ window.FRDATA = (function (source) {
     return response.json();
   };
 
+  const cacheCourses = (courses) => {
+    courses.filter(Boolean).forEach((course) => {
+      currentCache.set(String(course.id || '').trim().toUpperCase(), course);
+      if (course.current?.oldId) currentCache.set(String(course.current.oldId).trim().toUpperCase(), course);
+    });
+    return courses;
+  };
+
+  const fallbackSearch = (query = '', maxResults = 20) => {
+    const normalized = String(query || '').trim().toLowerCase();
+    const tokens = normalized.split(/\s+/).filter(Boolean);
+    const expandedTokens = [...new Set(tokens.flatMap((token) => {
+      if (token === 'ml') return [token, 'machine', 'learning'];
+      if (token === 'ai') return [token, 'artificial', 'intelligence'];
+      if (token === 'hass') return [token, 'hass-a', 'hass-h', 'hass-s'];
+      return [token];
+    }))];
+    const scored = source.catalog
+      .filter((course) => !course._stub)
+      .map((course) => {
+        const haystack = [
+          course.id,
+          course.name,
+          course.desc,
+          course.instructor,
+          course.satisfies.join(' '),
+          course.area,
+        ].join(' ').toLowerCase();
+        const matchScore = source.matchScores[course.id]?.total || 0;
+        let score = 0;
+        if (!normalized) score += matchScore || 1;
+        if (course.id.toLowerCase() === normalized) score += 120;
+        if (course.id.toLowerCase().includes(normalized)) score += 60;
+        if (course.name.toLowerCase().includes(normalized)) score += 40;
+        if (course.desc.toLowerCase().includes(normalized)) score += 14;
+        expandedTokens.forEach((token) => {
+          if (haystack.includes(token)) score += 6;
+        });
+        if (normalized && score > 0) score += Math.min(matchScore, 10);
+        return { course, score };
+      })
+      .filter((entry) => !normalized || entry.score > 0)
+      .sort((a, b) => b.score - a.score || a.course.id.localeCompare(b.course.id))
+      .slice(0, Math.max(1, Number(maxResults) || 20))
+      .map((entry) => entry.course);
+    return cacheCourses(scored);
+  };
+
   const fetchCurrentCourse = async (id) => {
     const normalized = String(id || '').trim().toUpperCase();
     if (!normalized) return null;
@@ -121,7 +172,10 @@ window.FRDATA = (function (source) {
     try {
       const payload = await fetchJson(`/api/current/course/${encodeURIComponent(normalized)}`);
       const course = toPlannerCourse(payload.course);
-      if (course) currentCache.set(normalized, course);
+      if (course) {
+        cacheCourses([course]);
+        currentCache.set(normalized, course);
+      }
       return course;
     } catch (error) {
       return getCourse(normalized);
@@ -131,9 +185,9 @@ window.FRDATA = (function (source) {
   const fetchCurrentSearch = async (query = '', maxResults = 20) => {
     try {
       const payload = await fetchJson(`/api/current/search?q=${encodeURIComponent(query)}&max_results=${encodeURIComponent(maxResults)}`);
-      return (payload.results || []).map(toPlannerCourse).filter(Boolean);
+      return cacheCourses((payload.results || []).map(toPlannerCourse).filter(Boolean));
     } catch (error) {
-      return source.catalog.filter((course) => !course._stub);
+      return fallbackSearch(query, maxResults);
     }
   };
 
@@ -142,8 +196,10 @@ window.FRDATA = (function (source) {
     try {
       const payload = await fetchJson('/api/current/catalog?max_results=500');
       catalogCache = (payload.courses || []).map(toPlannerCourse).filter(Boolean);
+      cacheCourses(catalogCache);
     } catch (error) {
       catalogCache = source.catalog.filter((course) => !course._stub);
+      cacheCourses(catalogCache);
     }
     return catalogCache;
   };

@@ -187,17 +187,186 @@ const CalendarView = ({ courses }) => {
   );
 };
 
+const courseWorkloadLabel = (course) => {
+  const parts = [];
+  if (Number(course.units)) parts.push(`${course.units} units`);
+  if (Number(course.hydrant)) parts.push(`~${Number(course.hydrant).toFixed(1)}h/wk`);
+  return parts.join(' · ') || 'Units TBD';
+};
+
+const ManualCourseSearch = ({ schedule, onAddCourse, onOpenCourse, onCoursesLoaded }) => {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [status, setStatus] = useState('loading');
+  const [error, setError] = useState('');
+  const requestId = useRef(0);
+
+  useEffect(() => {
+    const id = requestId.current + 1;
+    requestId.current = id;
+    const searchText = query.trim();
+    setStatus('loading');
+    setError('');
+
+    const timer = setTimeout(() => {
+      FRDATA.fetchCurrentSearch(searchText, searchText ? 50 : 80)
+        .then((courses) => {
+          if (requestId.current !== id) return;
+          const list = courses.filter(Boolean);
+          setResults(list);
+          onCoursesLoaded(list);
+          setStatus('ready');
+        })
+        .catch((err) => {
+          if (requestId.current !== id) return;
+          setResults([]);
+          setError(err && err.message ? err.message : 'Search failed');
+          setStatus('error');
+        });
+    }, 220);
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const scheduled = new Set(schedule.map((id) => String(id).toUpperCase()));
+  const visibleResults = results.filter((course) => course && course.id);
+
+  return (
+    <div style={{
+      marginTop: 8, border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
+      background: 'var(--surface)', overflow: 'hidden',
+    }}>
+      <div style={{ padding: 10, borderBottom: '1px solid var(--border)', background: 'var(--bg)' }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '8px 10px', borderRadius: 8,
+          background: 'var(--surface)', border: '1px solid var(--border)',
+        }}>
+          <Icon name="search" size={14} style={{ color: 'var(--text-tertiary)' }} />
+          <input
+            autoFocus
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search by course number, title, requirement, or keyword"
+            style={{ flex: 1, fontSize: 13, minWidth: 0 }}
+          />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              className="btn-ghost"
+              title="Clear search"
+              style={{
+                width: 22, height: 22, borderRadius: 6, padding: 0,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--text-tertiary)',
+              }}
+            >
+              <Icon name="x" size={12} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div style={{ maxHeight: 330, overflowY: 'auto' }}>
+        {status === 'loading' && (
+          <div style={{ padding: 16, fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center' }}>
+            Searching current catalog...
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div style={{ padding: 16, fontSize: 13, color: 'var(--accent)', textAlign: 'center' }}>
+            {error}
+          </div>
+        )}
+
+        {status === 'ready' && visibleResults.length === 0 && (
+          <div style={{ padding: 16, fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center' }}>
+            No current courses found
+          </div>
+        )}
+
+        {status === 'ready' && visibleResults.map((course) => {
+          const isAdded = scheduled.has(course.id);
+          const tags = Array.isArray(course.satisfies) ? course.satisfies.slice(0, 3) : [];
+          return (
+            <div
+              key={course.id}
+              style={{
+                padding: '11px 12px', borderBottom: '1px solid var(--border)',
+                display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 12,
+                alignItems: 'center',
+              }}
+              onMouseEnter={(event) => { event.currentTarget.style.background = 'var(--surface-2)'; }}
+              onMouseLeave={(event) => { event.currentTarget.style.background = 'transparent'; }}
+            >
+              <div style={{ minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 9, minWidth: 0 }}>
+                  <AreaDot area={course.area} />
+                  <span className="mono" style={{ fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{course.id}</span>
+                  <span style={{
+                    color: 'var(--text)', fontSize: 13,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>
+                    {course.name}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 7 }}>
+                  <span className="mono" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{courseWorkloadLabel(course)}</span>
+                  {tags.map((tag) => (
+                    <span key={tag} className="mono" style={{
+                      fontSize: 10, padding: '2px 6px', borderRadius: 999,
+                      background: 'var(--surface-2)', border: '1px solid var(--border)',
+                      color: 'var(--text-secondary)',
+                    }}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <button
+                  onClick={() => onOpenCourse(course.id)}
+                  className="btn-ghost"
+                  style={{
+                    fontSize: 11, padding: '6px 8px', borderRadius: 6,
+                    border: '1px solid var(--border)', color: 'var(--text-secondary)',
+                  }}
+                >
+                  Detail
+                </button>
+                <button
+                  onClick={() => onAddCourse(course.id)}
+                  disabled={isAdded}
+                  style={{
+                    fontSize: 11, padding: '6px 9px', borderRadius: 6,
+                    background: isAdded ? 'var(--surface-2)' : 'var(--accent)',
+                    color: isAdded ? 'var(--text-tertiary)' : '#fff',
+                    opacity: isAdded ? 0.65 : 1,
+                    cursor: isAdded ? 'default' : 'pointer',
+                  }}
+                >
+                  {isAdded ? 'Added' : 'Add'}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 // ============== Schedule panel (left) ==============
 const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAddCourse, onRemoveCourse, viewMode, setViewMode, planningTermLabel = 'Next Semester' }) => {
   const [showCoursePicker, setShowCoursePicker] = useState(false);
-  const [catalog, setCatalog] = useState(() => FRDATA.catalog.filter(c => !c._stub));
   const [courseMap, setCourseMap] = useState(() => Object.fromEntries(FRDATA.catalog.map((course) => [course.id, course])));
 
   useEffect(() => {
     let cancelled = false;
     FRDATA.fetchCurrentSearch('', 80).then((courses) => {
       if (cancelled) return;
-      setCatalog(courses);
       setCourseMap((current) => ({
         ...current,
         ...Object.fromEntries(courses.map((course) => [course.id, course])),
@@ -222,7 +391,13 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
   const totalUnits = courses.reduce((s, c) => s + c.units, 0);
   const reqsCovered = new Set();
   courses.forEach((c) => c.satisfies.forEach((r) => reqsCovered.add(r)));
-  const available = catalog.filter(c => !schedule.includes(c.id));
+
+  const mergeLoadedCourses = (coursesToMerge) => {
+    setCourseMap((current) => ({
+      ...current,
+      ...Object.fromEntries(coursesToMerge.filter(Boolean).map((course) => [course.id, course])),
+    }));
+  };
 
   const removeCourse = (id) => {
     if (onRemoveCourse) onRemoveCourse(id);
@@ -230,9 +405,10 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
   };
 
   const addCourseToSem = (id) => {
-    if (schedule.includes(id)) { setShowCoursePicker(false); return; }
-    if (onAddCourse) onAddCourse(id);
-    else setSchedule(s => [...s, id]);
+    const courseId = String(id || '').trim().toUpperCase();
+    if (schedule.map((item) => String(item).toUpperCase()).includes(courseId)) { setShowCoursePicker(false); return; }
+    if (onAddCourse) onAddCourse(courseId);
+    else setSchedule(s => [...s, courseId]);
     setShowCoursePicker(false);
   };
 
@@ -325,31 +501,12 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
           <Icon name="plus" size={14} /> Add course manually
         </button>
         {showCoursePicker && (
-          <div style={{
-            marginTop: 8, border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
-            background: 'var(--surface)', overflow: 'hidden', maxHeight: 260, overflowY: 'auto',
-          }}>
-            {available.length === 0
-              ? <div style={{ padding: 16, fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center' }}>All courses added</div>
-              : available.map(c => (
-                <button
-                  key={c.id}
-                  onClick={() => addCourseToSem(c.id)}
-                  style={{
-                    width: '100%', textAlign: 'left', padding: '10px 14px',
-                    borderBottom: '1px solid var(--border)',
-                    display: 'flex', alignItems: 'center', gap: 10, fontSize: 13,
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                >
-                  <AreaDot area={c.area} />
-                  <span className="mono" style={{ fontSize: 12, fontWeight: 600, minWidth: 58 }}>{c.id}</span>
-                  <span style={{ color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
-                </button>
-              ))
-            }
-          </div>
+          <ManualCourseSearch
+            schedule={schedule}
+            onAddCourse={addCourseToSem}
+            onOpenCourse={onOpenCourse}
+            onCoursesLoaded={mergeLoadedCourses}
+          />
         )}
       </div>
 

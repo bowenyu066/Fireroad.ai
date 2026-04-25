@@ -2,10 +2,9 @@ const { SYSTEM_PROMPT } = require('./prompt');
 const { OPENROUTER_MODEL, callOpenRouter, publicErrorMessage } = require('./openrouter');
 const {
   asArray,
-  getCourse,
-  mockData,
   normalizeProfile,
   normalizeSchedule,
+  resolveCurrentCourseSummary,
   sanitizeSuggestions,
   toolHandlers,
   toolSchemas,
@@ -163,7 +162,7 @@ function explicitScheduleChangeRequested(text, messages = []) {
     return false;
   }
   const hasMutationVerb = /\b(add|put|include|enroll|register|remove|drop|delete|swap|replace)\b/.test(lower);
-  const hasCourseOrScheduleContext = /\b(schedule|plan|semester|course|class)\b/.test(lower) || /\b\d{1,2}\.[\w.]+\b/.test(lower);
+  const hasCourseOrScheduleContext = /\b(schedule|plan|semester|course|class)\b/.test(lower) || extractCourseIdsFromText(lower).length > 0;
   return hasMutationVerb && hasCourseOrScheduleContext;
 }
 
@@ -177,8 +176,7 @@ async function extractRequestedUiActions(text, schedule, messages = []) {
   }
 
   const lower = String(text || '').toLowerCase();
-  const mentionedIds = toolCatalogCourseIds()
-    .filter((courseId) => lower.includes(courseId.toLowerCase()));
+  const mentionedIds = extractCourseIdsFromText(lower);
 
   if (!mentionedIds.length) return [];
 
@@ -200,10 +198,10 @@ async function extractRequestedUiActions(text, schedule, messages = []) {
   return [];
 }
 
-function toolCatalogCourseIds() {
-  return mockData.catalog
-    .filter((course) => !course._stub)
-    .map((course) => course.id);
+function extractCourseIdsFromText(text) {
+  return [...String(text || '').matchAll(/\b[A-Z0-9]{1,5}\.[A-Z0-9.]*[A-Z0-9]\b/gi)]
+    .map((match) => String(match[0] || '').trim().toUpperCase())
+    .filter((courseId, index, list) => courseId && list.indexOf(courseId) === index);
 }
 
 async function validateFinalActions(actions, context, debug, allowActions) {
@@ -284,11 +282,11 @@ async function buildLocalActionFallback(body = {}, reason) {
   const uiActions = await validateFinalActions(requestedActions, context, debug, true);
   if (!uiActions.length) return null;
 
-  const descriptions = uiActions.map((action) => {
-    const course = getCourse(action.courseId);
+  const descriptions = await Promise.all(uiActions.map(async (action) => {
+    const course = await resolveCurrentCourseSummary(action.courseId);
     const verb = action.type === 'add_course' ? 'add' : action.type === 'remove_course' ? 'remove' : 'replace with';
     return `${verb} ${action.courseId}${course ? ` (${course.name})` : ''}`;
-  });
+  }));
 
   return {
     message: {
