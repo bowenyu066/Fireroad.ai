@@ -16,6 +16,7 @@ const Icon = ({ name, size = 16, ...rest }) => {
     chevronDown: 'M6 9l6 6 6-6',
     chevronUp: 'M6 15l6-6 6 6',
     upload: 'M12 16V4M6 10l6-6 6 6M4 20h16',
+    download: 'M12 4v12M6 10l6 6 6-6M4 20h16',
     paperclip: 'M21 11.5l-9 9a5 5 0 11-7.07-7.07l9-9a3.5 3.5 0 014.95 4.95l-9 9a2 2 0 11-2.83-2.83l8.49-8.49',
     send: 'M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z',
     sparkle: 'M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3zM19 15l.7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7L19 15z',
@@ -28,6 +29,10 @@ const Icon = ({ name, size = 16, ...rest }) => {
     clock: 'M12 6v6l4 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
     grid: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
     list: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
+    thumbsUp: 'M14 9V5a3 3 0 00-3-3l-4 9v11h11.3a2 2 0 002-1.7l1.4-8A2 2 0 0019.7 10H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3',
+    thumbsDown: 'M10 15v4a3 3 0 003 3l4-9V2H5.7a2 2 0 00-2 1.7l-1.4 8A2 2 0 004.3 14H10zM17 2h3a2 2 0 012 2v7a2 2 0 01-2 2h-3',
+    minus: 'M5 12h14',
+    edit: 'M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z',
   };
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...rest}>
