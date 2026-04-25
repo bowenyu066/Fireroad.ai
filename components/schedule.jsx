@@ -131,10 +131,14 @@ const ScheduleCard = ({ course, match, onRemove, onOpen, justAdded }) => {
 };
 
 // ============== Calendar mini-view ==============
+const CAL_PALETTE = ['#4A8FE8','#E8704A','#7C4AE8','#E84A7A','#14B8A6','#F59E0B','#34D399','#E05252'];
+
 const CalendarView = ({ courses }) => {
   const days = ['M', 'T', 'W', 'R', 'F'];
   const dayLabels = { M: 'Mon', T: 'Tue', W: 'Wed', R: 'Thu', F: 'Fri' };
   const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+  const colorOf = {};
+  courses.forEach((c, i) => { colorOf[c.id] = CAL_PALETTE[i % CAL_PALETTE.length]; });
 
   return (
     <div style={{
@@ -160,7 +164,7 @@ const CalendarView = ({ courses }) => {
                 return (
                   <div key={c.id} style={{
                     position: 'absolute', top: offsetTop, left: 2, right: 2, height,
-                    background: `var(--course-${c.area})`, opacity: 0.85,
+                    background: colorOf[c.id], opacity: 0.9,
                     borderRadius: 4, padding: '3px 5px', color: '#fff',
                     fontSize: 10, lineHeight: 1.2, overflow: 'hidden',
                   }}>

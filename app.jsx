@@ -1,4 +1,4 @@
-/* global React, ReactDOM, FRDATA, Onboarding, TopBar, SchedulePanel, FourYearPlan, AgentPanel, Recommendations, CourseDetail, AppCtx */
+/* global React, ReactDOM, FRDATA, Onboarding, ProfilePage, TopBar, SchedulePanel, FourYearPlan, AgentPanel, Recommendations, CourseDetail, AppCtx */
 const { useState, useEffect } = React;
 
 const Planner = ({ schedule, setSchedule, messages, setMessages }) => {
@@ -91,6 +91,7 @@ const App = () => {
           onAdd={addCourse}
         />
       )}
+      {route.name === 'profile' && <ProfilePage />}
     </AppCtx.Provider>
   );
 };

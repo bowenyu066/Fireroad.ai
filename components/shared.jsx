@@ -148,10 +148,16 @@ const TopBar = ({ tab, setTab, showTabs = true }) => {
 
       <div style={{ flex: '1 1 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
         <ThemeToggle />
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 10, padding: '4px 10px 4px 4px',
-          borderRadius: 999, background: 'var(--surface)', border: '1px solid var(--border)',
-        }}>
+        <button
+          onClick={() => setRoute({ name: 'profile' })}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '4px 10px 4px 4px',
+            borderRadius: 999, background: 'var(--surface)', border: '1px solid var(--border)',
+            transition: 'border-color 160ms, background 160ms',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--surface-2)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--surface)'; }}
+        >
           <div style={{
             width: 24, height: 24, borderRadius: '50%', background: 'var(--accent)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -160,7 +166,7 @@ const TopBar = ({ tab, setTab, showTabs = true }) => {
             {profile.name.split(' ').map((s) => s[0]).join('')}
           </div>
           <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{profile.name}</span>
-        </div>
+        </button>
       </div>
     </div>
   );
