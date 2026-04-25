@@ -24,6 +24,8 @@ The current product focus is active-semester planning. Treat `fourYearPlan[activ
 
 Keep `fourYearPlan` and `activeSem` as the canonical frontend/persistence state because they preserve term-aware data. Do not add cross-semester drag/drop flows unless explicitly requested. `FourYearPlan` is kept only as a legacy read-only component export for future display work and should not be mounted from the main planner.
 
+The active term selector is generated in `data.js` from the current date, using a Hydrant-like rolling default while still allowing manual term selection. Do not hardcode `S25` or other stale semester defaults in UI state.
+
 ## Architecture
 
 **No bundler. No frontend build.** All browser JavaScript files are loaded as ordered `<script>` tags in `index.html`:
@@ -54,8 +56,11 @@ Keep `fourYearPlan` and `activeSem` as the canonical frontend/persistence state 
 - `FRDATA.profile` — mock student profile (taken courses, preferences, calibration, remaining requirements)
 - `FRDATA.matchScores` — match score breakdown per course (`total`, `interest`, `workload`, `reqValue`)
 - `FRDATA.fourYearPlan`, `FRDATA.semesterLabels`, `FRDATA.semesterOrder`, `FRDATA.defaultActiveSem` — term-aware seed plan data; the editable schedule is `fourYearPlan[activeSem]`
+- `FRDATA.termOptions` — rolling term picker options generated from the current date
 - `FRDATA.fetchCurrentCourse(id)` / `FRDATA.fetchCurrentSearch(q)` / `FRDATA.fetchCurrentCatalog()` — server-backed current catalog helpers with mock fallback
 - `FRDATA.getCourse(id)` / `FRDATA.getMatch(id)` — fallback lookup helpers
+
+The planner's manual course search path must call `FRDATA.fetchCurrentSearch(...)` and treat `/api/current/search` as the primary source. Cache current search results for schedule/detail display, but do not reintroduce mock catalog filtering as the main user path.
 
 Course `area` is computed from course ID prefix: `6.` → `cs`, `18.` → `math`, `8.` → `physics`, `7.` → `bio`, HASS-prefix numbers → `hass`.
 
@@ -83,10 +88,11 @@ Course area colors follow the pattern `var(--course-cs)`, `var(--course-math)`, 
 
 The app has a small real backend, while transcript parsing and some student-data persistence remain prototype-level:
 
-- `AgentPanel` (`components/agent.jsx`): calls `POST /api/chat`, which runs the OpenRouter-backed tool-calling agent from `server/chat/*`.
+- `AgentPanel` (`components/agent.jsx`): calls `POST /api/chat`, including `studentName`, which runs the OpenRouter-backed tool-calling agent from `server/chat/*`.
 - `server/current/*`: normalizes the local `data/courses.json` catalog snapshot for frontend current views, recommendations, and agent tools. Override with `CURRENT_CATALOG_PATH` when needed.
 - `server/history/*`: SQLite-backed read-only historical offerings/documents/policies.
 - `server/chat/prompt.js`: keep the agent focused on the active semester and reject cross-semester roadmap mutations unless explicitly requested.
+- `server/chat/tools.js`: search, course detail, recommendations, schedule summaries, suggestion sanitization, and UI action validation should resolve courses through `server/current/fireroad.js` first. Mock data is only a fallback when the current snapshot cannot load.
 - Match scores in `FRDATA.matchScores` should come from `POST /api/score-courses`
 - First-entry onboarding calls `/api/onboarding/*` for PDF text extraction, prompt execution, course import, and course-preference updates. The browser persists returned `personalCourseMarkdown` through Firebase client auth.
 - The workload estimate in `CourseDetail` uses `profile.calibration` (0–1 float) — calibration should eventually be computed server-side
@@ -98,4 +104,4 @@ The app has a small real backend, while transcript parsing and some student-data
 
 ## Documentation Maintenance
 
-Multiple agents may work in this repository concurrently. When changing setup, scripts, generated data, API contracts, schema assumptions, product scope, or agent behavior, update the relevant documentation in the same change. At minimum, keep `README.md`, this file, prompt Markdown files, and nearby domain docs consistent with the code. Do not leave generated-data provenance or agent contracts for a later agent to rediscover.
+Multiple agents may work in this repository concurrently. When changing setup, scripts, generated data, API contracts, schema assumptions, product scope, prompt assets, or agent behavior, update the relevant documentation in the same change. At minimum, keep `README.md`, this file, prompt files, and nearby domain docs consistent with the code. Do not leave generated-data provenance or agent contracts for a later agent to rediscover.

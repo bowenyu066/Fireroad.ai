@@ -26,6 +26,7 @@ const Icon = ({ name, size = 16, ...rest }) => {
     sun: 'M12 3v2M12 19v2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M3 12h2M19 12h2M5.6 18.4l1.4-1.4M17 7l1.4-1.4',
     moon: 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z',
     book: 'M4 19.5A2.5 2.5 0 016.5 17H20V3H6.5A2.5 2.5 0 004 5.5v14zM4 19.5A2.5 2.5 0 006.5 22H20',
+    search: 'M21 21l-4.3-4.3M10.8 18a7.2 7.2 0 110-14.4 7.2 7.2 0 010 14.4z',
     calendar: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z',
     clock: 'M12 6v6l4 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
     grid: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
@@ -117,11 +118,15 @@ const ThemeToggle = () => {
 };
 
 const TopBar = ({ planningTermLabel }) => {
-  const { setRoute, profile, authState, signOut, resetOnboarding, planningTermLabel: activePlanningTermLabel } = useApp();
+  const { setRoute, profile, authState, signOut, resetOnboarding, activeSem, setActiveSem, termOptions, planningTermLabel: activePlanningTermLabel } = useApp();
   const isLocalDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
   const displayName = profile?.name || authState?.user?.email?.split('@')[0] || 'User';
   const initials = displayName.split(' ').map((s) => s[0]).join('');
   const termLabel = planningTermLabel || activePlanningTermLabel || 'Next Semester';
+  const generatedTerms = Array.isArray(termOptions) && termOptions.length ? termOptions : [{ id: activeSem || termLabel, label: termLabel }];
+  const terms = activeSem && !generatedTerms.some((term) => term.id === activeSem)
+    ? [{ id: activeSem, label: termLabel }, ...generatedTerms]
+    : generatedTerms;
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -135,13 +140,36 @@ const TopBar = ({ planningTermLabel }) => {
       </div>
 
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 8, padding: '7px 13px',
-        borderRadius: 999, background: 'var(--surface-2)', border: '1px solid var(--border)',
-        color: 'var(--text-secondary)', fontSize: 12,
+        display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px',
+        borderRadius: 10, background: 'var(--surface-2)', border: '1px solid var(--border)',
+        color: 'var(--text-secondary)', fontSize: 12, position: 'relative',
       }}>
         <Icon name="calendar" size={14} />
-        <span className="mono" style={{ color: 'var(--text)' }}>{termLabel}</span>
-        <span>planner</span>
+        {setActiveSem ? (
+          <select
+            value={activeSem}
+            onChange={(event) => setActiveSem(event.target.value)}
+            className="mono"
+            title="Planning term"
+            style={{
+              appearance: 'none',
+              background: 'transparent',
+              border: 0,
+              color: 'var(--text)',
+              fontSize: 12,
+              padding: '0 18px 0 0',
+              outline: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            {terms.map((term) => (
+              <option key={term.id} value={term.id}>{term.label}</option>
+            ))}
+          </select>
+        ) : (
+          <span className="mono" style={{ color: 'var(--text)' }}>{termLabel}</span>
+        )}
+        <Icon name="chevronDown" size={13} style={{ position: 'absolute', right: 8, pointerEvents: 'none', color: 'var(--text-secondary)' }} />
       </div>
 
       <div style={{ flex: '1 1 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>

@@ -10,6 +10,10 @@ The app keeps the `fourYearPlan` object in state and persistence so term-aware d
 
 Course detail is split into `Current` and `Historical` views. Current data comes from the server-side normalized local catalog snapshot at `data/courses.json`. Historical data comes from the SQLite-backed history subsystem and is read-only reference.
 
+The active term selector is generated from the current date in `data.js`, similar to Hydrant's rolling term picker. Users can still manually choose another term; do not hardcode stale semester labels or default active terms.
+
+Manual course search in the planner uses `FRDATA.fetchCurrentSearch(...)`, which calls `/api/current/search` and caches normalized current courses for schedule display. The chat agent's course lookup, search, recommendation, schedule summary, and UI action validation tools also use the server-side current catalog first. `shared/mock-data.js` remains only a fallback when current data cannot be loaded.
+
 ## Setup
 
 ```bash
@@ -27,7 +31,7 @@ Open http://localhost:3000.
 ## API
 
 - `GET /api/health` checks server status and whether an OpenRouter key is configured.
-- `POST /api/chat` accepts `{ messages, profile, schedule, activeSem }` where `schedule` is `fourYearPlan[activeSem]`, and returns an agent message plus validated `uiActions`.
+- `POST /api/chat` accepts `{ messages, profile, schedule, activeSem, studentName }` where `schedule` is `fourYearPlan[activeSem]`, and returns an agent message plus validated `uiActions`.
 - `GET /api/current/course/:courseId` returns normalized current catalog data.
 - `GET /api/current/search?q=...` searches current catalog data.
 - `GET /api/current/catalog` returns a normalized current catalog snapshot.
@@ -78,4 +82,4 @@ The seed script currently imports the demo `6.*` courses from `shared/mock-data.
 
 ## Documentation Maintenance
 
-Multiple agents may work in this repository at the same time. Any change that alters setup, data generation, API contracts, product scope, scripts, schemas, or agent behavior must update the relevant docs in the same change (`README.md`, `CLAUDE.md`, `agent.md`, or the closest domain doc). Treat generated-data provenance, including the `data/courses.json` generation rule above, as maintained project state.
+Multiple agents may work in this repository at the same time. Any change that alters setup, data generation, API contracts, product scope, scripts, schemas, prompt assets, or agent behavior must update the relevant docs in the same change (`README.md`, `CLAUDE.md`, prompt files, or the closest domain doc). Treat generated-data provenance, including the `data/courses.json` generation rule above, as maintained project state.
