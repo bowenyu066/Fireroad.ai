@@ -1,6 +1,53 @@
 /* global React, FRDATA, Icon, MatchBar, AreaDot, useApp */
 const { useState, useEffect, useRef, useMemo } = React;
 
+// ============== ICS export ==============
+const exportToICS = (courses) => {
+  // MIT Spring 2025: Feb 3 – May 16
+  const SEM_START = new Date(2025, 1, 3); // Feb 3 is a Monday
+  const SEM_UNTIL = '20250517T035959Z';   // May 16 23:59 EDT in UTC
+
+  const DAY_OFFSET = { M: 0, T: 1, W: 2, R: 3, F: 4 };
+  const DAY_ICS    = { M: 'MO', T: 'TU', W: 'WE', R: 'TH', F: 'FR' };
+
+  const pad = (n) => String(n).padStart(2, '0');
+  const toTime = (dec) => { const h = Math.floor(dec); const m = Math.round((dec - h) * 60); return `${pad(h)}${pad(m)}00`; };
+  const addDays = (d, n) => { const r = new Date(d); r.setDate(r.getDate() + n); return r; };
+  const fmtDate = (d, t) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${t}`;
+
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//fireroad.ai//Course Planner//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
+
+  courses.forEach((c) => {
+    if (!c.days || c.days.length === 0) return;
+    const firstOffset = Math.min(...c.days.map((d) => DAY_OFFSET[d]));
+    const firstDate   = addDays(SEM_START, firstOffset);
+    const byDay       = c.days.map((d) => DAY_ICS[d]).join(',');
+    const desc        = [`Instructor: ${c.instructor}`, `Units: ${c.units}`, c.satisfies.length ? `Satisfies: ${c.satisfies.join(', ')}` : ''].filter(Boolean).join('\\n');
+
+    lines.push(
+      'BEGIN:VEVENT',
+      `DTSTART;TZID=America/New_York:${fmtDate(firstDate, toTime(c.time.start))}`,
+      `DTEND;TZID=America/New_York:${fmtDate(firstDate, toTime(c.time.end))}`,
+      `RRULE:FREQ=WEEKLY;BYDAY=${byDay};UNTIL=${SEM_UNTIL}`,
+      `SUMMARY:${c.id} – ${c.name}`,
+      `DESCRIPTION:${desc}`,
+      'LOCATION:MIT',
+      `UID:${c.id}-spring2025@fireroad.ai`,
+      'END:VEVENT',
+    );
+  });
+
+  lines.push('END:VCALENDAR');
+
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'fireroad-spring-2025.ics';
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
 // ============== Schedule course card (left panel) ==============
 const ScheduleCard = ({ course, match, onRemove, onOpen, justAdded }) => {
   const [removing, setRemoving] = useState(false);
@@ -105,8 +152,8 @@ const CalendarView = ({ courses }) => {
           </div>
           {days.map((d) => (
             <div key={d + h} style={{ borderTop: '1px dotted var(--border)', height: 28, position: 'relative' }}>
-              {courses.filter((c) => c.days.includes(d) && c.time.start <= h && c.time.end > h).map((c) => {
-                const isStart = c.time.start === h || (c.time.start > h && c.time.start < h + 1);
+              {courses.filter((c) => c.days.includes(d) && c.time.start < h + 1 && c.time.end > h).map((c) => {
+                const isStart = c.time.start >= h && c.time.start < h + 1;
                 if (!isStart) return null;
                 const offsetTop = (c.time.start - h) * 28;
                 const height = (c.time.end - c.time.start) * 28 - 2;
@@ -146,19 +193,36 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, viewM
             Spring 2025
             <Icon name="chevronDown" size={14} style={{ color: 'var(--text-secondary)' }} />
           </div>
-          <div style={{ display: 'flex', gap: 2, padding: 2, background: 'var(--surface-2)', borderRadius: 8, border: '1px solid var(--border)' }}>
-            {[['list', 'list'], ['cal', 'grid']].map(([k, ic]) => (
-              <button key={k} onClick={() => setViewMode(k)} title={k === 'list' ? 'List' : 'Calendar'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {courses.length > 0 && (
+              <button
+                onClick={() => exportToICS(courses)}
+                className="btn-ghost"
+                title="Export to .ics"
                 style={{
-                  width: 26, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  borderRadius: 6, background: viewMode === k ? 'var(--bg)' : 'transparent',
-                  color: viewMode === k ? 'var(--text)' : 'var(--text-tertiary)',
-                  border: viewMode === k ? '1px solid var(--border)' : '1px solid transparent',
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  fontSize: 12, padding: '4px 10px', borderRadius: 6,
+                  border: '1px solid var(--border)', color: 'var(--text-secondary)',
                 }}
               >
-                <Icon name={ic} size={13} />
+                <Icon name="download" size={13} />
+                Export .ics
               </button>
-            ))}
+            )}
+            <div style={{ display: 'flex', gap: 2, padding: 2, background: 'var(--surface-2)', borderRadius: 8, border: '1px solid var(--border)' }}>
+              {[['list', 'list'], ['cal', 'grid']].map(([k, ic]) => (
+                <button key={k} onClick={() => setViewMode(k)} title={k === 'list' ? 'List' : 'Calendar'}
+                  style={{
+                    width: 26, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    borderRadius: 6, background: viewMode === k ? 'var(--bg)' : 'transparent',
+                    color: viewMode === k ? 'var(--text)' : 'var(--text-tertiary)',
+                    border: viewMode === k ? '1px solid var(--border)' : '1px solid transparent',
+                  }}
+                >
+                  <Icon name={ic} size={13} />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <div className="eyebrow" style={{ marginTop: 6 }}>Your schedule · {courses.length} {courses.length === 1 ? 'course' : 'courses'}</div>
