@@ -50,7 +50,7 @@ const Planner = ({ schedule, setSchedule, messages, setMessages }) => {
           </>
         ) : (
           <div style={{ flex: 1, minWidth: 0 }}>
-            <FourYearPlan schedule={schedule} setSchedule={setSchedule} fourYearPlan={FRDATA.fourYearPlan} />
+            <FourYearPlan schedule={schedule} />
           </div>
         )}
       </div>
@@ -62,8 +62,15 @@ const App = () => {
   const [theme, setTheme] = useState(() => localStorage.getItem('fr-theme') || 'dark');
   const [route, setRoute] = useState({ name: 'onboarding' });
   const [profile, setProfile] = useState(FRDATA.profile);
-  const [schedule, setSchedule] = useState([]);
+  const [fourYearPlan, setFourYearPlan] = useState(FRDATA.fourYearPlan);
   const [messages, setMessages] = useState(FRDATA.agentMessages);
+
+  // S25 is the live planning semester — stored inside fourYearPlan for consistency
+  const schedule = fourYearPlan['S25'] || [];
+  const setSchedule = (updater) => setFourYearPlan(p => {
+    const cur = p['S25'] || [];
+    return { ...p, S25: typeof updater === 'function' ? updater(cur) : updater };
+  });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -75,7 +82,7 @@ const App = () => {
     setSchedule((s) => [...s, id]);
   };
 
-  const ctx = { theme, setTheme, route, setRoute, profile, setProfile };
+  const ctx = { theme, setTheme, route, setRoute, profile, setProfile, fourYearPlan, setFourYearPlan };
 
   return (
     <AppCtx.Provider value={ctx}>
