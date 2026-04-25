@@ -34,6 +34,8 @@ const Icon = ({ name, size = 16, ...rest }) => {
     thumbsDown: 'M10 15v4a3 3 0 003 3l4-9V2H5.7a2 2 0 00-2 1.7l-1.4 8A2 2 0 004.3 14H10zM17 2h3a2 2 0 012 2v7a2 2 0 01-2 2h-3',
     minus: 'M5 12h14',
     edit: 'M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z',
+    logOut: 'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9',
+    rotateCcw: 'M3 12a9 9 0 109-9 9.8 9.8 0 00-6.4 2.3L3 8M3 3v5h5',
   };
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...rest}>
@@ -115,7 +117,9 @@ const ThemeToggle = () => {
 
 // ============== Top bar (planner / detail) ==============
 const TopBar = ({ tab, setTab, showTabs = true }) => {
-  const { route, setRoute, profile } = useApp();
+  const { route, setRoute, profile, authState, signOut, resetOnboarding } = useApp();
+  const isLocalDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  const initials = (profile.name || 'User').split(' ').map((s) => s[0]).join('');
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -153,8 +157,22 @@ const TopBar = ({ tab, setTab, showTabs = true }) => {
 
       <div style={{ flex: '1 1 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
         <ThemeToggle />
+        {isLocalDev && resetOnboarding && (
+          <button
+            className="btn-ghost"
+            onClick={resetOnboarding}
+            title="Reset onboarding for this account"
+            style={{
+              width: 32, height: 32, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              borderRadius: 8, color: 'var(--text-secondary)',
+            }}
+          >
+            <Icon name="rotateCcw" size={15} />
+          </button>
+        )}
         <button
           onClick={() => setRoute({ name: 'profile' })}
+          title={authState?.user?.email || 'Profile'}
           style={{
             display: 'flex', alignItems: 'center', gap: 10, padding: '4px 10px 4px 4px',
             borderRadius: 999, background: 'var(--surface)', border: '1px solid var(--border)',
@@ -168,10 +186,23 @@ const TopBar = ({ tab, setTab, showTabs = true }) => {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: '#fff', fontSize: 11, fontWeight: 600,
           }}>
-            {profile.name.split(' ').map((s) => s[0]).join('')}
+            {initials}
           </div>
           <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{profile.name}</span>
         </button>
+        {signOut && (
+          <button
+            className="btn-ghost"
+            onClick={signOut}
+            title="Sign out"
+            style={{
+              width: 32, height: 32, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              borderRadius: 8, color: 'var(--text-secondary)',
+            }}
+          >
+            <Icon name="logOut" size={15} />
+          </button>
+        )}
       </div>
     </div>
   );
