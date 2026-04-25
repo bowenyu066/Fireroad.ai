@@ -1,0 +1,17 @@
+24-1#,#24 Minor (Philosophy)#,#Philosophy#,#Minor in Philosophy
+The goal of the Minor in Philosophy is to introduce students to the methods of analytic philosophy and then to have them study a broad range of philosophers and philosophical issues at a more sophisticated level, culminating in an advanced seminar.
+
+tier_1
+Students may substitute an appropriate philosophy concourse subject with the permission of the minor advisor.
+tier_2
+Select three non-introductory philosophy subjects, approved by the minor advisor. Students may take a logic subject offered by another department (e.g., Mathematics) with the permission of the minor advisor.
+tier_3
+
+
+tier_1_1 := 24.00/24.01/24.02/24.03/24.04/24.05/24.06/24.07/24.08/24.09
+tier_1_2 := 24.118/24.241/24.242/24.243/24.244/24.245
+tier_1, "Tier I" := tier_1_1, tier_1_2
+
+tier_2, "Tier II" := ""3 subjects""{>=3}
+
+tier_3, "Tier III" := 24.260

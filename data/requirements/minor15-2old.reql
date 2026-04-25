@@ -1,0 +1,19 @@
+15#,#15 Minor (Business Analytics) (Old)#,#Business Analytics#,#Minor in Business Analytics (Old)#,#url=https://mitsloan.mit.edu/undergrad/15-2-business-analytics-minor-requirements
+The Minor in Business Analytics introduces data analysis techniques and their application to practical business problems. Its focus reflects the core content of the SB degree program in business analytics.
+
+reqd
+
+rest
+Three full subjects from the approved list of subjects. At least two full subjects must be from Course 15. A full subject is either 9 or 12 units. A half subject is 6 units.
+
+
+reqd_1 := 15.053
+reqd_2 := 6.3700/14.30/15.0791/18.600
+reqd_3 := 14.32/15.075/18.650
+reqd, "Required Subjects" := reqd_1, reqd_2, reqd_3
+
+
+rest_1 := 15.0251/15.0341/15.0621/15.068/15.0711/15.0741/15.093/15.276/15.312/15.450/15.456/15.565/15.570/15.6731/15.7611/15.772/15.777/15.780/15.8141/15.841/(15.871, 15.872)/15.8741{>=2}
+%% Todo: This should be <=1 when the requirements engine can correctly compute that progress
+rest_2 := 1.022/1.041/6.034/6.036/6.050/9.401/9.66/14.12/14.15/18.06/18.615{>=0}
+rest, "Restricted Electives" := rest_1, rest_2 {>=3}

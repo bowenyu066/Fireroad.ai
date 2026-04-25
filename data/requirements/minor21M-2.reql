@@ -1,0 +1,15 @@
+21M-2#,#21M Minor (Theater Arts)#,#Music and Theater Arts#,#Minor in Theater Arts#,#threshold=6#,#url=http://catalog.mit.edu/schools/humanities-arts-social-sciences/music-theater-arts/#theater-arts-minor
+The Minor in Theater Arts is designed to give students the opportunity to experiment in the making of theater. The flexibility of the minor allows students either to explore the basic principles of several theater disciplines or to concentrate more deeply on one.
+
+tier_1_2
+
+tier_3
+
+
+tier_1, "Tier I: Theoretical" := 21M.611/21M.690/21M.700/21M.706/21M.710/21M.711/21M.714/21M.715/21M.800/21M.846/21M.848{>=1}
+
+tier_2, "Tier II: Practical" := 21M.600/21M.601/21M.603/21M.604/21M.605/21M.606/21M.608/21M.623/21M.624/21M.645/21M.704/21M.705/21M.732/21M.733/21M.734/21M.735/21M.737/21M.785/21M.790/21M.830/21M.840/21M.842/21M.861/21M.862/21M.863{>=1}
+
+tier_1_2, "Tier I and II":= tier_1/tier_2 {>=5|>=2}
+
+tier_3, "Tier III: Performance and Design" := 21M.803/21M.806/21M.809/21M.851{>=9u}

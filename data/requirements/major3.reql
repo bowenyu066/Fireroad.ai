@@ -1,0 +1,12 @@
+3#,#3 Major#,#Materials Science and Engineering#,#Bachelor of Science in Materials Science and Engineering
+The undergraduate program serves the needs of students who intend to pursue employment in materials-related industries immediately upon graduation, as well as those who will do graduate work in the engineering or science of materials. The program is designed to be started at the beginning of the sophomore year, although it can be started in the spring term of the sophomore year or in the junior year with some loss of scheduling flexibility.
+
+core_reqd
+
+elective_eng
+
+%% Departmental Program
+
+core_reqd, "Required Subjects" := (6.100A/6.100L), (18.03/18.032/CC.1803/ES.1803/18.06/18.C06), 3.010, 3.013, 3.020, 3.023, 3.029, 3.030, 3.033, 3.042, 3.044, ((3.930,3.931)/3.THU)
+
+elective_eng, "Restricted Electives" := 3.004/3.017/3.021/3.039/3.041/3.046/3.052/3.053/3.054/3.055/3.056/3.063/3.064/3.07/3.071/3.074/3.080/3.081/3.086/3.087/3.088/3.14/3.15/3.152/3.154/3.155/3.156/3.16/3.17/3.171/3.18/3.19{>=33u}

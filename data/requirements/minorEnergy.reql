@@ -1,0 +1,18 @@
+Energy#,#Energy Studies Minor#,#Interdisciplinary#,#Minor in Energy Studies
+Energy is a fundamentally multidisciplinary topic. Transforming the worldâs energy systems requires combining expertise from numerous fields in engineering and technology, natural and social science, and policy. A diversity of disciplinary perspectives is necessary to equip students to work in this complex, evolving field.\n\nThe Energy Studies Minor for undergraduates is an Institute-wide program that complements the deep expertise obtained in any major with a broad understanding of the interlinked realms of science, technology, and social sciences as they relate to energy and associated environmental challenges. The minor curriculum integrates these three domains in a thoroughly multidisciplinary program. The Energy Minor Oversight Committee, including faculty representatives from all five Schools, oversees the Energy Studies Minor program.\n\nSee the Energy Studies Minor website for potential elective and core subject substitutions or additions.
+
+core
+
+electives
+
+
+science_found, "Science Foundations" := 8.21/12.021
+econ_found, "Economics Foundations" := 14.01/15.0111
+ss_found, "Social Science Foundations" := 11.142/14.44/15.0201/15.2191
+tech_ctx, "Energy Tech, Eng in Context" := 2.60/11.165/22.081/EC.711/EC.712
+
+core, "Core Curriculum" := science_found, econ_found, ss_found, tech_ctx
+
+std_subj, "Standard Electives" := 1.018/1.020/1.071/1.079/1.801/2.005/2.006/2.570/2.603/2.612/2.627/2.813/3.003/3.004/3.012/3.030/3.154/3.18/4.401/4.432/5.352/5.372/5.60/6.061/6.131/6.152/6.701/10.04/10.05/10.213/10.27/10.28/10.302/10.426/11.162/12.213/12.346/14.42/15.026/16.001/16.002/16.003/16.004/22.033/22.04/22.054/22.06/STS.032{>=0}
+sub_subj, "Substitutions" := ""Substituted subjects""{<=24u}
+electives, "Electives" := std_subj/sub_subj{>=24u}

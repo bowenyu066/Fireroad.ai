@@ -1,0 +1,32 @@
+6-7#,#6-7 Major#,#Computer Science and Molecular Biology#,#Bachelor of Science in Computer Science and Molecular Biology
+The Bachelor of Science in Computer Science and Molecular Biology prepares students for careers that leverage computational biology (e.g., pharmaceuticals, bioinformatics, medicine, etc.) as well as further graduate study in biology, in computer science, and in emerging programs at the interface. Students in this program who have a strong academic record will be offered an opportunity to continue through the five-year master's program, leading to the Master of Engineering in Computer Science and Molecular Biology.
+
+reqd_subjects
+
+rest_electives
+
+cims
+
+
+%% Departmental Program
+math_intro, "Mathematics and Introductory" := (6.100A/6.100L/6.1020), 6.120A, 6.C06
+chem, "Chemistry" := 5.12, 5.601
+intro_lab, "Introductory Laboratory" := (7.002, 7.003)/20.109
+foundational_subjects, "Foundational Subjects" := comp_foundation, bio_foundation
+
+comp_foundation, "Computer Science Foundational" := 6.1010, 6.1210, (6.3900/(6.C01, 7.C01))
+bio_foundation, "Biological Science Foundational" := 7.03, (7.05/5.07), 7.06
+
+reqd_subjects, "Required Subjects" := math_intro, chem, intro_lab, foundational_subjects
+
+comp_bio_rest, "Computational Biology" := 1.088/18.413/6.4710/6.8701/(7.093, 7.094)/7.032/7.033
+comms, "Technical Communication" := 6.UAT/6.UAR/7.19
+
+bio_rest, "Biology Restricted Electives" := 1.018/10.441/12.031/20.110/20.205/20.230/5.08/6.4710/7.08/(7.093, 7.094)/7.20/7.21/7.23/7.24/7.26/7.27/7.28/7.29/7.30/7.31/7.32/7.33/7.35/7.37/7.371/7.45/7.46/7.49/9.09/9.17/9.18/9.26/HST.540
+aid_aus, "AI+D Advanced Undergraduate Subjects" := 18.404/6.3020/6.3730/6.4210/6.5151/6.5831/6.5931/6.7411/6.8301/6.8371/6.8611/6.8701/6.8711/6.8801
+comp_bio_other, "Computational Biology" := 1.088/18.413/6.4710/6.8701/(7.093, 7.094)/7.032/7.033
+other_rest, "Two additional Restricted Elective subjects" := bio_rest, aid_aus, comp_bio_other{>=3}
+
+rest_electives, "Restricted Electives" := comp_bio_rest, comms, other_rest
+
+cims, "Communication-Intensive Subjects" := (7.002,7.003)/20.109/6.UAR/6.UAT/7.19{>=2}

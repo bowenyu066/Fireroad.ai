@@ -1,0 +1,29 @@
+10-ENG#,#10-ENG Major#,#Chemical Engineering#,#Bachelor of Science in Engineering as Recommended by the Department of Chemical Engineering
+The 10-ENG degree program is designed to offer flexibility within the context of chemical engineering while ensuring significant engineering content, and is a complement to our chemical engineering degree programs 10 and 10-B. The degree is designed to enable students to pursue a deeper level of understanding in a specific interdisciplinary field that is relevant to the chemical engineering core discipline. The degree requirements include all of the core chemical engineering coursework, plus a chosen set of three foundational concept subjects and four subjects with engineering content that make up a comprehensive concentration specific to the interdisciplinary area selected by the student. The concentrations have been selected by the Department of Chemical Engineering to represent new and developing cross-disciplinary areas that benefit from a strong foundation in engineering within the chemical engineering context. Details of the concentrations are available from the Chemical Engineering Student Office and the department's website.
+
+reqd
+
+foundational
+All subjects are suitable for any concentration within the program. In consultation with the advisor, students select one subject from each of the three groups. Students may not exceed the 45-unit cap except by petition.
+engin_conc
+These four electives define a concentrated area of study in one of the following designated concentrations: biomedical engineering, energy, environmental studies, or materials process and design.
+capstone
+
+cim
+
+
+reqd, "Required Subjects" := 5.601, 10.10, 10.213, 10.301, 10.302, 10.37, 18.03
+
+group_1, "Group I" := 10.26/10.27/10.28/10.29/10.467
+group_2, "Group II" := (1.106, 1.107)/2.671/3.014/5.310/10.702/12.335/20.109/(5.351, 5.352, 5.353)
+group_3, "Group III" := 1.00/(1.018A, 1.018B)/(1.080A, 1.080B)/3.012/3.155/5.12/5.61/6.00/7.03/8.21
+foundational, "Foundational Concepts" := group_1, group_2, group_3
+
+engin_conc, "Engineering Concentration" := ""39-48 units""{>=39u}
+
+option_1, "Option 1" := 10.THU
+option_2, "Option 2" := 10.490/10.491/10.492/10.493/10.494
+option_3, "Option 3" := 10.910, (10.492/10.493/10.494)
+capstone, "Capstone" := option_1/option_2/option_3{>=12u}
+
+cim, "Communication-Intensive Subjects" := 10.26/10.27/10.28/10.29/10.467/2.671/3.014/10.702/12.335/20.109/3.155{>=2}

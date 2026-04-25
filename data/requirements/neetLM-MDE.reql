@@ -1,0 +1,23 @@
+NEET#,#NEET Living Machines - Microfluidic Device Engineering#,#NEET Living Machines Thread - Microfluidic Device Engineering Track#,#NEET Certificate in Living Machines - Microfluidic Device Engineering Track#,#url=https://neet.mit.edu/threads/lm
+Living Machines (LM) allows you to apply engineering principles and concepts to problems in the Life and Medical Sciences, through various biotechnology innovations. As a Living Machines scholar, you have the opportunity to work on projects spanning synthetic biology, immuno-engineering, tissue engineering, microfluidics, and computational biology and other disruptive research areas, united by a theme of improving our understanding of and therapies for human disease.
+
+subjects
+
+immersion
+
+growth
+
+
+%% Variable declarations
+
+idr := ""Intellectual Diversity Requirement (IDR)""{>=1}
+int := ""Internship""{>=1}
+thesis := ""Senior Thesis""{=15u}
+
+urop := "UROP (credit/paid)""{>=1}
+subjects, "Subjects" := 20.051,(2.793/2.06/10.301),(2.676/20.334),idr
+immersion, "Immersion" := (20.054,urop)/int/thesis
+
+lm_act := ""LM Activities (60 HEQ)""{>=60u}
+sem := ""Seminars""{>=8}
+growth, "Growth" := lm_act, sem

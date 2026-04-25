@@ -1,0 +1,40 @@
+12#,#12 Major#,#Earth and Planetary Sciences#,#Bachelor of Science in Earth, Atmospheric, and Planetary Sciences
+The Earth, Atmospheric, and Planetary Sciences Department offers undergraduate preparation for professional careers in a wide range of fields in geoscience (which includes geology, geophysics, geobiology, and geochemistry), atmospheric science, climate science, environmental systems, and planetary science and planetary astronomy.\n\nThe curriculum for the Bachelor of Science in Earth, Atmospheric, and Planetary Sciences ensures a fundamental background through general departmental subjects and advanced study in a concentration area chosen by the student. The student and advisor plan an appropriate and relevant selection of electives. Students are also required to take field and/or laboratory subjects, and to complete an independent research project as part of the degree requirements.
+
+intro_subj
+
+lab_field
+
+computation
+
+concentration
+
+supporting
+
+cim
+
+
+intro_1 := 12.001/12.002/12.003/12.004{>=3}
+intro_subj, "Introductory Subjects" := intro_1, 12.TIP, 12.THU
+
+lab_field, "Laboratory/Field Subjects" := (12.115, 12.116)/12.307/12.335/12.410
+
+computation, "Computational Science Subjects" := 12.010/12.012/12.C25/(6.100A, 6.100B)/(6.100A, 16.C20)
+
+geo_1 := 12.007/12.100/12.104/12.108/12.110A/12.110B/12.113/12.163/12.177/12.178/12.201/12.202/12.203/12.210/12.211/12.214/12.225/12.377/12.421{>=36u}
+geoscience, "Area 1 â Earth Science" := geo_1
+
+atmos_1 := 12.006/12.086/12.300/12.306/12.314/12.315/12.320A/12.320B/12.349/12.372/12.373/12.377/12.390/12.421/12.422{>=24u}
+atmospheres, "Area 2 âÂ Climate, Atmospheres, and Oceans" := (12.301/12.318), atmos_1
+
+planet_1 := 12.006/12.104/12.177/12.409/12.411/12.412/12.421/12.422/12.425/12.43{>=24u}
+planetary, "Area 3 âÂ Planetary Science and Astronomy" := 12.420, planet_1
+
+envir_1 := 12.006/12.007/12.031/12.086/12.104/12.110A/12.110B/12.163/12.177/12.301/12.348/12.349/12.373/12.377/12.385/12.386/12.421{>=36u}
+environ, "Area 4 âÂ Environmental Science" := envir_1
+
+concentration, "Concentration" := geoscience/atmospheres/planetary/environ
+
+supporting, "Supporting Subjects" := (1.C01, 6.C01)/1.060/1.060A/(1.061A, 1.106)/1.080/2.001/2.016/3.010/3.020/(5.601,5.602)/6.8711/6.1010/6.1200/6.3000/6.3700/6.3800/6.3900/6.9080/7.05/8.03/8.04/8.044/8.07/8.223/(12.320A, 12.320B)/14.01/18.C06/18.C20/18.03/18.05/18.06/18.300{>=36u}
+
+cim, "Communication-Intensive Subjects" := 12.THU/(12.115,12.116)/12.307/12.335/12.410{>=2}

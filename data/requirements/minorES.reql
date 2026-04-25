@@ -1,0 +1,26 @@
+E&S#,#E&S Minor#,#Environment and Sustainability#,#Minor in Environment and Sustainability
+Open to all MIT undergraduates in any major, the Environment and Sustainability Minor (E&S Minor) offers students the opportunity to apply their STEM and major-course knowledge to some of the most critical and challenging problems facing humanity. The minor equips students with interdisciplinary knowledge and real-world experience needed to understand, diagnose, and develop solutions to complex problems faced by society as it strives for social and environmental sustainability. Students tailor their MIT education to their professional goals, preparing to apply the principles of sustainability in diverse workplace contexts, including business/industry, government, civil society, and academia. \n\n The E&S Minor combines a wide range of fields of inquiry to directly engage environmental and climate challenges facing ecosystems and populations around the globe. Fundamentally, these challenges affect both human systems and the earth systems on which we depend. Planetary challenges include climate change, risks to oceans and forests, degradation to both biodiversity and material resources, and fundamental transformations of biogeochemical cycles. Challenges facing society include widespread and intransigent environmental injustice, expanding urban and agricultural pollution, technological and economic lock-in of infrastructure and all manner of production and consumption systems, and a global dependence on carbon intensive energy. \n\n The minor prioritizes integrative, interdisciplinary learning that is critical for effectively understanding and addressing the complexities of environmental issues today and in the future, and is structured on four pillars: Earth Systems and Climate Science, Environmental Governance, Environmental Histories and Cultures, and Engineering for Sustainability. Upon completion of the minor, students will have achieved learning outcomes in seven categories: Systems Thinking; Sustainable Design Skills; Applied Sustainable Solutions; Know Your Planet; Social Context; Ethical Decision-making; and Impactful Communication. \n\nThe E&S Minor is comprised of five to six subjects, for a minimum of 57 units: \nOne foundational subject (12.387[J] People and the Planet: Environmental Governance and Science) \n Subjects in two core required areas of study: 1) Context and Perspective and 2) Sustainable Solutions \n 24 units of elective subjects, reflecting the student's particular interests. 
+
+reqd
+
+electives
+
+
+esf, "Environment and Sustainability Foundation" := 12.387
+cp, "Context and Perspectives" := 11.169/21A.312/21A.410/21H.185/21H.186/21H.187
+ss, "Sustainable Solutions" := 1.006/2.722/11.025/EC.715/EC.719
+
+dis, "Discovery" := 1.008/1.009/1.091/2.00C/2.981/3.002/12.000/12.12/SP.310/SP.360/SP.361
+aps, "Applied Problem Solving" := 1.004/1.013/1.020/1.102/1.107/2.00A/2.651/4.218/4.411/10.496/11.007/11.173/12.307/12.335/15.772/22.033
+egs, "Economic and Global Systems" := 14.42/14.43/14.44/15.8731/21H.383/IDS.437
+exs, "Energy x Sustainability" := 3.18/5.371/8.21/10.04/10.05/10.390/22.081/IDS.521
+ejf, "Ethics and Just Futures" := 6.9320/11.148/21A.155/22.04/24.03/24.07/24.191/STS.032/WGS.160/WGS.275
+le, "Life and Ecology" := 1.089/7.30/12.007/21A.303
+mmc, "Materials and Material Culture" := 1.035/3.081/3.094/3.19/3.982/3.983/4.657
+mcl, "Media, Communications, and Literature" := 21L.449/21W.012/21W.036/21W.775/CMS.374/CMS.375/STS.034
+npp, "Negotiations, Politics, and Policy" := 11.003/11.011/12.385/17.181/17.30/17.309/IDS.060/IDS.061/IDS.062
+pecs, "Planet Earth and Climate Science" := 1.061/1.061A/1.071/1.080/1.085/12.001/12.002/12.003/12.021/12.086/12.104/12.301/12.306/12.349/12.372/12.377/12.390/18.352
+be, "The Built Environment" := 4.211/4.401/4.432/11.113/11.123/11.149/11.158/11.165
+
+reqd, "Required" := esf/cp/ss
+electives, "Electives" := dis/aps/egs/exs/ejf/le/mmc/mcl/npp/pecs/be{>=24u}

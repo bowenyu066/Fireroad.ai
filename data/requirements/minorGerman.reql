@@ -1,0 +1,15 @@
+21G#,#21G Minor (German)#,#Global Studies and Languages#,#Minor in German#,#threshold=6
+
+
+tier_1
+Two subjects or fewer depending on demonstrated level of entering competence.
+tier_2
+Select two or three of the following subjects in German language, literature, and culture.
+tier_3
+Select two or three of the following advanced subjects in German literature and culture.
+
+tier_1, "Tier I" := 21G.403/21G.404{>=0}
+
+tier_2, "Tier II" := 21G.405/21G.409/21G.410/21G.412{>=2}
+
+tier_3, "Tier III" := 17.561/21G.019/21G.055/21G.057/21G.058/21G.059/21G.414/21G.415/21G.416/21G.417/21G.418/21G.420{>=2}

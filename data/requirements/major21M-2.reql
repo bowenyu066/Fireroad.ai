@@ -1,0 +1,19 @@
+21M#,#21M-2 Major#,#Theater Arts#,#Bachelor of Science in Theater Arts#,#url=http://catalog.mit.edu/degree-charts/theater-arts-course-21m-2/
+The undergraduate program leading to the Bachelor of Science in Theater Arts degree comprises a broad foundation in theoretical and practical studies, and intensive performance and design practica. To satisfy the requirements, students complete a coherent set of restricted elective subjects (two of which satisfy the CI-M requirement) in addition to a capstone thesis (including a pre-thesis tutorial). With an emphasis on artistic practice, this course of study prepares students who plan either to enter the field or to pursue graduate studies in theater arts. Students should demonstrate proficiency in theater arts fundamentals, should have some performance experience before declaring the major, and should consult the major advisor in Theater Arts no later than the first term of their junior year.
+
+reqd_subjects
+
+electives
+In consultation with the Major Advisor, select 12 units of restricted electives. Qualified students may, with departmental approval, substitute 12 units of thesis (21M.THU). Pursuit of the thesis is by application only. By the beginning of the second semester of the junior year, all interested students will write a thesis proposal in consultation with the Major Advisor. This proposal will be submitted to the Theater Arts Curriculum Committee, which will communicate its decision to the student in April.
+cim
+
+
+theory, "Theoretical Studies" := 21M.611/21M.690/21M.700/21M.706/21M.710/21M.711/21M.714/21M.715/21M.800/21M.846/21M.848 {>=3}
+practice, "Practical Studies" := 21M.600/21M.601/21M.603/21M.604/21M.605/21M.606/21M.607/21M.608/21M.623/21M.624/21M.645/21M.702/21M.704/21M.705/21M.712/21M.732/21M.733/21M.734/21M.735/21M.737/21M.785/21M.790/21M.830/21M.840/21M.842/21M.861/21M.862/21M.863 {>=60u}
+perf_design, "Performance and Design Practica" := 21M.803/21M.806/21M.809/21M.851 {>=12u}
+reqd_subjects, "Required Subjects" := theory, practice, perf_design
+
+rest_elec := ""12 units""{>=12u}
+electives, "Restricted Electives" := rest_elec/21M.THU
+
+cim, "Communication-Intensive Subjects" := 21M.624/21M.732/21M.733/21M.735/21M.785/21M.790/21M.830 {>=2}

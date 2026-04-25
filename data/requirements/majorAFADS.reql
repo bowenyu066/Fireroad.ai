@@ -1,0 +1,24 @@
+21#,#21 Major (African Studies)#,#African and African Diaspora Studies#,#Bachelor of Science in Humanities (African and African Diaspora Studies)
+The African and African Diaspora Studies program is designed for students interested in the contributions, cultures, and experiences of peoples of African descent on the African continent and across the diaspora. The goal of the program is to emphasize the importance of Africa and people of African descent in the world's cultural, economic, and social developments, and to provide a balance between language, humanistic, historical, and contemporary study. Building on MIT's strengths in understanding science and technology, the program provides students the opportunity to study interactions of people of African descent with contemporary technology sectors, such as digital media, artificial intelligence, aerospace, genetics, and climate change mitigation. It also includes the study of economic and political systems as they reflect the African continent and areas of the African diaspora, and the histories, languages, and literatures of Africans and peoples of African descent elsewhere.
+
+reqd_subjects
+As noted in the degree chart, the program consists of at least eight subjects beyond the introductory subject (24.912[J] Black Matters: Introduction to Black Studies), pre-thesis tutorial (21.THT), and thesis (21.THU). 
+language
+Students are expected to have two intermediate (Levels III and IV) subjects in either the official language of the region of study or two subjects at any level in an indigenous African language or non-English official language of the region of study. In cases where the student is specializing in Anglophone Africa or an English-speaking region of the diaspora, and does not undertake study of an indigenous language, or is a native speaker of the official language(s) of a country or region of emphasis, this component would be replaced by literature or other humanities subjects.
+areas
+The eight subjects for the majorâat least five of which must be MIT subjectsâshould be arranged in four areas of study; students should select two subjects that contribute to language training, and six subjects that together draw from Areas II, III, and IV:
+
+reqd_subjects, "Required Subjects" := 21.THT, 21.THU, 24.912 
+
+lang_1 := ""2 intermediate language subjects""{>=2}
+language, "Area I: Language" := (21G.303, 21G.304)/(21G.703, 21G.704)/(21G.803, 21G.804)/lang_1
+
+area_2, "Area II: Humanities and the Arts" := 21L.007/21L.504/21M.030/21M.226/21M.293/21M.460/21W.742/WGS.142{>=0}
+
+area_3, "Area III: Social Sciences" := 11.164/11.166/17.523/17.571/21A.306/21A.308/21A.442/24.908/WGS.150/WGS.225/WGS.228{>=0}
+
+area_4, "Area IV: Historical Studies" := 21H.165/21H.229/21H.319/21H.358/21H.385/STS.048/STS.088/WGS.220{>=0}
+
+cross_reg := ""appropriate Harvard/Wellesley subjects"" {<=3}
+
+areas, "Additional Areas" := area_2/area_3/area_4/cross_reg{>=6|>=2}

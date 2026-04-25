@@ -1,0 +1,15 @@
+17#,#17 Minor#,#Political Science#,#Minor in Political Science#,#threshold=6
+The objective of the minor is to deepen and expand student knowledge of the discipline of political science. It consists of six subjects divided into two tiers, selected from the discipline's subfields as listed in the online MIT Subject Listing & Schedule.
+
+tier_1
+Select at least one but no more than two introductory classes, which are designated by two-digit numbers. These classes provide broad theoretical and/or empirical overviews of their subject matter.
+tier_2
+Select at least four but no more than five upper-level classes, which are designated by three-digit numbers. These specialized classes provide students with advanced and in-depth examination of their subject matter.
+
+tier_1_1 := ""1-2 introductory classes""{<=2}
+tier_1_2, "Examples" := 17.01/17.20/17.40/17.50{>=0}
+tier_1, "Tier I: Introductory" := tier_1_1/ tier_1_2{>=1}
+
+tier_2_1 := ""4-5 upper-level classes""{<=5}
+tier_2_2, "Examples" := 17.051/17.317/17.473/17.483{>=0}
+tier_2, "Tier II: Upper-Level" := tier_2_1/tier_2_2{>=4}

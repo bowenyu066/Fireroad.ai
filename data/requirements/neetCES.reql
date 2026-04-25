@@ -1,0 +1,32 @@
+NEET#,#NEET Renewable Energy Machines#,#Renewable Energy Machines#,#NEET Certificate in Renewable Energy Machines#,#url=https://neet.mit.edu/threads/rem
+The Renewable Energy Machines thread trains students on the energy production, conversion, storage, and transmission technologies that produce little to no CO2 or greenhouse emissions. Every nation on earth except one recently affirmed their willingness to decrease CO2 and other greenhouse gas emissions, recognizing the issues and challenges facing the creation of a new, ultra-clean baseload energy generation system for developed and developing nations. The Renewable Energy Machines thread will prepare students to fully participate and lead in the creation of the worldâs truly low-carbon grids and systems. Students will receive a solid foundation in the technical, economic, and societal aspects of low-carbon energy generation and distribution. 
+
+sophomore
+
+junior
+
+senior
+Senior Fall: TBA Large-scale design-build-test of complete energy system; or a SuperUROP in energy.
+seminar
+This interactive seminar is focused on identifying and solving major issues facing renewable energy. Each week features conversations with guest speakers from academia and industry who are experts in renewable energy and climate science.
+
+%% Variable declarations
+
+tech_en_subj := ""Technical energy subject in major""{>=1}
+
+sophomore_fall, "Sophomore Fall" := (3.007/22.03)/1.101/(2.00/2.00A/2.00B)
+sophomore_spring, "Sophomore Spring" := 22.071
+sophomore, "Sophomore Year" := sophomore_fall, sophomore_spring
+
+superurop := ""SuperUROP in energy""{>=1}
+junior_spring, "Junior Spring" := 1.020/superurop
+junior, "Junior Year" := junior_spring
+
+energy_sys := ""Complete energy system""{>=12u}
+superurop_2 := ""SuperUROP in energy""{>=1}
+senior_fall, "Senior Fall" := energy_sys/superurop_2
+senior_spring, "Senior Spring" := 16.634,16.84
+
+senior, "Senior Year" := senior_fall, senior_spring
+
+seminar, "Seminar" := ""3 units of 22.003 each semester""{>=6}

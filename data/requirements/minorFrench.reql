@@ -1,0 +1,15 @@
+21G#,#21G Minor (French)#,#Global Studies and Languages#,#Minor in French#,#threshold=6
+
+
+tier_1
+Two subjects or fewer depending on demonstrated level of entering competence.
+tier_2
+Select two or three of the following intermediate subjects in French language, literature, and culture.
+tier_3
+Select two or three of the following advanced subjects in French literature and culture.
+
+tier_1, "Tier I" := 21G.303/21G.304{>=0}
+
+tier_2, "Tier II" := 21G.308/21G.310/21G.311/21G.312/21G.315{>=2}
+
+tier_3, "Tier III" := 21G.049/21G.052/21G.053/21G.054/21G.068/21G.320/21G.321/21G.322/21G.325/21G.326/21G.026/21G.341/21G.344/21G.346/21G.347/21G.348{>=2}

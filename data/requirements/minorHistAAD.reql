@@ -1,0 +1,21 @@
+4#,#4 Minor (History of Architecture)#,#Architecture#,#Minor in the History of Architecture, Art and Design
+The HASS Minor in the History of Architecture, Art and Design is designed to enable students to concentrate on the historical, theoretical, and critical issues associated with artistic and architectural production. Introductions to the historical frameworks and stylistic conventions of art and architectural history are followed by more concentrated study of particular periods and theoretical problems in visual culture and in cultural history in general.
+
+tier_1
+
+tier_2
+Select three of the following with no more than two subjects from either the history of art or the history of architecture.
+tier_3
+
+
+tier_1, "Tier I" := (4.601/4.602), (4.605/4.614)
+
+history_arch, "History of Architecture and Design" := 4.603/4.605/4.614/4.657{>=1}
+
+history_art, "History of Art" := 4.601/4.602/4.635/4.636/4.641/4.651{>=1}
+
+tier_2, "Tier II" := history_arch,history_art{>=3}
+
+adv_sem := ""1 adv. seminar in history of art/architecture""{>=1}
+offering := ""1 Harvard or Wellesley subject""{>=1}
+tier_3, "Tier III" := 4.609/adv_sem/offering

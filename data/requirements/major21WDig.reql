@@ -1,0 +1,13 @@
+21W#,#21W Major (Old)#,#Digital Media#,#Bachelor of Science in Writing (Digital Media Option)
+The writing major offers students the opportunity to study the craft, forms, and traditions of contemporary writing, journalism, and digital media. Some students explore writing as a means of artistic expression. Some learn how to write for a variety of media or to communicate the results of their science and technical work to broad audiences and members of their professions. Others work collaboratively within the evolving framework of digital media to become skillful in interactive and nonlinear forms of communication. All subjects in the major emphasize the development of the foundational skills, creative initiative, and critical sensibility necessary to become a good writer. Subjects in the program's three areas of emphasisâcreative writing (fiction, nonfiction prose, poetry), science writing, and digital mediaâare taught at both introductory and advanced levels. All subjects require extensive writing and revision. Student work is typically discussed in workshops and receives the written commentary of the instructor. The writing major is an option for students interested in journalism, longer forms like the science documentary, and communication issues related to the public understanding of science and technology. It is also designed to work as a complementary major for students majoring in science, engineering, or another field of study at MIT. Students also fulfill an internship requirement, which provides in-depth practical experience.
+
+reqd_subjects
+
+electives
+Select three subjects in writing, which may be in digital media, creative writing, or science writing, and three related subjects from another department.
+
+reqd_subjects, "Required Subjects" := 21W.764, 21W.765, 21W.785, 21W.THT, 21W.THU, (21W.757/21W.758/21W.759/21W.762/21W.770/21W.771/21W.777)
+
+writing := ""3 writing subjects"" {>=3}
+related := ""3 related subjects"" {>=3}
+electives, "Restricted Electives" := writing, related {>=63u}

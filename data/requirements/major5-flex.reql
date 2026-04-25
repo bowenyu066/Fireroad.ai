@@ -1,0 +1,22 @@
+5#,#5-Flex Major#,#Chemistry#,#Bachelor of Science in Chemistry (Flexible Option)
+The Flexible Chemistry Option, âChemFlex,â is designed to provide an education both for those who intend to pursue chemistry as a career and for those who plan to go into an allied field, such as biotechnology or scientific consulting, in which a sound knowledge of chemistry is important. Students receive thorough instruction in the principles of chemistry, supplemented by a strong foundation in mathematics, physics, biology, and the humanities. This training can be tailored to the student's interests by the judicious choice of elective focus subjects that contribute to the major. The Department of Chemistry also teaches courses jointly with the departments of Biology, Chemical Engineering, Biological Engineering, and Materials Science and Engineering. The student's faculty advisor can offer suggestions for elective subjects that are of value in preparation for specialization in the various broad areas of chemistry. The proper choice of electives is particularly important for students planning to continue their education in a graduate program. Students at all levels are encouraged to undertake original research.
+
+reqd
+
+elec_focus
+Select a minimum of 36 units of coursework forming an intellectually coherent unit in some area, subject to the approval of the department 
+lab
+Laboratory Restricted Electives cannot be double-counted within the program.
+
+
+sub_1 := 5.03, 5.07, 5.12, 5.601, 5.611
+sub_2 := 5.04/5.08/5.13/5.43/5.602/5.612/5.62{>=24u}
+reqd, "Required Subjects" := sub_1, sub_2
+
+elec_focus, "Elective Focus" := ""Approved electives""{>=36u}
+
+lab_1 := 5.351, 5.352, 5.353, 5.361
+lab_2a := 5.362/5.363/5.371/5.372/5.373/5.381/5.382/5.383{>=20u}
+lab_2c := ""Approved lab subjects""{>=1}
+lab_2 := lab_2a/5.39/lab_2c
+lab, "Laboratory Requirement" := lab_1, lab_2

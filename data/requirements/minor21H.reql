@@ -1,0 +1,13 @@
+21H#,#21H Minor#,#History#,#Minor in History
+The goal of this minor is to lead the student from basic survey subjects into more focused studies of individual countries or periods of time, and to encourage thinking about broader analytical and comparative issues in historical study.
+
+reqd
+
+other
+Of these subjects, at least two temporal periodsâone pre-modern (before 1700) and one modernâmust be covered. For the seminar, select from 21H subjects for which the first digit after the decimal is 3.
+
+reqd, "Required Subject" := 21H.390
+
+other_1 := ""1 21H seminar""{>=1}
+other_2 := ""4 introductory or intermediate subjects""{>=4}
+other, "Additional Subjects" := other_1, other_2

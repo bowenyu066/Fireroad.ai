@@ -1,0 +1,14 @@
+21#,#21 Major (American Studies)#,#American Studies#,#Bachelor of Science in Humanities (American Studies)
+American Studies at MIT offers students the opportunity to organize subjects from various fields (e.g., history, anthropology, literature, political science, music, art, architecture, and urban planning) into personally constructed interdisciplinary programs as a way of gaining an integrated understanding of American society and culture. Students can focus on any of several areas of interest, such as American literature; folklore and popular culture; black history and culture; women's studies; American history, politics, or law; the history of science and technology; and American art, architecture, or music. Thus, a program in American Studies is ideal for preparing students for further work not only in the various humanistic fields, but also in law, urban planning, management, architecture, engineering, medicine, teaching, and the media. The program has three primary objectives: 1) To understand the underlying system of beliefs that informs every aspect of American cultureâits myths, institutions, politics and literature, its characteristic dreams and rituals. 2) To understand the uses and limits of different methods and intellectual disciplines as tools for exploring the complexities of a culture. 3) To understand the American present in relation to the American past.
+
+reqd_subjects
+With the consent of the faculty advisor in the chosen field, a student may substitute two subjects for the pre-thesis and thesis requirement.
+electives
+A minimum of nine subjects (108 units) beyond the pre-thesis and thesis. Remaining subjects selected from at least two of the three disciplinary areas. The list of restrictive electives below is not exhaustive. Additional information can be obtained from the American Studies advisor, Professor Christopher Capozzola, E51-284, 617-452-4960, or from the SHASS academic administrator, Andrea Wirth, 4-240, 617-253-4441.
+
+reqd_subjects, "Required Subjects" := 21.THT, 21.THU
+
+area1, "Area I: Humanities and the Arts" := 21L.006/21L.011/21L.432/21L.487/21L.501/21L.504/21L.512/21M.215/21M.226/21M.283/21M.284/21M.295/21W.742/24.912 {>=0}
+area2, "Area II: Social Sciences; Science, Technology, and Society" := 17.20/17.251/17.261/17.263/17.265/17.317/17.40/17.483/STS.001/STS.026/STS.027/STS.048/STS.049/STS.050/WGS.150/WGS.225 {>=0}
+area3, "Area III: Historical Studies" := 11.013/11.014/17.28/21G.043/21H.102/21H.201/21H.211/21H.214/21H.220/21H.226/21H.227/21H.228/21H.229/21H.315/21H.319/21H.320/21H.321/21H.322/STS.027 {>=0}
+electives, "Restricted Electives" := area1/area2/area3 {>=9|>=2}

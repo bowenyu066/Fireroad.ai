@@ -1,0 +1,22 @@
+NEET#,#NEET Advanced Materials Machines#,#Advanced Materials Machines#,#NEET Certificate in Advanced Materials Machines#,#url=https://neet.mit.edu/threads/amm
+Learn to rapidly prototype and explore the novel materials, technologies and processes that will define the future of production. Discover how engineers scale up materials-intensive manufacturing enterprises from prototyping, production and then product and process innovation. Learn about additive manufacturing, 3D printing, powder and casting processes, advanced polymer processing approaches all applied to the aerospace, automotive, energy, and health care sectors!
+
+proj_1
+Recommended sophomore fall.
+proj_2
+Recommended junior year
+capstone
+Can be taken junior and/or senior year.
+seminar
+(Participation in 3 semesters over the course of 3 years, can do more)
+foundation
+
+
+%% Variable declarations
+
+proj_1, "Intro Project" := 3.007/22.03
+proj_2, "Intermediate Project" := 2.008
+urop := ""UROP in materials and manufacturing""{>=1}
+capstone, "Capstone" := 3.042/2.013/2.014/2.S981/urop{>=2}
+seminar, "Seminar" := ""3 semesters of 3.006""{>=3}
+foundation, "Suggested Foundations" := 3.012/2.001/3.044/3.032/2.005/(2.001, 2.002){>=0}

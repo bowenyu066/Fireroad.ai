@@ -1,0 +1,18 @@
+21H#,#21H Major#,#History#,#Bachelor of Science in History
+The program leading to the degree of Bachelor of Science in History is designed to encourage students to discover and reconstruct the past, to confront and understand the complexity of past human behavior for itself, and to inform their sense of the historical present. The curriculum includes the selection of at least one subject taken from the curriculum's 21H undergraduate seminars. Students are expected to take seven additional subjects of their own choice, selected in consultation with a major advisor. These must include subjects drawn from at least two geographical areas, as well as one pre-modern (before 1700) and one modern subject.
+
+reqd
+Select one 21H seminar subject for which the first digit after the decimal point is 3 (excluding 21H.390).
+rest
+Select a coherent program, in consultation with a major advisor, of seven subjects from the history curriculum and three related subjects from a second HASS discipline. The seven 21H subjects must be drawn from two geographical areas and include one pre-modern subject (before 1700) and one modern subject.
+cim
+
+
+reqd_1 := ""1 21H seminar""{>=1}
+reqd, "Required Subjects" := 21H.390, 21H.THT, 21H.THU, reqd_1
+
+rest_1 := ""7 history subjects""{>=7}
+rest_2 := ""3 subjects from another HASS""{>=3}
+rest, "Restricted Electives" := rest_1, rest_2
+
+cim, "Communication-Intensive Subjects" := 21H.390, 21H.THU

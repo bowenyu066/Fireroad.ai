@@ -1,0 +1,41 @@
+6-4#,#6-4 Major#,#Artificial Intelligence and Decision Making#,#Bachelor of Science in Artificial Intelligence and Decision Making
+The Bachelor of Science in Artificial Intelligence and Decision Making aims to integrate disciplines typically taught in different departments including electrical engineering, computer science, statistics, operations research, and brain and cognitive sciences. 
+
+fundamentals
+
+centers
+
+application_cim
+
+regular_cim
+
+serc
+
+electives
+
+
+%% Departmental Program
+fundamentals, "Fundamentals" := (6.100A/6.100L), 6.1200, (6.S084/18.C06/18.06), (6.3700/6.3800/18.05), 6.1010, 6.1210
+
+data_centric, "Data Centric" := 6.3720/6.3900/(6.C01, 6.S052)/(6.C51, 6.S952)/6.S059{>=1}
+model_centric, "Model Centric" := 6.3000/6.4110/6.4400{>=1}
+decision_centric, "Decision Centric" := 6.3100/6.4110/6.7201{>=1}
+computation_centric, "Computation Centric" := 6.1220/6.4400/6.7201{>=1}
+human_centric, "Human Centric" := 6.3260/6.3950/6.4120/6.4590/6.C35/6.S041/9.660{>=1}
+centers, "Centers" := data_centric,decision_centric/model_centric/computation_centric/human_centric{>=5|>=5}
+
+regular_cim, "Course 6 CI-M" := 6.1800/6.2040/6.2060/6.2061/6.2220/6.2221/6.2370/6.2600/6.4200/6.4210/6.4590/6.4860/6.4880/6.8301/6.8611/6.9030/6.UAR/6.UAT {>=2}
+
+serc, "Social and Ethical Responsibilities of Computing" := 6.3900/6.3950/6.4590/6.8301/6.8611
+
+eecs := 18.03/18.032/18.05/18.06/18.404/18.600/18.C06/(6.100A,6.100B)/6.1010/6.1020/6.1040/6.1060/6.1100/6.1120/6.1200/6.1210/6.1220/6.1400/6.1800/6.1810/6.1820/6.1850/6.1910/6.1920/6.2000/6.2040/6.2050/6.2060/6.2061/6.2080/6.2090/6.2092/6.2200/6.2210/6.2220/6.2221/6.2300/6.2370/6.2400/6.2410/6.2500/6.2530/6.2540/6.2600/6.3000/6.3010/6.3020/6.3100/6.3102/6.3260/6.3400/6.3700/6.3720/6.3730/6.3800/6.3900/6.3950/6.4100/6.4110/6.4120/6.4200/6.4210/6.4300/6.4400/6.4420/6.4510/6.4530/6.4550/6.4570/6.4590/6.4580/6.4810/6.4820/6.4830/6.4860/6.4880/6.4900/6.5060/6.5080/6.5081/6.5110/6.5120/6.5151/6.5210/6.5220/6.5230/6.5240/6.5250/6.5310/6.5320/6.5340/6.5350/6.5400/6.5410/6.5420/6.5430/6.5490/6.5610/6.5620/6.5630/6.5660/6.5810/6.5820/6.5830/6.5831/6.5840/6.5850/6.5890/6.5900/6.5930/6.5931/6.5940/6.5951/6.6010/6.6210/6.6320/6.6331/6.7100/6.7120/6.7201/6.7210/6.7220/6.7230/6.7250/6.7260/6.7300/6.7310/6.7320/6.7330/6.7340/6.7411/6.7370/6.7480/6.7700/6.7710/6.7720/6.7800/6.7810/6.7830/6.7900/6.7910/6.7920/6.7930/6.7940/6.7940/6.7960/6.8200/6.8210/6.8300/6.8370/6.8371/6.8420/6.8510/6.8530/6.8611/6.8620/6.8701/6.8710/6.8711/6.8721/6.8801/6.8850/6.9000/6.9010/6.9030/6.9080/6.9160/(6.C01,6.C011)/(6.C01,6.C511)/6.C06/6.C25/6.C27/6.C35/6.C40/6.C571/6.C85/6.S041/6.S057/6.S058/6.S899/6.S963/6.S966/6.UAR/6.UAT/9.660/CC.1803/ES.1803
+course_18_req := ""Math (course 18) requirement""{>=1}
+eecs_or_math_elective, "EECS Elective or a Math Requirement" := (eecs/course_18_req)
+
+aid_aus, "AI+D_AUS" := 18.404/6.3730/6.4210/6.5151/6.5831/6.7411/6.7930/6.8300/6.8301/6.8371/6.8611/6.8701/6.8711/6.S079/6.S966
+application_cim, "Application CI-M" := 6.4200/6.4210/6.8301/6.8611
+mandatory_application_cim, "Mandatory Application CI-M" := 6.4200/6.4210/6.8301/6.8611
+application_cim_elective_check, "AI+D_AUS/Application CI-M" := aid_aus/application_cim{>=2|>=1}
+in_course_AUS_CIM_electives, ""You must take an Application CI-M and either another Application CI-M or an AI+D_AUS"" := mandatory_application_cim, application_cim_elective_check
+
+electives, "Electives" := in_course_AUS_CIM_electives,(eecs/course_18_req)

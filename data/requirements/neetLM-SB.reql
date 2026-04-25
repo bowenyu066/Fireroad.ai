@@ -1,0 +1,23 @@
+NEET#,#NEET Living Machines - Synthetic Biology#,#NEET Living Machines Thread - Synthetic Biology Track#,#Certificate in NEET Living Machines - Synthetic Biology Track#,#url=https://neet.mit.edu/threads/lm
+Living Machines (LM) allows you to apply engineering principles and concepts to problems in the Life and Medical Sciences, through various biotechnology innovations. As a Living Machines scholar, you have the opportunity to work on projects spanning synthetic biology, immuno-engineering, tissue engineering, microfluidics, and computational biology and other disruptive research areas, united by a theme of improving our understanding of and therapies for human disease.
+
+subjects
+
+immersion
+
+growth
+
+
+%% Variable declarations
+
+idr := ""Intellectual Diversity Requirement (IDR)""{>=1}
+subjects, "Subjects" := 20.051,(20.129/20.109),(20.305/2.180), idr
+int := ""Internship""{>=1}
+thesis := ""Senior Thesis""{>=15u}
+igem := ""IGEM""{>=1}
+
+urop := ""UROP (credit/paid)""{>=1}
+immersion, "Immersion" := (20.054,urop)/int/thesis/igem
+lm_act := ""LM Activities (60 HEQ)""{>=60u}
+seminars := ""Seminars""{>=8}
+growth, "Growth" := lm_act, seminars

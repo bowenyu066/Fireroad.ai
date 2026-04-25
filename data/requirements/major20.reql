@@ -1,0 +1,32 @@
+20#,#20 Major#,#Biological Engineering#,#Bachelor of Science in Biological Engineering
+The Department of Biological Engineering (BE) offers an undergraduate curriculum emphasizing quantitative, engineering-based analysis, design, and synthesis in the study of modern biology from the molecular to the systems level. Completion of the curriculum leads to the Bachelor of Science in Biological Engineering and prepares students for careers in diverse fields ranging from the pharmaceutical and biotechnology industries to materials, devices, ecology, and public health. Graduates of the program will be prepared to enter positions in basic research or project-oriented product development, as well as graduate school or further professional study.\n\nThe required core curriculum includes a strong foundation in biological and biochemical sciences, which are integrated with quantitative analysis and engineering principles throughout the entire core. Students who wish to pursue the Bachelor of Science in Biological Engineering are encouraged to complete the Biology General Institute Requirement during freshman year and may delay completion of Physics II until the fall term of sophomore year if necessary. The optional subject Introduction to Biological Engineering Design, offered during the spring term of freshman year, provides a framework for understanding the Biological Engineering SB program.
+
+reqd
+
+rest
+
+cim
+
+
+tier_1, "Tier I" := 5.12, 6.100A, 6.100B, 7.03, 18.03, (20.110/2.772)
+tier_2, "Tier II" := (5.07/7.05), 7.06, 20.109, 20.309, 20.320
+tier_3, "Tier III" := (20.330/2.793/6.4830), 20.380
+reqd, "Required Subjects" := tier_1, tier_2, tier_3
+
+course_1, "Course 1" := 1.010/1.018/1.071/1.085/1.088/1.089{>=0}
+course_2, "Course 2" := 2.131/2.180/2.391/2.671/2.674/2.676/2.71/2.715/2.717/2.782/2.785/2.79/2.799{>=0}
+course_3, "Course 3" := 3.032/3.052{>=0}
+course_5, "Course 5" := 5.08/5.13/5.310/5.54/5.64/5.78{>=0}
+course_6, "Course 6" := 6.2000/6.3000/6.4810/6.4840/6.4100/6.3900/6.3700/6.1200/6.8701/6.4870/6.2600/6.4822/6.8721/6.8711{>=0}
+course_7, "Course 7" := 7.20/7.21/7.23/7.26/7.27/7.28/7.29/7.32/7.33/7.37/7.371/7.45/7.46/7.493/7.71/7.76/7.95{>=0}
+course_8, "Course 8" := 8.241/8.592/8.593{>=0}
+course_9, "Course 9" := 9.07/9.12/9.123/9.26/9.40/9.49/9.66{>=0}
+course_10, "Course 10" := 10.28/10.495/10.544{>=0}
+course_18, "Course 18" := 18.06/18.062/18.600{>=0}
+course_20, "Course 20" := 20.005/20.102/20.104/20.106/20.129/20.201/20.203/20.205/20.213/20.230/20.260/20.305/20.310/20.315/20.345/20.352/20.361/20.363/20.365/20.370/20.373/20.375/20.381/20.385/20.390/20.446/20.450/20.452/20.487/20.535/20.554{>=1}
+course_22, "Course 22" := 22.071{>=0}
+ids, "Institute for Data Systems and Society" := IDS.012/IDS.013{>=0}
+
+rest, "Restricted Electives" := course_1/course_2/course_3/course_5/course_6/course_7/course_8/course_9/course_10/course_18/course_20/course_22/ids{>=3}
+
+cim, "Communication-Intensive Subjects" := (20.109/20.129), 20.380

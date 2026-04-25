@@ -1,0 +1,19 @@
+STS#,#STS Major#,#Science, Technology, and Society#,#Bachelor of Science in Science, Technology, and Society
+MIT students are increasingly seeking to understand the social and historical contexts in which they will work and the social consequences of what they will do in their professional careers. STS subjects help them think realistically and creatively about the intellectual, moral, political, and social issues raised by the rapid growth of science and technology in the 20th century and beyond.\n\nSTS contributes to undergraduate education at MIT in several ways. It offers general subjects to introduce students to broad social and intellectual perspectives on science and engineering fields. It also offers more specialized subjects in the history of science and technology and in social and cultural studies of science and technology. Within each of these categories, students can choose both introductory and more advanced subjects.\n\nThe full major in Science, Technology, and Society (STS) may be pursued only as a second major in conjunction with another degree program in a field of engineering or science, or in other fields on a case-by-base basis.
+
+reqd_subjects
+
+electives
+Select a coherent group of five elective subjects in STS, plus four subjects related to the historical and social study of science and technology, in consultation with the STS undergraduate officer.
+cim
+
+
+tier1, "Tier 1" := STS.004, (STS.001/STS.002/STS.003/STS.006/STS.007/STS.008/STS.009/STS.012)
+tier2_subj := STS.022/STS.023/STS.025/STS.026/STS.027/STS.028/STS.032/STS.034/STS.035/STS.042/STS.043/STS.044/STS.046/STS.047/STS.048/STS.049/STS.050/STS.056/STS.060/STS.062/STS.064/STS.065/STS.068/STS.070/STS.071/STS.074/STS.075/STS.080/STS.081/STS.082/STS.084/STS.085/STS.086/STS.087/STS.088 {>=1}
+tier2, "Tier 2" := STS.THT, STS.THU, tier2_subj
+reqd_subjects := tier1, tier2
+
+electives, "Restricted Electives" := ""102 units of electives"" {>=102u}
+
+other_cim := ""CI-M from primary major"" {<=2}
+cim, "Communication-Intensive Subjects" := STS.004/STS.THU/other_cim {>=2}

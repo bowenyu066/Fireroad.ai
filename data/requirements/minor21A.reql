@@ -1,0 +1,11 @@
+21A#,#21A Minor#,#Anthropology#,#Minor in Anthropology
+The Minor in Anthropology consists of six subjects arranged into two tiers as shown below. Students create individual programs with the help of the minor advisor to ensure that they gain a coherent understanding of the methods, approaches, and some of the results of the discipline.
+
+tier_1
+
+tier_2
+With approval of the minor advisor, select five subjects with a unifying theme (not to include 21A.00 or 21A.01). Examples of five subjects with a unifying theme are:  Global Health (four subjects from 21A.300 - 21A.308 and 21A.331[J]); Gender (21A.103[J],  21A.111[J], 21A.141[J], 21A.143[J] and 21A.504[J]); or Culture and Identity (21A.104, 21A.111[J], 21A.130[J], 21A.150 and 21A.155).
+
+tier_1, "Tier I" := 21A.00/21A.01
+
+tier_2, "Tier II" := ""5 subjects""{>=5}

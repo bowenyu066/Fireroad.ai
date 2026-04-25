@@ -1,0 +1,26 @@
+Public Policy#,#Public Policy Minor#,#Interdisciplinary#,#Minor in Public Policy
+Some of the most far-reaching decisions about science, technology, and enterprise are made in the public policy arena. The interdisciplinary minor in Public Policy enables students from across the Institute to develop their understanding of public problems and how governments attempt to address them, with emphasis on the process and outcomes of policymaking.\n\nStudents benefit from increased engagement with and understanding of emerging real-world issues that affect society's greatest challenges, including energy, globalization, health care, conflict resolution, science and technology policy, and public-private collaboration.\n\nStudents majoring in Planning (Course 11) are not permitted to minor in Public Policy. Political Science (Course 17) majors can minor in Public Policy, but subjects being used to fulfill their major cannot be used toward the minor.
+
+tier_1
+
+tier_2
+
+tier_3
+Select three subjects in one of the following tracks.
+
+tier_1_1, "Introduction to Markets, Politics, and Public Policy" := 11.002, 14.01
+tier_1, "Tier I" := tier_1_1
+
+tier_2_1, "Policy Analysis" := 11.003/14.03
+tier_2, "Tier II" := tier_2_1
+
+sep, "Social and Educational Policy" := ""3 subjects""{>=3}
+ep, "Environmental Policy" := ""3 subjects""{>=3}
+ip, "Infrastructure Policy" := ""3 subjects""{>=3}
+stp, "Science and Technology Policy" := ""3 subjects""{>=3}
+lip, "Labor and Industrial Policy" := ""3 subjects""{>=3}
+idp, "International Development Policy" := ""3 subjects""{>=3}
+sdp, "Security and Defense Policy" := ""3 subjects""{>=3}
+urp, "Urban and Regional Policy" := ""3 subjects""{>=3}
+tier_3_1, "Policy Concentration" := sep/ep/ip/stp/lip/idp/sdp/urp
+tier_3, "Tier III" := tier_3_1

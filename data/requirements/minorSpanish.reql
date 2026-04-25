@@ -1,0 +1,19 @@
+21G#,#21G Minor (Spanish)#,#Global Studies and Languages#,#Minor in Spanish#,#threshold=6#,#url=http://catalog.mit.edu/schools/humanities-arts-social-sciences/global-studies-languages/#spanish-minor
+
+
+tier_1
+Two subjects or fewer depending on demonstrated level of entering competence.
+tier_2
+Select three of the following subjects or fewer depending on demonstrated level of entering competence from the Spanish Intermediate Subjects in Language, Literature, and Culture listing.
+tier_3
+Select two of the following subjects or more depending on demonstrated level of entering competence from the Spanish Advanced Subjects in Literature and Culture listing.
+six_subjects
+The Minor in Spanish consists of six subjects arranged into three levels of study.
+
+tier_1, "Tier I" := 21G.703/21G.704{>=0}
+
+tier_2, "Tier II" := 21G.706/21G.707/21G.710/21G.711/21G.712/21G.713/21G.714/21G.715/21G.795{>=0}
+
+tier_3, "Tier III" := 21G.070/21G.072/21G.073/21G.078/21G.084/21H.173/21H.270/21H.273/21L.019/21G.716/21G.717/21G.731/21G.732/21G.735/21G.736/21G.738/21G.739/21G.740/21G.784{>=2}
+
+six_subjects := tier_1/tier_2/tier_3{>=6|>=0}

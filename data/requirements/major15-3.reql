@@ -1,0 +1,29 @@
+15-3#,#15-3 Major#,#Finance#,#Bachelor of Science in Finance#,#url=https://mitsloan.mit.edu/undergrad/15-3-finance-major-requirements
+
+
+reqd
+
+rest_elec
+Each student must take an additional seven full subjects from the approved list of Restricted Electives. At least two of the electives must be in the area of Core Electives in Finance and there must be at least five electives in total between the areas of Core Electives in Finance and Topics in Finance.
+cim
+
+
+reqd_1, "Managerial Finance" := 15.417/(15.401, 15.418)
+reqd_2, "Corporate Finance" := 15.418/(15.402, 15.417)
+reqd_3, "Communication" := (15.418, 15.417)/((15.401/15.402), (15.276/15.279))
+reqd_4, "Accounting" := 15.501
+reqd_5, "Microeconomics" := 14.01/15.0111
+reqd_6, "Probability and Statistics" := (15.069/18.05/14.30)/((18.600/6.3700), (15.075/18.650)) 
+reqd, "Required Subjects" := reqd_1, reqd_2, reqd_3, reqd_4, reqd_5, reqd_6
+
+
+core, "Core Electives in Finance" := 15.4311/15.4331/15.4341/15.4371/15.4381/15.4451{>=2}
+topics, "Topics in Finance" := 15.447/15.436/15.446/15.450/15.456/15.457/15.458/15.465/15.466/15.467/15.481/15.482/15.483/15.5181/15.535{>=0}
+non_finance_elec, "Non-Finance Electives" := 15.053/15.7611/15.8141/15.9001/15.301/15.310/15.312{>=0}
+
+finance_elec, "Finance Electives: := core/topics{>=5}
+rest_elec, "Restricted Electives" := finance_elec/non_finance_elec {>=7}
+%update electives requirement. collapsing investments and corporate finance into core electives. putting non-finance electives under this requirement where it belongs%
+
+
+cim, "Communication-Intensive Subjects" := 15.417/15.418/15.276/15.279{>=2}

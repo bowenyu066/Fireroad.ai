@@ -1,0 +1,20 @@
+18#,#18 Major (Pure)#,#Pure Mathematics#,#Bachelor of Science in Mathematics (Pure Mathematics Option)
+Pure (or "theoretical") mathematics is the study of the basic concepts and structure of mathematics. Its goal is to arrive at a deeper understanding and an expanded knowledge of mathematics itself.\n\nTraditionally, pure mathematics has been classified into three general fields: analysis, which deals with continuous aspects of mathematics; algebra, which deals with discrete aspects; and geometry. The undergraduate program is designed so that students become familiar with each of these areas. Students also may wish to explore other topics such as logic, number theory, complex analysis, and subjects within applied mathematics.
+
+reqd
+
+rest
+
+cim
+
+
+reqd, "Required Subjects" := (18.03/18.032/18.152/18.303), (18.100B/18.100A/18.100P/18.100Q), 18.701, 18.702, 18.901
+
+group_1 := 18.101/18.102/18.103
+group_2 := 18.104/18.504/18.704/18.784/18.904/18.994
+addl := ""2 math subjects (first decimal â¥ 1)""{>=2}
+rest, "Restricted Electives" := group_1, group_2, addl
+
+option_a, "Option A" := 18.104/18.204/18.384/18.424/18.434/18.504/18.704/18.784/18.821/18.904/18.994
+option_b, "Option B" := 8.06/14.18/14.33/18.100P/18.100Q/18.200/18.642{>=0}
+cim, "Communication-Intensive Subjects" := option_a, option_b{>=2}

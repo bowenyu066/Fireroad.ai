@@ -1,0 +1,11 @@
+21W#,#21W Minor#,#Writing#,#Minor in Writing
+The minor consists of six subjects that are selected to focus on one of three areas: creative writing, science writing, or digital media.
+
+tier_1
+
+tier_2
+Select five subjects from among the writing subjects in the area of focus.
+
+tier_1, "Tier I" := 21W.011/21W.021/21W.013/21W.014/21W.015/21W.021/21W.022/21W.026/21W.031/21W.032/21W.034/21W.035/21W.036/21W.041/21W.042/21W.755/21W.756
+
+tier_2, "Tier II" := ""5 subjects""{>=5}

@@ -1,0 +1,11 @@
+21W#,#21W Major#,#Digital Media#,#Bachelor of Science in Writing
+The writing major offers students the opportunity to study the craft, forms, and traditions of contemporary writing, journalism, and digital media. Some students explore writing as a means of artistic expression. Some learn how to write for a variety of media or to communicate the results of their science and technical work to broad audiences and members of their professions. Others work collaboratively within the evolving framework of digital media to become skillful in interactive and nonlinear forms of communication. All subjects in the major emphasize the development of the foundational skills, creative initiative, and critical sensibility necessary to become a good writer. Subjects in the program's three areas of emphasisâcreative writing, science writing, and nonfiction writingâare taught at both introductory and advanced levels. All subjects require extensive writing and revision. Student work is typically discussed in workshops and receives the written commentary of the instructor.
+
+reqd_subjects
+
+electives
+Select nine subjects, of which one is normally introductory, that form a cohesive unit.
+
+reqd_subjects, "Required Subjects" := 21W.THT, 21W.THU, (21W.757/21W.758/21W.759/21W.762/21W.765/21W.770/21W.771/21W.777/21W.786)
+
+electives, "Restricted Electives" := "Elective subjects" {>=9}

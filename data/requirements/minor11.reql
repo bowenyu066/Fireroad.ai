@@ -1,0 +1,11 @@
+11#,#11 Minor#,#Urban Studies and Planning#,#Minor in Urban Studies and Planning
+The six-subject Minor in Urban Studies and Planning offers students the opportunity to explore issues in urban studies and planning in some depth. Students initially take two Tier I subjects that establish the political, economic, and design contexts for local, urban, and regional decision making. In addition, students choose four Tier II elective subjects, which provide an opportunity to focus on urban and environmental policy issues or to study urban problems and institutions. Students are encouraged to craft a minor that reflects their own particular interests within the general parameters of the minor program requirements and in consultation with the minor advisor.
+
+req
+
+elec
+In consultation with the advisor, students can select from recommended concentrations described in the department's course maps or create their own stream tailored to a particular set of urban, policy, or planning concerns.
+
+req, "Requirements" := 11.001, 11.002
+
+elec, "Electives" := ""4 Course 11 electives""{>=4}

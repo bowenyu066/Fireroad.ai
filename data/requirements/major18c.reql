@@ -1,0 +1,24 @@
+18-C#,#18-C Major#,# Mathematics with Computer Science#,#Bachelor of Science in Mathematics with Computer Science
+Mathematics and computer science are closely related fields. Problems in computer science are often formalized and solved with mathematical methods. It is likely that many important problems currently facing computer scientists will be solved by researchers skilled in algebra, analysis, combinatorics, logic and/or probability theory, as well as computer science.\n\nThe purpose of this program is to allow students to study a combination of these mathematical areas and potential areas of application in computer science. Required subjects include linear algebra (18.06 or 18.700) because it is so broadly used, and discrete mathematics (18.062[J] or 18.200) to give experience with proofs and the necessary tools for analyzing algorithms. The required subjects covering complexity (18.404 Theory of Computation or 18.400[J] Automata, Computability, and Complexity) and algorithms (18.410[J] Design and Analysis of Algorithms) provide an introduction to the most theoretical aspects of computer science.  We also require exposure to other areas of computer science (6.1020, 6.1800, 6.4100, or 6.3900) where mathematical issues may also arise.
+
+reqd
+
+rest
+The overall program must consist of subjects of essentially different content, and must include at least five Course 18 subjects with a first decimal digit of 1 or higher. The Course 6 subject may not be 6.00 or 6.1200.
+cim
+
+
+foundational, "Foundational Subjects" := (18.03/18.032/18.152/18.303), (18.06/18.700/18.701)
+discrete, "Discrete Mathematics" := 18.062/18.200/18.200A
+comp_1 := 6.1020/6.4100/6.3900/6.1800
+computation, "Computation and Algorithms" := 6.100A, 6.1210, 6.1010, (18.400/18.404), 18.410, comp_1
+
+reqd, "Required Subjects" := foundational, discrete, computation
+
+rest_18 := ""4 12-unit subjects from Course 18""{>=4}
+rest_6 := ""1 12-unit subject from Course 6""{>=1}
+rest, "Restricted Electives" := rest_18, rest_6
+
+option_a, "Option A" := 18.104/18.204/18.384/18.424/18.434/18.504/18.704/18.784/18.821/18.904/18.994
+option_b, "Option B" := 6.1800/8.06/14.33/18.100P/18.100Q/18.200/18.642{>=0}
+cim, "Communication-Intensive Subjects" := option_a/option_b{>=2}

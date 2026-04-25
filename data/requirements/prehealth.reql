@@ -1,0 +1,24 @@
+7#,#Prehealth#,#Recommended Courses#,#MIT Prehealth Recommended Courses#,#url=https://capd.mit.edu/prepare-academically-for-med-school/
+The MIT Committee on Prehealth Advising has provided the following information to guide MIT students on how to fulfill the academic requirements for admission to most U.S. medical schools. Specific requirements may vary for a particular school, and thus we suggest also referring to the Medical School Admission Requirements (MSAR) and information directly from particular schools to which you plan to apply.
+
+reqd
+Note: Some schools require 2 semesters of organic chemistry.
+recommended
+Taking some of the additional subjects below may provide additional breadth and depth in preparation for medical school. The list is not intended to provide an exhaustive list of courses that all premedical students should take, but rather, is provided to guide students in the selection of a few electives that may be of interest. Other health profession programs, such as dentistry and veterinary medicine, may require additional prerequisite courses. See the school/program web sites for more information.
+
+bio, "General Biology with Lab" := GIR:BIOL, (7.002/20.109/9.12/20.129)
+chem_1 := GIR:CHEM, 5.12
+chem_2 := 5.310/((5.351, 5.352, 5.353)/5.363)
+chem, "General and Organic Chemistry with Lab" := chem_1, chem_2
+biochem, "Biochemistry" := 7.05/(5.07/20.507)
+physics, "Physics" := GIR:PHY1, GIR:PHY2
+math, "Math" := GIR:CAL1, GIR:CAL2
+eng, "English/Writing and Humanities" := "CI-H"/"CI-HW"{>=2}
+reqd, "Required Courses" := bio, chem, biochem, physics, math, eng
+
+bio_rec, "Biology" := 7.03/7.06/7.20{>=0}
+chem_rec, "Chemistry" := 5.08/5.13{>=0}
+math_rec, "Math/Statistics" := 18.05{>=0}
+psych_rec, "Psychology" := 9.00{>=0}
+
+recommended, "Recommended Courses" := bio_rec/chem_rec/math_rec/psych_rec{>=0}

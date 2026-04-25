@@ -1,0 +1,17 @@
+4#,#4 Minor (Design)#,#Architecture#,#Minor in Design#,#threshold=6
+The Minor in Design (D-Minor) provides a hub at MIT where undergraduate students can learn core principles of design in dynamic studio settings, develop a sensibility for visual and physical form, and help contribute to new ways of designing that are applicable across a spectrum of areas.\n\nThis minor is a way for students who see the value of design as a means of approaching problems they normally encounter within their own major to receive a rigorous conceptual foundation along with a strong design skill set. The objective is to prepare students to pursue diverse career paths or further education in multiple areas of design from product design to 3-D design to visual communication, and to enable them to take advantage of emerging opportunities in industry and academia.
+
+reqd
+
+elec
+
+
+reqd, "Group 1" := 4.021, 4.053, (4.031/4.032) %%swapped 4.022 requirement with 4.053
+
+objects, "Objects" := 2.00A/2.00/2.007/2.009/4.031/4.041/4.043/4.110/4.118/4.125/4.451/4.501/4.657/EC.720/MAS.377{>=0}
+
+info, "Information" := 4.032/4.051/4.053/4.500/4.502/4.504/4.520/CMS.405/CMS.622/CMS.633/MAS.110{>=0}
+
+art_e, "Art & Experience" := 4.301/4.302/4.307/4.320/4.322/4.341/4.354/4.602/21M.603/CMS.362/CMS.634
+
+elec, "Group 2" := objects/info/art_e{>=3}

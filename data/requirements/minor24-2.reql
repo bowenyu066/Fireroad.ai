@@ -1,0 +1,15 @@
+24-2#,#24 Minor (Linguistics)#,#Linguistics#,#Minor in Linguistics
+The Minor in Linguistics consists of six subjects arranged in three levels of study, intended to provide students with breadth in the field of theoretical linguistics as a whole.
+
+tier_1
+
+tier_2
+
+tier_3
+
+
+tier_1, "Tier I" := 24.900
+
+tier_2, "Tier II" := 24.901, 24.902, 24.903
+
+tier_3, "Tier III" := 24.904/24.905/24.906/24.907/24.909/24.910/24.914/24.915{>=2}

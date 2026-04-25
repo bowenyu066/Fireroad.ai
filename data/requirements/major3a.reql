@@ -1,0 +1,24 @@
+3#,#3-A Major#,#Materials Science and Engineering#,#Bachelor of Science as Recommended by the Department of Materials Science and Engineering
+Students planning to follow this curriculum must submit a program of study no later than the beginning of the their junior year.\n\nSome students may be attracted to the many opportunities available in the materials discipline, but also have special interests that are not satisfied by the Course 3 program. For instance, some students may wish to take more biology and chemistry subjects in preparation for medical school or more management subjects prior to entering an MBA or law program. In these cases, the 3-A program may be of value as a more flexible curriculum in which a larger number of elective choices is available.\n\nThe curriculum requirements for Course 3-A are similar to, but more flexible than, those for Course 3.
+
+required_subjects
+
+elective_eng
+
+electives
+Select 66 units from a proposal of study approved by the department. Students must develop a program of elective subjects totaling 66 units appropriate to their stated goals in their Course 3-A Program Proposal as approved by the DMSE Undergraduate Committee.
+cim
+The combination of 3.010 and 3.020 is equivalent to one communication-intensive subject (CI-M) in fulfillment of the Communication Requirement. For the second CI-M, students typically take 3.042 or 3.155J, but a range of options in other departments are available. Please refer to the 2020-2021 MIT Bulletin for the full degree chart and all CI-M choices
+
+
+%% Departmental Program
+
+
+interm := 3.013/3.023/3.029/3.030/3.033/3.044/3.042{>=3}
+required_subjects, "Required Subjects" := (18.03/18.06/18.C06/18.032/CC.1803/ES.1803), 3.010, 3.020, interm
+
+elective_eng, "Restricted Electives" := 3.004/3.017/3.021/3.039/3.041/3.046/3.052/3.053/3.054/3.055/3.056/3.063/3.064/3.07/3.071/3.074/3.080/3.081/3.086/3.087/3.088/3.14/3.15/3.152/3.154/3.155/3.156/3.16/3.17/3.171/3.173/3.18/3.19{>=36u}
+
+electives, "Electives" := ""66 units""{>=66u}
+
+cim, "Communication-Intensive Subjects" := (3.010,3.020), (2.009/2.671/3.042/3.155/7.003/10.26/10.28/10.29/10.467)

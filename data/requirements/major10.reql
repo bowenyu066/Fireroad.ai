@@ -1,0 +1,30 @@
+10#,#10 Major#,#Chemical Engineering#,#Bachelor of Science in Chemical Engineering
+This degree is intended for the student who seeks a broad education in the application of chemical engineering to a variety of specific areas, including energy and the environment, nanotechnology, polymers and colloids, surface science, catalysis and reaction engineering, systems and process design, and biotechnology. The degree requirements include the core chemical engineering subjects with a chemistry emphasis, and the opportunity to add subjects in any of these application areas.
+
+foundational
+
+intermediate
+
+advanced
+
+rest
+May be satisfied with a second term of 10.492A, 10.492B, 10.493, 10.494A, 10.494B, or a second term of 10.490 Integrated Chemical Engineering (with permission of instructor). Graduate subjects may not be used as restricted electives. In addition, the following undergraduate subjects may not be used as restricted electives: 10.04, 10.792[J], 10.806, 10.910 and 10.911 Independent Research Problem, 10.UR and 10.URG Undergraduate Research, and 10.THU. Consult the Chemical Engineering Student Office for a list of acceptable engineering lab subjects. 
+cim
+
+
+foundational, "Foundational Subjects" := 5.12, 5.310, 5.601, 10.10, (18.03/18.032)
+
+int_1 := 5.03/5.07/5.13/(5.611, 5.612)/7.05
+int_2 := 10.26/10.27/10.28/10.29/10.467
+intermediate, "Intermediate Subjects" := 10.213, 10.301, 10.302, int_1, int_2
+
+adv_1 := 10.492A/10.492B/10.493/10.494A/10.494B{>=2}
+advanced, "Advanced Subjects" := 10.32, 10.37, 10.490, adv_1
+
+rest_1 := ""One subject of at least 6 units in Chemical Engineering""{>=6u}
+rest_2 := ""One subject of at least 9 units in Chemical Engineering""{>=9u}
+lab := ""One engineering laboratory subject of at least 6 units""{>=6u}
+
+rest, "Restricted Electives" := rest_1, rest_2, lab
+
+cim, "Communication-Intensive Subjects" := 5.310/10.26/10.27/10.28/10.29/10.467{>=2}

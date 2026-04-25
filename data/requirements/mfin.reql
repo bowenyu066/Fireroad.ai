@@ -1,0 +1,23 @@
+15#,#MFin#,#Finance#,#Master of Finance
+The Master of Finance program at MIT Sloan is a specialized advanced master's degree designed to prepare students for careers in finance.\n\nPutting ideas into action is fundamental to MITâs approach to knowledge creation, education, and research. In the MFin program, this presents itself in a rigorous, hands-on curriculum that offers students the chance to build a deep reservoir of finance knowledge and immediately put that knowledge to work in the world. MFin students participate in Action Learning experiences including Proseminars and the Finance Lab (formerly known as the Finance Research Practicum).\n\nThe MFin curriculum consists of required fundamental and advanced subjects, restricted electives, and an action learning course. Students may choose to write a thesis or pursue an independent study, pending approval by the faculty director.\n\nThe MFin program degree is completed in 18 months. There is an option to accelerate the degree requirements and complete it in 12 months. This allows you to tailor the program to your specific needs. The degree requirements are the same for both formats; the only difference is timing. During the 18 months, students will have the option to complete an internship during the second summer term, take additional courses or use the additional time to write a thesis. The shorter timeframe allows you to earn a full MFin degree in one yearâincluding an Action Learning experience where youâll work with corporate partners on real-world challengesâaccelerating your path to a rewarding career.
+
+core
+During the summer term, youâll begin with rigorous courses in finance theory, financial mathematics, and financial accounting which provide foundational theories and principles youâll draw from throughout the program and your career. MIT Undergraduates only who have taken 15.401 and 15.402, or 15.501, may be granted exemption from these requirements.
+advanced
+Youâll work with analytical toolsâfinancial modeling, portfolio and pricing theory, statistics and data analytics, and computational methodsâto help tackle multi-faceted challenges that arise in finance, from capital budgeting and cash flow analysis, to dynamic asset allocation and big-data-based investment strategies, and more.
+electives
+A minimum of four restricted electives must be taken. Select 1st year PhD Finance and Economics courses will also serve as restricted electives. Youâll choose from topics ranging from financial technology, to quantitative methods, to economics, to specialized disciplines such as healthcare finance, fixed income, mergers and acquisitions and asset management.
+action_learning
+Our signature finance Action Learning courses integrate financial theory and applications with hands-on work experience alongside financial industry practitioners. These project-based courses challenge students to solve real-world problems with MIT's partner corporations, culminating in student presentations to corporate decision makers.
+professional_development
+A required professional development course adds an important dimension, focusing on finance ethics and social responsibility.
+
+core, "Required Core" := (15.415/(15.401, 15.402)), (15.516/15.501), (15.454/15.455)
+
+advanced, "Required Advanced Subjects" := 15.425, 15.433, (15.450/15.457)
+
+electives, "Restricted Electives" := 15.431/15.434/15.437/15.438/15.445/15.447/15.456/15.458/15.466/15.467/15.481/15.483/15.S08/15.085/15.093/15.470/15.472/15.474/15.070/15.471/15.473/(14.121, 14.122)/14.381/14.384/14.385/(14.351, 14.352)/(14.123, 14.124)/14.382/(14.453, 14.454){>=4}
+
+action_learning, "Required Action Learning" := 15.451/15.452/15.453
+
+professional_development, "Required Professional Development" := 15.S06

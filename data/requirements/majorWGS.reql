@@ -1,0 +1,17 @@
+WGS#,#21 Major (WGS)#,#Women's and Gender Studies#,#Bachelor of Science in Humanities (Women's and Gender Studies)
+This program offers students an academic framework for the study of women, gender, and sexuality using the analytical tools and methodologies of a variety of disciplines in the humanities, arts, and social sciences.
+
+reqd_subjects
+In consultation with the director, the pre-thesis and thesis may be replaced by two additional WGS courses.
+electives
+A minimum of seven subjects (84 units) beyond the introductory course, advanced feminist theory course, pre-thesis, and thesis. The list of restricted electives below is not exhaustive. Students interested in this interdisciplinary program should consult with the Women's and Gender Studies program manager, Emily Neill, Room 14E-316, 617-253-2642, and then arrange a meeting with the current director, Helen Lee.
+
+reqd_subjects, "Required Subjects" := 21.THT, 21.THU
+
+tier1, "Tier 1" := WGS.101
+hassHA, "Humanities (HASS-H) and Arts (HASS-A) subjects" := WGS.109/WGS.110/WGS.111/WGS.115/WGS.123/WGS.140/WGS.141/WGS.142/WGS.145/WGS.154/WGS.161/WGS.181/WGS.190/WGS.220/WGS.226/WGS.231/WGS.233/WGS.234/WGS.235/WGS.236/WGS.240/WGS.245 {>=0}
+hassS, "Social Science (HASS-S) subjects" := WGS.125/WGS.151/WGS.172/WGS.221/WGS.222/WGS.224/WGS.225/WGS.228/WGS.229/WGS.250/WGS.270/WGS.271/WGS.274/WGS.275/WGS.276/WGS.321 {>=0}
+tier2, "Tier 2" := hassHA/hassS {>=7|>=2}
+
+tier3, "Tier 3" := WGS.301
+electives, "Restricted Electives" := tier1, tier2, tier3

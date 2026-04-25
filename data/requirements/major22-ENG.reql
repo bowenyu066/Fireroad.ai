@@ -1,0 +1,23 @@
+22#,#22-ENG Major - Flexible#,#Nuclear Science and Engineering - Flexible#,#Bachelor of Science as Recommended by Nuclear Science and Engineering
+The department's undergraduate program offers a strong foundation in science-based engineering, providing the skills and knowledge for a broad range of careers. This specific major allows flexibility in defining a sub-field of advanced study, related to NSE but not necessarily comprised solely of courses within the NSE department. The program develops scientific and engineering fundamentals in the production, interactions, measurement, and control of radiation arising from nuclear processes. In addition, the program introduces students to thermal-fluid engineering, electronics, and computational methods. Building upon these fundamentals, students understand the principles, design, and appropriate application of nuclear-based systems that have broad societal impacts in energy, human health, and securityâfor example, reactors, imaging systems, detectors, and plasma confinement. In addition, they develop professional skills in quantitative research, written and oral technical communication, team building, and leadership. The program provides excellent preparation for subsequent graduate education and research in a broad range of fields. In the nuclear field, there is high demand for nuclear engineers around the world as the nuclear energy industry continues to expand. Other nuclear and radiation applications are increasingly important in medicine, industry, and government. This degree is not ABET accredited.
+
+core
+
+system
+
+computational
+
+math
+
+capstone
+
+focus
+In consultation with advisor, select 72 units comprising a coherent specialization directly related to NSE.
+
+core, "Core NSE Requirements" := 2.005, (18.03/18.032), 22.01, 22.04, 22.09
+system, "Reactor System Specialization" := 22.06/22.061
+capstone, "Senior Capstone Project" := 22.033/(22.THT, 22.THU)
+math, "Mathematics Elective" := 6.3700/18.04/18.05/18.075/18.600
+computational, "Computational Elective" := 1.000/2.086/(6.100A, (6.100B/CSE.C20))/12.010/22.C25
+
+focus, "Focus Area" := ""72 units""{>=72u}

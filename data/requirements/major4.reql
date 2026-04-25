@@ -1,0 +1,21 @@
+4#,#4 Major#,#Architecture#,#Bachelor of Science in Architecture#,#url=http://catalog.mit.edu/degree-charts/architecture-course-4/
+Course 4 offers a program introducing students to the five discipline areas: art, culture and technology; architectural design and urbanism; building technology; design and computation; and history, theory and criticism of architecture, art and design.
+
+reqd
+
+rest_elec
+Where there are certain choices in the Required Subjects section (4.501 or 4.502; and 4.605, 4.614, or 4.635), the option(s) not chosen can be used as a restrictive elective.
+thesis
+
+
+reqd, "Required Subjects" := (4.021/4.02A), 4.022, 4.023, 4.024, 4.302, 4.401, 4.440, 4.500, 4.603, (4.605/4.614/4.635)
+
+arch_design_studies, "Architecture Design and Studies" := 4.041/4.053/4.250{>0}
+art_cult_tech, "Art, Culture, and Technology" := 4.307/4.314/4.322/4.341/4.344/4.354/4.356/4.368/4.373{>=0}
+build_tech, "Building Technology" := 4.411/4.432/4.451{>=0}
+comp, "Computation" := 4.501/4.502/4.507/4.520/6.1040/6.4400/6.8371/CMS.405/CMS.631/CMS.633{>=0}
+hist_theo_crit, "History, Theory and Criticism of Architecture, Art and Design" := 4.601/4.602/4.605/4.614/4.635/4.636/4.651/4.657{>=0}
+
+rest_elec, "Restricted Electives" := arch_design_studies/art_cult_tech/build_tech/comp/hist_theo_crit{>=24u}
+
+thesis, "Thesis" := 4.THT, 4.THU

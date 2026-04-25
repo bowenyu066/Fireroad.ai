@@ -1,0 +1,18 @@
+21#,#21 Minor (African Studies)#,#African and African Diaspora Studies#,#Minor in African and African Diaspora Studies#,#threshold=6
+The Minor in African and African Diaspora Studies is designed for students interested in the cultures and experiences of the peoples of African descent on the continent and elsewhere. The goal of the minor program is to emphasize the importance of Africa and people of African descent in world cultural, economic, and social developments, and to provide a balance between language, humanistic, historical, and contemporary study. The minor includes study of economic and political systems as they reflect the African continent and areas of the African diaspora, and the histories, languages, and literatures of Africans and peoples of African descent elsewhere.\n\nAll of Africa falls within the geographical scope of the minor. A student may concentrate on a particular region or on any of the broad groupings of African cultures, such as Arabic-speaking, Anglophone, Francophone, or Lusophone Africa. Equally, a student choosing to focus on the African diaspora may concentrate on any group of African-descended populations in the Americas. Students focusing on either principal area (Africa or the African diaspora) must also take at least one subject which deals with the other area or with interactions between them.
+
+language
+Students are expected to have two intermediate (Levels III and IV) subjects in either the official language of the region of study or in an indigenous African language. In cases where the student is specializing in Anglophone Africa or an English-speaking region of the diaspora, and does not undertake study of an indigenous language, or is a native speaker of the official language(s) of a country or region of emphasis, this component would be replaced by literature or other humanities subjects.
+areas
+
+
+lang_1 := ""2 intermediate language subjects""{>=2}
+language, "Area I: Language" := (21G.303, 21G.304)/(21G.703, 21G.704)/(21G.803, 21G.804)/lang_1
+
+area_2, "Area II: Humanities and the Arts" := 21L.007/21L.504/21M.030/21M.226/21M.293/21M.460/21W.742/24.912/WGS.142{>=0}
+
+area_3, "Area III: Social Sciences" := 11.164/11.166/17.523/17.571/21A.306/21A.308/21A.442/24.908/WGS.150/WGS.225/WGS.228{>=0}
+
+area_4, "Area IV: Historical Studies" := 21H.165/21H.229/21H.319/21H.358/21H.385/24.912/STS.048/STS.088/WGS.220{>=0}
+
+areas, "Additional Areas" := area_2/area_3/area_4{>=4|>=2}

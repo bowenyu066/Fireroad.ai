@@ -1,0 +1,15 @@
+5-7#,#5-7 Major#,#Chemistry and Biology#,#Bachelor of Science in Chemistry and Biology#,#url=https://biology.mit.edu/undergraduate/course-requirements/
+The Department of Biology and the Department of Chemistry offer a joint curriculum leading to a Bachelor of Science in Chemistry and Biology that focuses on the intersection of these two subject areas, encompassing biochemistry and chemical biology. The curriculum provides strong foundations in both biology and chemistry, with flexibility in elective subjects that enable students to tailor their major program to their specific interests within the broad interface of biology and chemistry. Students in the program are full members of both departments, with one academic advisor from each department.\n\nThe Bachelor of Science in Chemistry and Biology prepares students for careers that involve applications of both subjects, including the pharmaceutical and biotechnology industries, as well as further graduate study in biochemistry, molecular biology, and chemical biology. The interdepartmental major program also provides a strong foundation for the study of clinical and research careers in medicine and related health professions.\n\nChoose at least two subjects in the major that are designated as communication-intensive (CI-M) to fulfill the Communication Requirement.
+
+reqd
+
+rest_elec
+
+lab_req
+
+
+reqd, "Required Subjects" := 5.03, (5.07/7.05), 5.08, 5.12, 5.13, 5.601, 5.611, 7.03, 7.06
+
+rest_elec, "Restricted Electives" := 5.04/5.363/5.371/5.372/5.373/5.381/5.382/5.383/5.39/5.43/5.602/5.612/5.62/7.093/7.094/7.19/7.20/7.21/7.23/7.26/7.27/7.28/7.29/7.30/7.31/7.32/7.33/7.371/7.45/7.46/7.49{>=30u}
+
+lab_req, "Departmental Laboratory Requirement" := 5.351, 5.352, 5.353, 7.002, ((5.361, 5.362)/7.003)
