@@ -117,11 +117,15 @@ const ThemeToggle = () => {
 };
 
 const TopBar = ({ planningTermLabel }) => {
-  const { setRoute, profile, authState, signOut, resetOnboarding, planningTermLabel: activePlanningTermLabel } = useApp();
+  const { setRoute, profile, authState, signOut, resetOnboarding, activeSem, setActiveSem, termOptions, planningTermLabel: activePlanningTermLabel } = useApp();
   const isLocalDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
   const displayName = profile?.name || authState?.user?.email?.split('@')[0] || 'User';
   const initials = displayName.split(' ').map((s) => s[0]).join('');
   const termLabel = planningTermLabel || activePlanningTermLabel || 'Next Semester';
+  const generatedTerms = Array.isArray(termOptions) && termOptions.length ? termOptions : [{ id: activeSem || termLabel, label: termLabel }];
+  const terms = activeSem && !generatedTerms.some((term) => term.id === activeSem)
+    ? [{ id: activeSem, label: termLabel }, ...generatedTerms]
+    : generatedTerms;
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -135,13 +139,36 @@ const TopBar = ({ planningTermLabel }) => {
       </div>
 
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 8, padding: '7px 13px',
-        borderRadius: 999, background: 'var(--surface-2)', border: '1px solid var(--border)',
-        color: 'var(--text-secondary)', fontSize: 12,
+        display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px',
+        borderRadius: 10, background: 'var(--surface-2)', border: '1px solid var(--border)',
+        color: 'var(--text-secondary)', fontSize: 12, position: 'relative',
       }}>
         <Icon name="calendar" size={14} />
-        <span className="mono" style={{ color: 'var(--text)' }}>{termLabel}</span>
-        <span>planner</span>
+        {setActiveSem ? (
+          <select
+            value={activeSem}
+            onChange={(event) => setActiveSem(event.target.value)}
+            className="mono"
+            title="Planning term"
+            style={{
+              appearance: 'none',
+              background: 'transparent',
+              border: 0,
+              color: 'var(--text)',
+              fontSize: 12,
+              padding: '0 18px 0 0',
+              outline: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            {terms.map((term) => (
+              <option key={term.id} value={term.id}>{term.label}</option>
+            ))}
+          </select>
+        ) : (
+          <span className="mono" style={{ color: 'var(--text)' }}>{termLabel}</span>
+        )}
+        <Icon name="chevronDown" size={13} style={{ position: 'absolute', right: 8, pointerEvents: 'none', color: 'var(--text-secondary)' }} />
       </div>
 
       <div style={{ flex: '1 1 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>

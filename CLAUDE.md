@@ -24,6 +24,8 @@ The current product focus is active-semester planning. Treat `fourYearPlan[activ
 
 Keep `fourYearPlan` and `activeSem` as the canonical frontend/persistence state because they preserve term-aware data. Do not add cross-semester drag/drop flows unless explicitly requested. `FourYearPlan` is kept only as a legacy read-only component export for future display work and should not be mounted from the main planner.
 
+The active term selector is generated in `data.js` from the current date, using a Hydrant-like rolling default while still allowing manual term selection. Do not hardcode `S25` or other stale semester defaults in UI state.
+
 ## Architecture
 
 **No bundler. No frontend build.** All browser JavaScript files are loaded as ordered `<script>` tags in `index.html`:
@@ -54,6 +56,7 @@ Keep `fourYearPlan` and `activeSem` as the canonical frontend/persistence state 
 - `FRDATA.profile` — mock student profile (taken courses, preferences, calibration, remaining requirements)
 - `FRDATA.matchScores` — match score breakdown per course (`total`, `interest`, `workload`, `reqValue`)
 - `FRDATA.fourYearPlan`, `FRDATA.semesterLabels`, `FRDATA.semesterOrder`, `FRDATA.defaultActiveSem` — term-aware seed plan data; the editable schedule is `fourYearPlan[activeSem]`
+- `FRDATA.termOptions` — rolling term picker options generated from the current date
 - `FRDATA.fetchCurrentCourse(id)` / `FRDATA.fetchCurrentSearch(q)` / `FRDATA.fetchCurrentCatalog()` — server-backed current catalog helpers with mock fallback
 - `FRDATA.getCourse(id)` / `FRDATA.getMatch(id)` — fallback lookup helpers
 
@@ -83,7 +86,7 @@ Course area colors follow the pattern `var(--course-cs)`, `var(--course-math)`, 
 
 The app has a small real backend, while transcript parsing and some student-data persistence remain prototype-level:
 
-- `AgentPanel` (`components/agent.jsx`): calls `POST /api/chat`, which runs the OpenRouter-backed tool-calling agent from `server/chat/*`.
+- `AgentPanel` (`components/agent.jsx`): calls `POST /api/chat`, including `studentName`, which runs the OpenRouter-backed tool-calling agent from `server/chat/*`.
 - `server/current/*`: normalizes the local `data/courses.json` catalog snapshot for frontend current views, recommendations, and agent tools. Override with `CURRENT_CATALOG_PATH` when needed.
 - `server/history/*`: SQLite-backed read-only historical offerings/documents/policies.
 - `server/chat/prompt.js`: keep the agent focused on the active semester and reject cross-semester roadmap mutations unless explicitly requested.

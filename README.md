@@ -10,6 +10,8 @@ The app keeps the `fourYearPlan` object in state and persistence so term-aware d
 
 Course detail is split into `Current` and `Historical` views. Current data comes from the server-side normalized local catalog snapshot at `data/courses.json`. Historical data comes from the SQLite-backed history subsystem and is read-only reference.
 
+The active term selector is generated from the current date in `data.js`, similar to Hydrant's rolling term picker. Users can still manually choose another term; do not hardcode stale semester labels or default active terms.
+
 ## Setup
 
 ```bash
@@ -27,7 +29,7 @@ Open http://localhost:3000.
 ## API
 
 - `GET /api/health` checks server status and whether an OpenRouter key is configured.
-- `POST /api/chat` accepts `{ messages, profile, schedule, activeSem }` where `schedule` is `fourYearPlan[activeSem]`, and returns an agent message plus validated `uiActions`.
+- `POST /api/chat` accepts `{ messages, profile, schedule, activeSem, studentName }` where `schedule` is `fourYearPlan[activeSem]`, and returns an agent message plus validated `uiActions`.
 - `GET /api/current/course/:courseId` returns normalized current catalog data.
 - `GET /api/current/search?q=...` searches current catalog data.
 - `GET /api/current/catalog` returns a normalized current catalog snapshot.

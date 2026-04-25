@@ -52,12 +52,19 @@ const exportToICS = (courses) => {
 const ScheduleCard = ({ course, match, onRemove, onOpen, justAdded }) => {
   const [removing, setRemoving] = useState(false);
   const lastClick = useRef(0);
+  const removingRef = useRef(false);
+
+  const requestRemove = () => {
+    if (removingRef.current) return;
+    removingRef.current = true;
+    setRemoving(true);
+    setTimeout(() => onRemove(course.id), 280);
+  };
 
   const handleClick = (e) => {
     const now = Date.now();
     if (now - lastClick.current < 350) {
-      setRemoving(true);
-      setTimeout(() => onRemove(course.id), 280);
+      requestRemove();
     } else {
       lastClick.current = now;
     }
@@ -66,7 +73,7 @@ const ScheduleCard = ({ course, match, onRemove, onOpen, justAdded }) => {
   return (
     <div
       onClick={handleClick}
-      onDoubleClick={() => { setRemoving(true); setTimeout(() => onRemove(course.id), 280); }}
+      onDoubleClick={requestRemove}
       className={justAdded ? 'slide-up' : ''}
       style={{
         position: 'relative', background: 'var(--surface)',
@@ -181,7 +188,7 @@ const CalendarView = ({ courses }) => {
 };
 
 // ============== Schedule panel (left) ==============
-const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, viewMode, setViewMode, planningTermLabel = 'Next Semester' }) => {
+const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAddCourse, onRemoveCourse, viewMode, setViewMode, planningTermLabel = 'Next Semester' }) => {
   const [showCoursePicker, setShowCoursePicker] = useState(false);
   const [catalog, setCatalog] = useState(() => FRDATA.catalog.filter(c => !c._stub));
   const [courseMap, setCourseMap] = useState(() => Object.fromEntries(FRDATA.catalog.map((course) => [course.id, course])));
@@ -218,12 +225,14 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, viewM
   const available = catalog.filter(c => !schedule.includes(c.id));
 
   const removeCourse = (id) => {
-    setSchedule(s => s.filter(x => x !== id));
+    if (onRemoveCourse) onRemoveCourse(id);
+    else setSchedule(s => s.filter(x => x !== id));
   };
 
   const addCourseToSem = (id) => {
     if (schedule.includes(id)) { setShowCoursePicker(false); return; }
-    setSchedule(s => [...s, id]);
+    if (onAddCourse) onAddCourse(id);
+    else setSchedule(s => [...s, id]);
     setShowCoursePicker(false);
   };
 

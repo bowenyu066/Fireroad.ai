@@ -6,7 +6,10 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
   const scrollRef = useRef(null);
-  const { activeSem, planningTermLabel } = useApp();
+  const { activeSem, planningTermLabel, authState } = useApp();
+  const studentName = String(profile?.name || '').trim()
+    || String(authState?.user?.email || '').split('@')[0]
+    || '';
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -30,6 +33,7 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
           schedule,
           activeSem,
           planningTermLabel,
+          studentName,
         }),
       });
 

@@ -20,6 +20,17 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
     }]);
   };
 
+  const onRemoveCourse = async (id) => {
+    const courseId = String(id || '').trim().toUpperCase();
+    if (!schedule.includes(courseId)) return;
+    const c = await FRDATA.fetchCurrentCourse(courseId) || FRDATA.getCourse(courseId) || { id: courseId, name: courseId };
+    setSchedule((s) => s.filter((x) => x !== courseId));
+    setMessages((m) => [...m, {
+      role: 'agent',
+      text: `Removed ${c.id} (${c.name}) from ${planningTermLabel}.`,
+    }]);
+  };
+
   const applyUiActions = (actions) => {
     if (!Array.isArray(actions) || actions.length === 0) return;
 
@@ -66,6 +77,7 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
           <SchedulePanel
             schedule={schedule} setSchedule={setSchedule}
             justAddedId={justAddedId} onOpenCourse={onOpenCourse}
+            onAddCourse={onAddCourse} onRemoveCourse={onRemoveCourse}
             viewMode={viewMode} setViewMode={setViewMode}
             planningTermLabel={planningTermLabel}
           />
@@ -96,6 +108,18 @@ const App = () => {
   });
   const freshFourYearPlan = () => JSON.parse(JSON.stringify(FRDATA.fourYearPlan || {}));
   const defaultActiveSem = FRDATA.defaultActiveSem || 'S25';
+  const termOptions = FRDATA.termOptions || [{ id: defaultActiveSem, label: FRDATA.semesterLabels?.[defaultActiveSem] || defaultActiveSem }];
+  const resolveSavedActiveSem = (saved) => {
+    const savedActiveSem = saved?.activeSem;
+    if (!savedActiveSem) return defaultActiveSem;
+    const savedSchedule = saved?.fourYearPlan && Array.isArray(saved.fourYearPlan[savedActiveSem])
+      ? saved.fourYearPlan[savedActiveSem]
+      : [];
+    if (savedActiveSem === 'S25' && defaultActiveSem !== 'S25' && savedSchedule.length === 0) {
+      return defaultActiveSem;
+    }
+    return savedActiveSem;
+  };
   const normalizeSavedFourYearPlan = (saved, activeSem) => {
     const base = freshFourYearPlan();
     if (saved?.fourYearPlan && typeof saved.fourYearPlan === 'object') {
@@ -149,7 +173,7 @@ const App = () => {
           name: authState.user.email.split('@')[0],
         };
 
-        const nextActiveSem = saved?.activeSem || defaultActiveSem;
+        const nextActiveSem = resolveSavedActiveSem(saved);
         setProfile(nextProfile);
         setActiveSem(nextActiveSem);
         setFourYearPlan(normalizeSavedFourYearPlan(saved, nextActiveSem));
@@ -243,7 +267,7 @@ const App = () => {
   };
 
   const ctx = {
-    theme, setTheme, route, setRoute, profile, setProfile, fourYearPlan, setFourYearPlan, activeSem, setActiveSem, planningTermLabel,
+    theme, setTheme, route, setRoute, profile, setProfile, fourYearPlan, setFourYearPlan, activeSem, setActiveSem, termOptions, planningTermLabel,
     authState, dataReady, onboardingCompleted, saveState,
     completeOnboarding, resetOnboarding, signOut: FRAuth.signOut,
   };

@@ -13,6 +13,59 @@ window.FRDATA = (function (source) {
   const currentCache = new Map();
   let catalogCache = null;
 
+  const termDefinitions = [
+    ['F', 'Fall'],
+    ['SU', 'Summer'],
+    ['S', 'Spring'],
+    ['IAP', 'IAP'],
+  ];
+
+  const termId = (code, year) => `${code}${String(year).slice(-2)}`;
+
+  const termLabel = (code, year) => {
+    const found = termDefinitions.find(([value]) => value === code);
+    return `${found ? found[1] : code} ${year}`;
+  };
+
+  const currentPlanningTerm = (date = new Date()) => {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    if (month === 1) return { code: 'IAP', year };
+    if (month >= 2 && month <= 3) return { code: 'S', year };
+    if (month >= 4 && month <= 8) return { code: 'F', year };
+    if (month >= 9 && month <= 11) return { code: 'S', year: year + 1 };
+    return { code: 'IAP', year: year + 1 };
+  };
+
+  const buildTermOptions = (date = new Date()) => {
+    const current = currentPlanningTerm(date);
+    const currentId = termId(current.code, current.year);
+    const all = [];
+    for (let year = current.year; year >= current.year - 5; year -= 1) {
+      termDefinitions.forEach(([code]) => {
+        all.push({ id: termId(code, year), label: termLabel(code, year) });
+      });
+    }
+
+    const startIndex = Math.max(0, all.findIndex((term) => term.id === currentId));
+    return all.slice(startIndex, startIndex + 18);
+  };
+
+  const termOptions = buildTermOptions();
+  const semesterLabels = { ...(source.semesterLabels || {}) };
+  termOptions.forEach((term) => {
+    semesterLabels[term.id] = term.label;
+  });
+  const semesterOrder = [
+    ...termOptions.map((term) => term.id),
+    ...(source.semesterOrder || []).filter((id) => !termOptions.some((term) => term.id === id)),
+  ];
+  const fourYearPlan = { ...(source.fourYearPlan || {}) };
+  semesterOrder.forEach((id) => {
+    fourYearPlan[id] = Array.isArray(fourYearPlan[id]) ? [...fourYearPlan[id]] : [];
+  });
+  const defaultActiveSem = termOptions[0]?.id || 'S25';
+
   const areaForCourseId = (id) => {
     const value = String(id || '');
     if (value.startsWith('6.')) return 'cs';
@@ -97,8 +150,12 @@ window.FRDATA = (function (source) {
 
   return {
     ...source,
-    defaultActiveSem: 'S25',
-    planningTermLabel: source.semesterLabels?.S25 || 'Next Semester',
+    fourYearPlan,
+    semesterLabels,
+    semesterOrder,
+    termOptions,
+    defaultActiveSem,
+    planningTermLabel: semesterLabels[defaultActiveSem] || 'Next Semester',
     fetchCurrentCatalog,
     fetchCurrentCourse,
     fetchCurrentSearch,
