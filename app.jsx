@@ -1,4 +1,4 @@
-/* global React, ReactDOM, FRDATA, Onboarding, ProfilePage, TopBar, SchedulePanel, FourYearPlan, AgentPanel, Recommendations, CourseDetail, AppCtx */
+/* global React, ReactDOM, FRDATA, FRAuth, AuthGate, Onboarding, ProfilePage, TopBar, SchedulePanel, FourYearPlan, AgentPanel, Recommendations, CourseDetail, AppCtx */
 const { useState, useEffect } = React;
 
 const Planner = ({ schedule, setSchedule, messages, setMessages }) => {
@@ -90,12 +90,74 @@ const Planner = ({ schedule, setSchedule, messages, setMessages }) => {
 };
 
 const App = () => {
+  const freshProfile = () => ({
+    ...FRDATA.profile,
+    taken: [...FRDATA.profile.taken],
+    preferences: { ...FRDATA.profile.preferences },
+  });
+  const freshFourYearPlan = () => JSON.parse(JSON.stringify(FRDATA.fourYearPlan));
+
   const [theme, setTheme] = useState(() => localStorage.getItem('fr-theme') || 'light');
   const [route, setRoute] = useState({ name: 'onboarding' });
-  const [profile, setProfile] = useState(FRDATA.profile);
-  const [fourYearPlan, setFourYearPlan] = useState(FRDATA.fourYearPlan);
+  const [profile, setProfile] = useState(freshProfile);
+  const [fourYearPlan, setFourYearPlan] = useState(freshFourYearPlan);
   const [activeSem, setActiveSem] = useState('S25');
   const [messages, setMessages] = useState(FRDATA.agentMessages);
+  const [authState, setAuthState] = useState(() => FRAuth.getState());
+  const [dataReady, setDataReady] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+  const [saveState, setSaveState] = useState('idle');
+
+  useEffect(() => {
+    const unsubscribe = FRAuth.subscribe(setAuthState);
+    FRAuth.init();
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (authState.status !== 'signedIn') {
+      setDataReady(false);
+      setOnboardingCompleted(false);
+      return () => { cancelled = true; };
+    }
+
+    setDataReady(false);
+    FRAuth.loadUserData()
+      .then((saved) => {
+        if (cancelled) return;
+        const completed = Boolean(saved?.onboardingCompleted);
+        const nextProfile = saved?.profile ? {
+          ...freshProfile(),
+          ...saved.profile,
+          taken: [...(saved.profile.taken || [])],
+          preferences: { ...freshProfile().preferences, ...(saved.profile.preferences || {}) },
+        } : {
+          ...freshProfile(),
+          name: authState.user.email.split('@')[0],
+        };
+
+        setProfile(nextProfile);
+        setFourYearPlan(saved?.fourYearPlan || freshFourYearPlan());
+        setActiveSem(saved?.activeSem || 'S25');
+        setOnboardingCompleted(completed);
+        setRoute({ name: completed ? 'planner' : 'onboarding' });
+        setDataReady(true);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error(err);
+        setProfile({ ...freshProfile(), name: authState.user.email.split('@')[0] });
+        setFourYearPlan(freshFourYearPlan());
+        setActiveSem('S25');
+        setOnboardingCompleted(false);
+        setRoute({ name: 'onboarding' });
+        setDataReady(true);
+      });
+
+    return () => { cancelled = true; };
+  }, [authState.status, authState.user?.uid]);
 
   // schedule always reflects the active planning semester
   const schedule = fourYearPlan[activeSem] || [];
@@ -109,28 +171,95 @@ const App = () => {
     localStorage.setItem('fr-theme', theme);
   }, [theme]);
 
+  useEffect(() => {
+    if (authState.status !== 'signedIn' || !dataReady) return undefined;
+    const timer = setTimeout(() => {
+      setSaveState('saving');
+      FRAuth.saveUserData({
+        onboardingCompleted,
+        profile,
+        fourYearPlan,
+        activeSem,
+      }).then(() => {
+        setSaveState('saved');
+        setTimeout(() => setSaveState('idle'), 1000);
+      }).catch((err) => {
+        console.error(err);
+        setSaveState('error');
+      });
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [authState.status, dataReady, onboardingCompleted, profile, fourYearPlan, activeSem]);
+
   const addCourse = (id) => {
     if (schedule.includes(id)) return;
     setSchedule((s) => [...s, id]);
   };
 
-  const ctx = { theme, setTheme, route, setRoute, profile, setProfile, fourYearPlan, setFourYearPlan, activeSem, setActiveSem };
+  const completeOnboarding = async ({ profile: nextProfile, onboarding, personalCourseMarkdown }) => {
+    setOnboardingCompleted(true);
+    setProfile(nextProfile);
+    setRoute({ name: 'planner' });
+    setSaveState('saving');
+    try {
+      await FRAuth.saveUserData({
+        onboardingCompleted: true,
+        profile: nextProfile,
+        fourYearPlan,
+        activeSem,
+        onboarding,
+        personalCourseMarkdown,
+      });
+      setSaveState('saved');
+      setTimeout(() => setSaveState('idle'), 1000);
+    } catch (err) {
+      console.error(err);
+      setSaveState('error');
+    }
+  };
+
+  const resetOnboarding = async () => {
+    await FRAuth.resetUserData();
+    const nextProfile = { ...freshProfile(), name: authState.user?.email?.split('@')[0] || '' };
+    setProfile(nextProfile);
+    setFourYearPlan(freshFourYearPlan());
+    setActiveSem('S25');
+    setOnboardingCompleted(false);
+    setRoute({ name: 'onboarding' });
+  };
+
+  const ctx = {
+    theme, setTheme, route, setRoute, profile, setProfile, fourYearPlan, setFourYearPlan, activeSem, setActiveSem,
+    authState, dataReady, onboardingCompleted, saveState,
+    completeOnboarding, resetOnboarding, signOut: FRAuth.signOut,
+  };
 
   return (
     <AppCtx.Provider value={ctx}>
-      {route.name === 'onboarding' && <Onboarding />}
-      {route.name === 'planner' && (
-        <Planner schedule={schedule} setSchedule={setSchedule} messages={messages} setMessages={setMessages} />
-      )}
-      {route.name === 'course' && (
-        <CourseDetail
-          courseId={route.id}
-          inSchedule={schedule.includes(route.id)}
-          onBack={() => setRoute({ name: 'planner' })}
-          onAdd={addCourse}
-        />
-      )}
-      {route.name === 'profile' && <ProfilePage />}
+      <AuthGate authState={authState}>
+        {!dataReady ? (
+          <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', color: 'var(--text-secondary)' }}>
+            Loading your Fireroad data...
+          </div>
+        ) : (
+          <>
+            {route.name === 'onboarding' && <Onboarding />}
+            {route.name === 'planner' && (
+              <Planner schedule={schedule} setSchedule={setSchedule} messages={messages} setMessages={setMessages} />
+            )}
+            {route.name === 'course' && (
+              <CourseDetail
+                courseId={route.id}
+                inSchedule={schedule.includes(route.id)}
+                onBack={() => setRoute({ name: 'planner' })}
+                onAdd={addCourse}
+              />
+            )}
+            {route.name === 'profile' && <ProfilePage />}
+          </>
+        )}
+      </AuthGate>
     </AppCtx.Provider>
   );
 };

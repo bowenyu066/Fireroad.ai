@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const { createApp } = require('./server/app');
 const { OPENROUTER_MODEL } = require('./server/chat/openrouter');
 

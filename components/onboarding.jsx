@@ -138,7 +138,7 @@ const toPersonalCourseMarkdown = (data) => {
 };
 
 const Onboarding = () => {
-  const { setRoute, setProfile } = useApp();
+  const { profile, setRoute, setProfile, completeOnboarding, authState, signOut } = useApp();
   const [data, setData] = useState(emptyData);
   const [active, setActive] = useState('profile');
 
@@ -224,7 +224,7 @@ const Onboarding = () => {
   const finish = () => {
     const taken = data.courses.map((course) => course.id);
     const majorLabel = MAJORS.find(([id]) => id === data.major)?.[1] || data.major;
-    setProfile((profile) => ({
+    const nextProfile = {
       ...profile,
       name: data.name || profile.name,
       major: data.major === 'undecided' ? 'Undecided' : data.major.startsWith('Course') ? data.major : `Course ${data.major}`,
@@ -236,8 +236,18 @@ const Onboarding = () => {
         skillLevel: data.skillLevel,
         notes: data.preferencesNote,
       },
-    }));
-    setRoute({ name: 'planner' });
+    };
+
+    setProfile(nextProfile);
+    if (completeOnboarding) {
+      completeOnboarding({
+        profile: nextProfile,
+        onboarding: data,
+        personalCourseMarkdown: toPersonalCourseMarkdown(data),
+      });
+    } else {
+      setRoute({ name: 'planner' });
+    }
   };
 
   const stepProps = {
@@ -250,7 +260,17 @@ const Onboarding = () => {
     <div className="fade-in" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '20px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Logo />
-        <ThemeToggle />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {authState?.user?.email && (
+            <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{authState.user.email}</span>
+          )}
+          <ThemeToggle />
+          {signOut && (
+            <button className="btn btn-ghost" onClick={signOut} style={{ padding: '8px 10px' }}>
+              <Icon name="logOut" size={14} /> Sign out
+            </button>
+          )}
+        </div>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 24px 26px' }}>
