@@ -5,6 +5,7 @@ const chatRoutes = require('./routes/chat');
 const currentRoutes = require('./routes/current');
 const healthRoutes = require('./routes/health');
 const historyRoutes = require('./routes/history');
+const onboardingRoutes = require('./onboarding/routes');
 const { getDb } = require('./history/db');
 
 const boolEnv = (name, fallback) => {
@@ -51,6 +52,7 @@ function createApp() {
   app.use('/api/chat', chatRoutes);
   app.use('/api/current', currentRoutes);
   app.use('/api/history', historyRoutes);
+  app.use('/api/onboarding', onboardingRoutes);
 
   app.use(express.static(rootDir));
 

@@ -98,7 +98,7 @@ The app has a small real backend, while transcript parsing and some student-data
 - `server/chat/prompt.js`: keep the agent focused on the active semester and reject cross-semester roadmap mutations unless explicitly requested.
 - `server/chat/tools.js`: search, course detail, recommendations, schedule summaries, suggestion sanitization, and UI action validation should resolve courses through `server/current/fireroad.js` first. Mock data is only a fallback when the current snapshot cannot load.
 - Match scores in `FRDATA.matchScores` should come from `POST /api/score-courses`
-- Transcript parsing in `Onboarding` Step 2 uses a `setTimeout` to simulate `POST /api/parse-transcript`
+- First-entry onboarding calls `/api/onboarding/*` for PDF text extraction, prompt execution, course import, and course-preference updates. The browser persists returned `personalCourseMarkdown` through Firebase client auth.
 - The workload estimate in `CourseDetail` uses `profile.calibration` (0–1 float) — calibration should eventually be computed server-side
 
 ## Key Constraints

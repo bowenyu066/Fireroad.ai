@@ -57,4 +57,6 @@ Fields include:
 
 Transcript and resume parsers can later write their results into the same user document or split them into subcollections without changing the current login flow.
 
+Current onboarding parsing is backend-assisted but frontend-persisted: `/api/onboarding/*` returns generated Markdown, parsed course rows, warnings, and metadata; the browser then saves `onboarding` and `personalCourseMarkdown` through the existing Firebase client SDK. Raw extracted transcript/resume text is used during the active onboarding session but omitted from the stored onboarding payload.
+
 Older local test data may still contain `semesterPlan`; the app reads it as a migration fallback into `fourYearPlan[activeSem]`, but new writes use the term-aware `fourYearPlan` and `activeSem` shape.
