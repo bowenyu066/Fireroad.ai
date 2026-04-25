@@ -94,6 +94,13 @@ const App = () => {
     taken: [...FRDATA.profile.taken],
     preferences: { ...FRDATA.profile.preferences },
   });
+  const personalizeAgentMessages = (nextProfile) => {
+    const firstName = String(nextProfile?.name || 'there').trim().split(/\s+/)[0] || 'there';
+    return FRDATA.agentMessages.map((message) => ({
+      ...message,
+      text: String(message.text || '').replace(/\bAlex\b/g, firstName),
+    }));
+  };
   const freshFourYearPlan = () => JSON.parse(JSON.stringify(FRDATA.fourYearPlan || {}));
   const defaultActiveSem = FRDATA.defaultActiveSem || 'S25';
   const normalizeSavedFourYearPlan = (saved, activeSem) => {
@@ -139,9 +146,11 @@ const App = () => {
         if (cancelled) return;
         const completed = Boolean(saved?.onboardingCompleted);
         const baseProfile = freshProfile();
+        const onboardingName = typeof saved?.onboarding?.name === 'string' ? saved.onboarding.name.trim() : '';
         const nextProfile = saved?.profile ? {
           ...baseProfile,
           ...saved.profile,
+          name: saved.profile.name === baseProfile.name && onboardingName ? onboardingName : saved.profile.name,
           taken: [...(saved.profile.taken || [])],
           preferences: { ...baseProfile.preferences, ...(saved.profile.preferences || {}) },
         } : {
@@ -151,6 +160,7 @@ const App = () => {
 
         const nextActiveSem = saved?.activeSem || defaultActiveSem;
         setProfile(nextProfile);
+        setMessages(personalizeAgentMessages(nextProfile));
         setActiveSem(nextActiveSem);
         setFourYearPlan(normalizeSavedFourYearPlan(saved, nextActiveSem));
         setOnboardingCompleted(completed);
@@ -160,7 +170,9 @@ const App = () => {
       .catch((err) => {
         if (cancelled) return;
         console.error(err);
-        setProfile({ ...freshProfile(), name: authState.user.email.split('@')[0] });
+        const nextProfile = { ...freshProfile(), name: authState.user.email.split('@')[0] };
+        setProfile(nextProfile);
+        setMessages(personalizeAgentMessages(nextProfile));
         setActiveSem(defaultActiveSem);
         setFourYearPlan(freshFourYearPlan());
         setOnboardingCompleted(false);
@@ -213,6 +225,7 @@ const App = () => {
   const completeOnboarding = async ({ profile: nextProfile, onboarding, personalCourseMarkdown }) => {
     setOnboardingCompleted(true);
     setProfile(nextProfile);
+    setMessages(personalizeAgentMessages(nextProfile));
     setRoute({ name: 'planner' });
     setSaveState('saving');
     try {
@@ -236,6 +249,7 @@ const App = () => {
     await FRAuth.resetUserData();
     const nextProfile = { ...freshProfile(), name: authState.user?.email?.split('@')[0] || '' };
     setProfile(nextProfile);
+    setMessages(personalizeAgentMessages(nextProfile));
     setActiveSem(defaultActiveSem);
     setFourYearPlan(freshFourYearPlan());
     setOnboardingCompleted(false);
