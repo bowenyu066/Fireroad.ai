@@ -84,6 +84,21 @@ npm run history:setup
 
 The seed script currently imports the demo `6.*` courses from `shared/mock-data.js` as canonical course rows only. Offerings, documents, attendance policies, grading policies, and extraction runs are schema-ready for future import/fetch/extract jobs.
 
+## Manual History Collection
+
+Course history is offering-first and updated manually from manifests in `data/history_manifests/`.
+
+```bash
+npm run history:import-manifest -- 6.3900
+npm run history:fetch-docs -- 6.3900
+OPENROUTER_API_KEY="your_openrouter_key" npm run history:extract-policies -- 6.3900
+
+# Or run the full manual pipeline:
+npm run history:collect -- 6.3900
+```
+
+The `/api/history/*` routes are read-only. Chat and planner flows do not write history data.
+
 ## Documentation Maintenance
 
 Multiple agents may work in this repository at the same time. Any change that alters setup, data generation, API contracts, product scope, scripts, schemas, prompt assets, or agent behavior must update the relevant docs in the same change (`README.md`, `CLAUDE.md`, prompt files, or the closest domain doc). Treat generated-data provenance, including the `data/courses.json` generation rule above, as maintained project state.

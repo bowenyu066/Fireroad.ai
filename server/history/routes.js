@@ -1,5 +1,11 @@
 const express = require('express');
 const { createHistoryRepo } = require('./repo');
+const {
+  buildCourseHistorySummary,
+  buildOfferingDetailSummary,
+  buildOfferingSummary,
+  buildSourceSummary,
+} = require('./summary');
 
 const router = express.Router();
 
@@ -23,24 +29,21 @@ router.get('/course/:courseId', asyncHandler(async (req, res) => {
   if (!course) return res.status(404).json({ error: `Course ${req.params.courseId} not found in history database.` });
 
   const aliases = repo.getCourseAliases(course.id);
-  const offerings = repo.listCourseOfferings(course.id);
-  const stats = repo.getCoursePolicyStats(course.id);
+  const offerings = repo.listCourseOfferings(course.id).map((offering) => {
+    const documents = repo.listOfferingDocuments(offering.id);
+    return buildOfferingSummary(
+      offering,
+      documents,
+      repo.getLatestAttendancePolicy(offering.id),
+      repo.getLatestGradingPolicy(offering.id),
+    );
+  });
+
   res.json({
     course,
     aliases,
-    offerings: offerings.map((offering) => ({
-      ...offering,
-      attendancePolicy: repo.getLatestAttendancePolicy(offering.id),
-      gradingPolicy: repo.getLatestGradingPolicy(offering.id),
-    })),
-    stats: {
-      offeringCount: stats.offering_count,
-      homepageCount: stats.homepage_count,
-      syllabusCount: stats.syllabus_count,
-      attendancePolicyCount: stats.attendance_policy_count,
-      gradingPolicyCount: stats.grading_policy_count,
-      hasPolicyCount: Math.max(stats.attendance_policy_count, stats.grading_policy_count),
-    },
+    summary: buildCourseHistorySummary(course, aliases, offerings),
+    offerings,
   });
 }));
 
@@ -49,9 +52,16 @@ router.get('/course/:courseId/offerings', asyncHandler(async (req, res) => {
   const course = repo.getCourseById(req.params.courseId);
   if (!course) return res.status(404).json({ error: `Course ${req.params.courseId} not found in history database.` });
 
+  const offerings = repo.listCourseOfferings(course.id).map((offering) => buildOfferingSummary(
+    offering,
+    repo.listOfferingDocuments(offering.id),
+    repo.getLatestAttendancePolicy(offering.id),
+    repo.getLatestGradingPolicy(offering.id),
+  ));
+
   res.json({
     course,
-    offerings: repo.listCourseOfferings(course.id),
+    offerings,
   });
 }));
 
@@ -60,11 +70,16 @@ router.get('/offering/:offeringId', asyncHandler(async (req, res) => {
   const offering = repo.getOfferingById(req.params.offeringId);
   if (!offering) return res.status(404).json({ error: `Offering ${req.params.offeringId} not found in history database.` });
 
+  const documents = repo.listOfferingDocuments(offering.id);
+  const attendancePolicy = repo.getLatestAttendancePolicy(offering.id);
+  const gradingPolicy = repo.getLatestGradingPolicy(offering.id);
+
   res.json({
     offering,
-    documents: repo.listOfferingDocuments(offering.id),
-    attendancePolicy: repo.getLatestAttendancePolicy(offering.id),
-    gradingPolicy: repo.getLatestGradingPolicy(offering.id),
+    summary: buildOfferingDetailSummary(offering, documents, attendancePolicy, gradingPolicy),
+    sources: documents.map((document) => buildSourceSummary(document, attendancePolicy, gradingPolicy)),
+    attendancePolicy,
+    gradingPolicy,
   });
 }));
 

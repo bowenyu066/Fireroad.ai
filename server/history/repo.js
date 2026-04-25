@@ -111,11 +111,31 @@ function createHistoryRepo(database = getDb()) {
 
     listCourseOfferings(courseId) {
       const id = normalizeCourseId(courseId);
-      return database.prepare('SELECT * FROM offerings WHERE course_id = ? ORDER BY term DESC, id DESC').all(id).map(mapOffering);
+      return database.prepare(`
+        SELECT * FROM offerings
+        WHERE course_id = ?
+        ORDER BY
+          CASE
+            WHEN term GLOB '[0-9][0-9][0-9][0-9]*' THEN substr(term, 1, 4)
+            ELSE term
+          END DESC,
+          CASE
+            WHEN term LIKE '%FA' THEN 4
+            WHEN term LIKE '%SU' THEN 3
+            WHEN term LIKE '%SP' THEN 2
+            WHEN term LIKE '%IAP' THEN 1
+            ELSE 0
+          END DESC,
+          id DESC
+      `).all(id).map(mapOffering);
     },
 
     getOfferingById(offeringId) {
       return mapOffering(database.prepare('SELECT * FROM offerings WHERE id = ?').get(Number(offeringId)));
+    },
+
+    getOfferingByCourseTerm(courseId, term) {
+      return mapOffering(database.prepare('SELECT * FROM offerings WHERE course_id = ? AND term = ?').get(normalizeCourseId(courseId), normalizeTerm(term)));
     },
 
     listOfferingDocuments(offeringId) {
@@ -181,12 +201,65 @@ function createHistoryRepo(database = getDb()) {
       return this.getCourseById(id);
     },
 
+    upsertAlias(alias) {
+      const aliasId = normalizeCourseId(alias.aliasId || alias.alias_id || alias.id);
+      const courseId = normalizeCourseId(alias.courseId || alias.course_id);
+      if (!aliasId || !courseId) return null;
+
+      database.prepare(`
+        INSERT INTO course_aliases (alias_id, course_id, valid_from_term, valid_to_term, source)
+        VALUES (@alias_id, @course_id, @valid_from_term, @valid_to_term, @source)
+        ON CONFLICT(alias_id) DO UPDATE SET
+          course_id = excluded.course_id,
+          valid_from_term = excluded.valid_from_term,
+          valid_to_term = excluded.valid_to_term,
+          source = excluded.source
+      `).run({
+        alias_id: aliasId,
+        course_id: courseId,
+        valid_from_term: alias.validFromTerm || alias.valid_from_term || null,
+        valid_to_term: alias.validToTerm || alias.valid_to_term || null,
+        source: alias.source || 'manifest',
+      });
+
+      return mapAlias(database.prepare('SELECT * FROM course_aliases WHERE alias_id = ?').get(aliasId));
+    },
+
     // Future import_offering_manifest can call this instead of writing SQL in scripts.
     upsertOffering(offering) {
       const courseId = normalizeCourseId(offering.courseId || offering.course_id);
       const term = normalizeTerm(offering.term);
       const existing = database.prepare('SELECT id FROM offerings WHERE course_id = ? AND term = ?').get(courseId, term);
-      if (existing) return this.getOfferingById(existing.id);
+      const row = {
+        course_id: courseId,
+        term,
+        title_snapshot: offering.titleSnapshot || offering.title_snapshot || null,
+        units_snapshot: offering.unitsSnapshot || offering.units_snapshot || null,
+        instructor_text: offering.instructorText || offering.instructor_text || null,
+        has_homepage: typeof offering.hasHomepage === 'boolean'
+          ? Number(offering.hasHomepage)
+          : offering.has_homepage ?? (offering.homepageUrl || offering.homepage_url ? 1 : null),
+        homepage_url: offering.homepageUrl || offering.homepage_url || null,
+        syllabus_url: offering.syllabusUrl || offering.syllabus_url || null,
+        ocw_url: offering.ocwUrl || offering.ocw_url || null,
+        notes: offering.notes || null,
+      };
+
+      if (existing) {
+        database.prepare(`
+          UPDATE offerings SET
+            title_snapshot = @title_snapshot,
+            units_snapshot = @units_snapshot,
+            instructor_text = @instructor_text,
+            has_homepage = @has_homepage,
+            homepage_url = @homepage_url,
+            syllabus_url = @syllabus_url,
+            ocw_url = @ocw_url,
+            notes = @notes
+          WHERE id = @id
+        `).run({ ...row, id: existing.id });
+        return this.getOfferingById(existing.id);
+      }
 
       const result = database.prepare(`
         INSERT INTO offerings (
@@ -198,22 +271,27 @@ function createHistoryRepo(database = getDb()) {
           @has_homepage, @homepage_url, @syllabus_url, @ocw_url, @notes
         )
       `).run({
-        course_id: courseId,
-        term,
-        title_snapshot: offering.titleSnapshot || offering.title_snapshot || null,
-        units_snapshot: offering.unitsSnapshot || offering.units_snapshot || null,
-        instructor_text: offering.instructorText || offering.instructor_text || null,
-        has_homepage: typeof offering.hasHomepage === 'boolean' ? Number(offering.hasHomepage) : offering.has_homepage ?? null,
-        homepage_url: offering.homepageUrl || offering.homepage_url || null,
-        syllabus_url: offering.syllabusUrl || offering.syllabus_url || null,
-        ocw_url: offering.ocwUrl || offering.ocw_url || null,
-        notes: offering.notes || null,
+        ...row,
       });
       return this.getOfferingById(result.lastInsertRowid);
     },
 
+    getDocumentByChecksum(checksum) {
+      if (!checksum) return null;
+      return mapDocument(database.prepare('SELECT * FROM documents WHERE checksum = ? ORDER BY id DESC LIMIT 1').get(checksum));
+    },
+
+    getOfferingDocumentByChecksum(offeringId, checksum) {
+      if (!checksum) return null;
+      return mapDocument(database.prepare('SELECT * FROM documents WHERE offering_id = ? AND checksum = ? ORDER BY id DESC LIMIT 1').get(Number(offeringId), checksum));
+    },
+
     // Future fetch_documents can call this after downloading/archiving source docs.
     createDocument(document) {
+      const checksum = document.checksum || null;
+      const existing = checksum ? this.getOfferingDocumentByChecksum(document.offeringId || document.offering_id, checksum) : null;
+      if (existing) return existing;
+
       const result = database.prepare(`
         INSERT INTO documents (
           offering_id, doc_type, url, archived_url, fetched_at,
@@ -230,14 +308,98 @@ function createHistoryRepo(database = getDb()) {
         archived_url: document.archivedUrl || document.archived_url || null,
         fetched_at: document.fetchedAt || document.fetched_at || new Date().toISOString(),
         content_type: document.contentType || document.content_type || null,
-        checksum: document.checksum || null,
+        checksum,
         raw_html: document.rawHtml || document.raw_html || null,
         raw_text: document.rawText || document.raw_text || null,
       });
       return mapDocument(database.prepare('SELECT * FROM documents WHERE id = ?').get(result.lastInsertRowid));
     },
 
-    // Future extract_policies should insert extraction_runs and then reviewed policy rows.
+    createExtractionRun(run) {
+      const result = database.prepare(`
+        INSERT INTO extraction_runs (
+          document_id, model, prompt_version, raw_model_output,
+          parsed_json, status, created_at
+        )
+        VALUES (
+          @document_id, @model, @prompt_version, @raw_model_output,
+          @parsed_json, @status, @created_at
+        )
+      `).run({
+        document_id: Number(run.documentId || run.document_id),
+        model: run.model || null,
+        prompt_version: run.promptVersion || run.prompt_version || null,
+        raw_model_output: run.rawModelOutput || run.raw_model_output || null,
+        parsed_json: run.parsedJson || run.parsed_json || null,
+        status: run.status || 'unknown',
+        created_at: run.createdAt || run.created_at || new Date().toISOString(),
+      });
+      return database.prepare('SELECT * FROM extraction_runs WHERE id = ?').get(result.lastInsertRowid);
+    },
+
+    createAttendancePolicy(policy) {
+      const result = database.prepare(`
+        INSERT INTO attendance_policies (
+          offering_id, attendance_required, attendance_counts_toward_grade,
+          attendance_notes, evidence_document_id, evidence_text,
+          confidence, review_status
+        )
+        VALUES (
+          @offering_id, @attendance_required, @attendance_counts_toward_grade,
+          @attendance_notes, @evidence_document_id, @evidence_text,
+          @confidence, @review_status
+        )
+      `).run({
+        offering_id: Number(policy.offeringId || policy.offering_id),
+        attendance_required: policy.attendanceRequired || policy.attendance_required || 'unknown',
+        attendance_counts_toward_grade: policy.attendanceCountsTowardGrade || policy.attendance_counts_toward_grade || 'unknown',
+        attendance_notes: policy.attendanceNotes || policy.attendance_notes || null,
+        evidence_document_id: policy.evidenceDocumentId || policy.evidence_document_id || null,
+        evidence_text: policy.evidenceText || policy.evidence_text || null,
+        confidence: policy.confidence ?? null,
+        review_status: policy.reviewStatus || policy.review_status || 'auto',
+      });
+      return mapAttendancePolicy(database.prepare('SELECT * FROM attendance_policies WHERE id = ?').get(result.lastInsertRowid));
+    },
+
+    createGradingPolicy(policy) {
+      const result = database.prepare(`
+        INSERT INTO grading_policies (
+          offering_id, letter_grade, has_participation_component,
+          participation_weight, homework_weight, project_weight, lab_weight,
+          quiz_weight, midterm_weight, final_weight, drop_lowest_rule_text,
+          late_policy_text, collaboration_policy_text, grading_notes,
+          evidence_document_id, evidence_text, confidence, review_status
+        )
+        VALUES (
+          @offering_id, @letter_grade, @has_participation_component,
+          @participation_weight, @homework_weight, @project_weight, @lab_weight,
+          @quiz_weight, @midterm_weight, @final_weight, @drop_lowest_rule_text,
+          @late_policy_text, @collaboration_policy_text, @grading_notes,
+          @evidence_document_id, @evidence_text, @confidence, @review_status
+        )
+      `).run({
+        offering_id: Number(policy.offeringId || policy.offering_id),
+        letter_grade: policy.letterGrade || policy.letter_grade || 'unknown',
+        has_participation_component: policy.hasParticipationComponent || policy.has_participation_component || 'unknown',
+        participation_weight: policy.participationWeight ?? policy.participation_weight ?? null,
+        homework_weight: policy.homeworkWeight ?? policy.homework_weight ?? null,
+        project_weight: policy.projectWeight ?? policy.project_weight ?? null,
+        lab_weight: policy.labWeight ?? policy.lab_weight ?? null,
+        quiz_weight: policy.quizWeight ?? policy.quiz_weight ?? null,
+        midterm_weight: policy.midtermWeight ?? policy.midterm_weight ?? null,
+        final_weight: policy.finalWeight ?? policy.final_weight ?? null,
+        drop_lowest_rule_text: policy.dropLowestRuleText || policy.drop_lowest_rule_text || null,
+        late_policy_text: policy.latePolicyText || policy.late_policy_text || null,
+        collaboration_policy_text: policy.collaborationPolicyText || policy.collaboration_policy_text || null,
+        grading_notes: policy.gradingNotes || policy.grading_notes || null,
+        evidence_document_id: policy.evidenceDocumentId || policy.evidence_document_id || null,
+        evidence_text: policy.evidenceText || policy.evidence_text || null,
+        confidence: policy.confidence ?? null,
+        review_status: policy.reviewStatus || policy.review_status || 'auto',
+      });
+      return mapGradingPolicy(database.prepare('SELECT * FROM grading_policies WHERE id = ?').get(result.lastInsertRowid));
+    },
   };
 }
 

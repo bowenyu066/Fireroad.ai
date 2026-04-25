@@ -242,7 +242,12 @@ const renderMarkdown = (value) => {
   };
   const flushList = () => {
     if (!listItems.length) return;
-    blocks.push(`<ul>${listItems.map((item) => `<li>${renderInlineMarkdown(item)}</li>`).join('')}</ul>`);
+    blocks.push(`<ul>${listItems.map((item) => {
+      const detail = item.details.length
+        ? `<div class="chat-list-detail">${item.details.map(renderInlineMarkdown).join('<br />')}</div>`
+        : '';
+      return `<li>${renderInlineMarkdown(item.main)}${detail}</li>`;
+    }).join('')}</ul>`);
     listItems = [];
   };
 
@@ -254,10 +259,24 @@ const renderMarkdown = (value) => {
       return;
     }
 
-    const bullet = trimmed.match(/^[-*]\s+(.+)$/);
+    const heading = trimmed.match(/^(#{1,4})\s+(.+)$/);
+    if (heading) {
+      flushParagraph();
+      flushList();
+      const level = Math.min(4, heading[1].length);
+      blocks.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
+      return;
+    }
+
+    const bullet = trimmed.match(/^(?:[-*]|\d+\.)\s+(.+)$/);
     if (bullet) {
       flushParagraph();
-      listItems.push(bullet[1]);
+      listItems.push({ main: bullet[1], details: [] });
+      return;
+    }
+
+    if (/^\s{2,}/.test(line) && listItems.length) {
+      listItems[listItems.length - 1].details.push(trimmed);
       return;
     }
 

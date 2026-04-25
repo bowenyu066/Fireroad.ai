@@ -1,0 +1,21 @@
+{
+  "courseId": "6.3900",
+  "aliases": ["6.036"],
+  "offerings": [
+    {
+      "term": "2024FA",
+      "titleSnapshot": "Introduction to Machine Learning",
+      "instructorText": "S. Shen",
+      "homepageUrl": "https://fireroad.mit.edu/courses/lookup/6.3900",
+      "archiveUrl": "https://web.archive.org/web/https://introml.mit.edu/",
+      "notes": "Starter manifest entry for the offering-first history pipeline. Replace or extend with verified syllabus/homepage URLs."
+    },
+    {
+      "term": "2024SP",
+      "titleSnapshot": "Introduction to Machine Learning",
+      "instructorText": "S. Shen",
+      "homepageUrl": "https://fireroad.mit.edu/courses/lookup/6.3900",
+      "notes": "Current catalog snapshot URL is included as a lightweight source until verified course-specific pages are added."
+    }
+  ]
+}

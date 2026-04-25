@@ -238,7 +238,7 @@ const HistoricalCourseView = ({ courseId }) => {
     );
   }
 
-  const { course, stats, offerings = [] } = state.payload;
+  const { course, summary = {}, offerings = [] } = state.payload;
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 32px' }}>
@@ -247,17 +247,21 @@ const HistoricalCourseView = ({ courseId }) => {
           <div className="eyebrow" style={{ marginBottom: 10 }}>Read-only history</div>
           <h1 className="display" style={{ fontSize: 32, margin: 0 }}>{course.id} Historical Context</h1>
           <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: 680 }}>
-            Past offerings, syllabi, attendance, and grading evidence are reference signals only. They do not create future-semester planning actions.
+            {summary.topSummaryText || 'Past offerings, syllabi, attendance, and grading evidence are reference signals only. They do not create future-semester planning actions.'}
+          </p>
+          <p className="mono" style={{ color: 'var(--text-tertiary)', fontSize: 12, marginTop: 10 }}>
+            Coverage {summary.coverageLevel || 'unknown'}
+            {summary.earliestTerm && summary.latestTerm ? ` · ${summary.earliestTerm} to ${summary.latestTerm}` : ''}
           </p>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 10, marginBottom: 26 }}>
-        <Stat label="Offerings" value={stats.offeringCount} />
-        <Stat label="Homepages" value={stats.homepageCount} />
-        <Stat label="Syllabi" value={stats.syllabusCount} />
-        <Stat label="Attendance" value={stats.attendancePolicyCount} />
-        <Stat label="Grading" value={stats.gradingPolicyCount} />
+        <Stat label="Offerings" value={summary.offeringCount} />
+        <Stat label="Homepages" value={summary.homepageCount} />
+        <Stat label="Syllabi" value={summary.syllabusCount} />
+        <Stat label="Attendance" value={summary.attendancePolicyCount} />
+        <Stat label="Grading" value={summary.gradingPolicyCount} />
       </div>
 
       <Section title="Offerings">
@@ -276,41 +280,114 @@ const HistoricalCourseView = ({ courseId }) => {
 };
 
 const OfferingCard = ({ offering }) => {
-  const attendance = offering.attendancePolicy;
-  const grading = offering.gradingPolicy;
+  const [expanded, setExpanded] = useState(false);
+  const [detail, setDetail] = useState({ loading: false, payload: null, error: '' });
+
+  useEffect(() => {
+    if (!expanded || detail.payload || detail.loading) return undefined;
+    let cancelled = false;
+    setDetail({ loading: true, payload: null, error: '' });
+    fetch(`/api/history/offering/${encodeURIComponent(offering.id)}`)
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error(`Offering detail unavailable (${response.status})`)))
+      .then((payload) => {
+        if (!cancelled) setDetail({ loading: false, payload, error: '' });
+      })
+      .catch((error) => {
+        if (!cancelled) setDetail({ loading: false, payload: null, error: error.message });
+      });
+    return () => { cancelled = true; };
+  }, [expanded, offering.id]);
+
   return (
     <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: 18 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginBottom: 12 }}>
         <div>
           <div className="mono" style={{ fontSize: 13, fontWeight: 600 }}>{offering.term}</div>
           <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>{offering.titleSnapshot || offering.courseId}</div>
+          <div style={{ color: 'var(--text-tertiary)', fontSize: 12, marginTop: 6 }}>
+            Instructor: {offering.instructorText || 'unknown'}
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          {(offering.sourceTypes || []).map((type) => <SourceBadge key={type}>{type}</SourceBadge>)}
           {offering.homepageUrl && <HistoryLink href={offering.homepageUrl}>Homepage</HistoryLink>}
           {offering.syllabusUrl && <HistoryLink href={offering.syllabusUrl}>Syllabus</HistoryLink>}
           {offering.ocwUrl && <HistoryLink href={offering.ocwUrl}>OCW</HistoryLink>}
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      <div style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.55 }}>
+        {offering.offeringSummaryText || 'No offering summary available yet.'}
+      </div>
+      {offering.notes && (
+        <div style={{ marginTop: 10, color: 'var(--text-tertiary)', fontSize: 12, lineHeight: 1.5 }}>
+          {offering.notes}
+        </div>
+      )}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 14 }}>
+        <SourceBadge>{offering.sourceCount || 0} sources</SourceBadge>
+        <SourceBadge>{offering.hasAttendancePolicy ? 'attendance extracted' : 'attendance unknown'}</SourceBadge>
+        <SourceBadge>{offering.hasGradingPolicy ? 'grading extracted' : 'grading unknown'}</SourceBadge>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          onClick={() => setExpanded((value) => !value)}
+          style={{ marginLeft: 'auto', padding: '6px 10px', fontSize: 12 }}
+        >
+          {expanded ? 'Hide sources' : 'Show sources'}
+        </button>
+      </div>
+      {expanded && <OfferingDetailPanel state={detail} />}
+    </div>
+  );
+};
+
+const OfferingDetailPanel = ({ state }) => {
+  if (state.loading) return <div style={{ marginTop: 14, color: 'var(--text-secondary)', fontSize: 12 }}>Loading sources...</div>;
+  if (state.error) return <div style={{ marginTop: 14, color: 'var(--warning)', fontSize: 12 }}>{state.error}</div>;
+  if (!state.payload) return null;
+
+  const { sources = [], attendancePolicy, gradingPolicy } = state.payload;
+  return (
+    <div style={{ marginTop: 16, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
         <PolicyBlock
           title="Attendance"
-          primary={attendance ? `Required: ${attendance.attendanceRequired || 'unknown'}` : 'Unknown'}
-          secondary={attendance?.attendanceNotes || attendance?.attendanceCountsTowardGrade || ''}
-          evidence={attendance?.evidenceText}
-          confidence={attendance?.confidence}
-          reviewStatus={attendance?.reviewStatus}
+          primary={attendancePolicy ? `Required: ${attendancePolicy.attendanceRequired || 'unknown'}` : 'No extracted attendance policy yet'}
+          secondary={attendancePolicy?.attendanceNotes || attendancePolicy?.attendanceCountsTowardGrade || ''}
+          evidence={attendancePolicy?.evidenceText}
+          confidence={attendancePolicy?.confidence}
+          reviewStatus={attendancePolicy?.reviewStatus}
         />
         <PolicyBlock
           title="Grading"
-          primary={grading ? participationText(grading) : 'Unknown'}
-          secondary={grading?.gradingNotes || grading?.latePolicyText || grading?.collaborationPolicyText || ''}
-          evidence={grading?.evidenceText}
-          confidence={grading?.confidence}
-          reviewStatus={grading?.reviewStatus}
+          primary={gradingPolicy ? participationText(gradingPolicy) : 'No extracted grading policy yet'}
+          secondary={gradingPolicy?.gradingNotes || gradingPolicy?.latePolicyText || gradingPolicy?.collaborationPolicyText || ''}
+          evidence={gradingPolicy?.evidenceText}
+          confidence={gradingPolicy?.confidence}
+          reviewStatus={gradingPolicy?.reviewStatus}
         />
       </div>
-      <div style={{ marginTop: 12, color: 'var(--text-secondary)', fontSize: 12 }}>
-        Instructor: {offering.instructorText || 'unknown'}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {sources.length ? sources.map((source) => (
+          <div key={source.id} style={{ border: '1px solid var(--border)', borderRadius: 8, padding: 12, background: 'var(--bg)' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+              <SourceBadge>{source.docType || 'source'}</SourceBadge>
+              {source.url && <HistoryLink href={source.url}>Open</HistoryLink>}
+              {source.archivedUrl && <HistoryLink href={source.archivedUrl}>Archive</HistoryLink>}
+              <span className="mono" style={{ color: 'var(--text-tertiary)', fontSize: 11, marginLeft: 'auto' }}>
+                {source.contentType || 'unknown type'}
+              </span>
+            </div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.5 }}>
+              {source.sourceSummaryText || 'Source captured.'}
+            </div>
+            {source.evidencePreview && (
+              <div style={{ color: 'var(--text-tertiary)', fontSize: 12, lineHeight: 1.5, marginTop: 8, borderLeft: '2px solid var(--border-strong)', paddingLeft: 10 }}>
+                {source.evidencePreview}
+              </div>
+            )}
+          </div>
+        )) : <Muted>No source documents fetched for this offering yet.</Muted>}
       </div>
     </div>
   );
@@ -379,6 +456,20 @@ const HistoryLink = ({ href, children }) => (
   <a href={href} target="_blank" rel="noreferrer" className="btn btn-ghost" style={{ padding: '5px 9px', fontSize: 12 }}>
     {children}
   </a>
+);
+
+const SourceBadge = ({ children }) => (
+  <span className="mono" style={{
+    fontSize: 11,
+    padding: '4px 7px',
+    borderRadius: 6,
+    border: '1px solid var(--border)',
+    color: 'var(--text-secondary)',
+    background: 'var(--bg)',
+    whiteSpace: 'nowrap',
+  }}>
+    {children}
+  </span>
 );
 
 const DetailLoading = ({ label }) => (
