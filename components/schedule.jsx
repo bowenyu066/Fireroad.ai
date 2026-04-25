@@ -182,8 +182,7 @@ const CalendarView = ({ courses }) => {
 
 // ============== Schedule panel (left) ==============
 const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, viewMode, setViewMode }) => {
-  const { fourYearPlan, setFourYearPlan } = useApp();
-  const [activeSem, setActiveSem] = useState('S25');
+  const { fourYearPlan, setFourYearPlan, activeSem, setActiveSem } = useApp();
   const [showSemPicker, setShowSemPicker] = useState(false);
   const [showCoursePicker, setShowCoursePicker] = useState(false);
 
@@ -384,14 +383,11 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, viewM
 };
 
 // ============== 4-Year Plan view ==============
-const FourYearPlan = ({ schedule }) => {
-  const { fourYearPlan, setFourYearPlan } = useApp();
+const FourYearPlan = () => {
+  const { fourYearPlan, setFourYearPlan, activeSem, setActiveSem } = useApp();
   const [addingTo, setAddingTo] = useState(null);
 
-  const semCourses = (sem) => {
-    if (sem === 'S25') return schedule.map((id) => FRDATA.getCourse(id)).filter(Boolean);
-    return (fourYearPlan[sem] || []).map((id) => FRDATA.getCourse(id)).filter(Boolean);
-  };
+  const semCourses = (sem) => (fourYearPlan[sem] || []).map((id) => FRDATA.getCourse(id)).filter(Boolean);
 
   const removeCourseFrom = (sem, id) =>
     setFourYearPlan(p => ({ ...p, [sem]: (p[sem] || []).filter(x => x !== id) }));
@@ -430,21 +426,26 @@ const FourYearPlan = ({ schedule }) => {
         {FRDATA.semesterOrder.map((sem) => {
           const courses = semCourses(sem);
           const units = courses.reduce((s, c) => s + c.units, 0);
-          const isCurrent = sem === 'S25';
-          const isPast = ['F23', 'S24'].includes(sem);
+          const isActive = sem === activeSem;
           return (
             <div key={sem} style={{
               background: 'var(--surface)',
-              border: '1px solid ' + (isCurrent ? 'var(--accent)' : 'var(--border)'),
+              border: '1px solid ' + (isActive ? 'var(--accent)' : 'var(--border)'),
               borderRadius: 'var(--r-md)', padding: 12, minHeight: 280,
-              opacity: isPast ? 0.7 : 1,
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span className="mono" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+              <button
+                onClick={() => { setActiveSem(sem); setAddingTo(null); }}
+                style={{
+                  width: '100%', display: 'flex', justifyContent: 'space-between',
+                  alignItems: 'center', marginBottom: 10, textAlign: 'left',
+                }}
+                title={`Plan ${FRDATA.semesterLabels[sem]}`}
+              >
+                <span className="mono" style={{ fontSize: 11, color: isActive ? 'var(--accent)' : 'var(--text-secondary)', fontWeight: isActive ? 600 : 400 }}>
                   {FRDATA.semesterLabels[sem]}
                 </span>
-                {isCurrent && <span className="mono" style={{ fontSize: 9, color: 'var(--accent)' }}>NOW</span>}
-              </div>
+                {isActive && <span className="mono" style={{ fontSize: 9, color: 'var(--accent)' }}>PLANNING</span>}
+              </button>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minHeight: 200 }}>
                 {courses.map((c) => (
@@ -492,7 +493,7 @@ const FourYearPlan = ({ schedule }) => {
                     }}
                   >
                     <option value="">Pick a course…</option>
-                    {FRDATA.catalog.filter(c => !c._stub && !(sem === 'S25' ? schedule : (fourYearPlan[sem] || [])).includes(c.id)).map(c => (
+                    {FRDATA.catalog.filter(c => !c._stub && !(fourYearPlan[sem] || []).includes(c.id)).map(c => (
                       <option key={c.id} value={c.id}>{c.id} — {c.name}</option>
                     ))}
                   </select>

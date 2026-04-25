@@ -50,7 +50,7 @@ const Planner = ({ schedule, setSchedule, messages, setMessages }) => {
           </>
         ) : (
           <div style={{ flex: 1, minWidth: 0 }}>
-            <FourYearPlan schedule={schedule} />
+            <FourYearPlan />
           </div>
         )}
       </div>
@@ -63,13 +63,14 @@ const App = () => {
   const [route, setRoute] = useState({ name: 'onboarding' });
   const [profile, setProfile] = useState(FRDATA.profile);
   const [fourYearPlan, setFourYearPlan] = useState(FRDATA.fourYearPlan);
+  const [activeSem, setActiveSem] = useState('S25');
   const [messages, setMessages] = useState(FRDATA.agentMessages);
 
-  // S25 is the live planning semester — stored inside fourYearPlan for consistency
-  const schedule = fourYearPlan['S25'] || [];
+  // schedule always reflects the active planning semester
+  const schedule = fourYearPlan[activeSem] || [];
   const setSchedule = (updater) => setFourYearPlan(p => {
-    const cur = p['S25'] || [];
-    return { ...p, S25: typeof updater === 'function' ? updater(cur) : updater };
+    const cur = p[activeSem] || [];
+    return { ...p, [activeSem]: typeof updater === 'function' ? updater(cur) : updater };
   });
 
   useEffect(() => {
@@ -82,7 +83,7 @@ const App = () => {
     setSchedule((s) => [...s, id]);
   };
 
-  const ctx = { theme, setTheme, route, setRoute, profile, setProfile, fourYearPlan, setFourYearPlan };
+  const ctx = { theme, setTheme, route, setRoute, profile, setProfile, fourYearPlan, setFourYearPlan, activeSem, setActiveSem };
 
   return (
     <AppCtx.Provider value={ctx}>
