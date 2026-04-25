@@ -26,7 +26,7 @@ function latestAssistantBeforeLastUser(messages) {
   return [...beforeLastUser].reverse().find((message) => message && message.role !== 'user') || null;
 }
 
-function buildModelMessages(messages, profile, schedule) {
+function buildModelMessages(messages, profile, schedule, activeSem, planningTermLabel) {
   const state = {
     profile: {
       name: profile.name,
@@ -37,7 +37,10 @@ function buildModelMessages(messages, profile, schedule) {
       remainingReqs: profile.remainingReqs,
       preferences: profile.preferences,
     },
-    currentSchedule: schedule,
+    activeSem,
+    planningTermLabel,
+    activeSemesterSchedule: schedule,
+    planningScope: 'active_semester_only',
   };
 
   const conversation = asArray(messages)
@@ -69,7 +72,7 @@ function parseToolArguments(rawArgs) {
   }
 }
 
-function executeToolCall(toolCall, context) {
+async function executeToolCall(toolCall, context) {
   const name = toolCall.function && toolCall.function.name;
   const args = parseToolArguments(toolCall.function && toolCall.function.arguments);
   const handler = toolHandlers[name];
@@ -94,7 +97,7 @@ function executeToolCall(toolCall, context) {
     return {
       name,
       args,
-      result: handler(args, context),
+      result: await handler(args, context),
     };
   } catch (error) {
     return {
@@ -151,6 +154,9 @@ function explicitScheduleChangeRequested(text, messages = []) {
   if (isAffirmativeScheduleConfirmation(text, messages)) return true;
 
   const lower = String(text || '').toLowerCase();
+  if (/\b(junior|senior|sophomore|freshman)\s+(fall|spring)|\b(fall|spring)\s+\d{4}|\bnext\s+year\b|\b4[- ]?year\b|\bfour[- ]?year\b|\broadmap\b/.test(lower)) {
+    return false;
+  }
   if (/\b(should|could|would|can)\s+i\s+(add|put|include|enroll|register|remove|drop|delete|swap|replace)\b/.test(lower)) {
     return false;
   }
@@ -159,10 +165,10 @@ function explicitScheduleChangeRequested(text, messages = []) {
   return hasMutationVerb && hasCourseOrScheduleContext;
 }
 
-function extractRequestedUiActions(text, schedule, messages = []) {
+async function extractRequestedUiActions(text, schedule, messages = []) {
   if (isAffirmativeScheduleConfirmation(text, messages)) {
     const previousAgent = latestAssistantBeforeLastUser(messages);
-    const suggestions = sanitizeSuggestions(previousAgent && previousAgent.suggestions);
+    const suggestions = await sanitizeSuggestions(previousAgent && previousAgent.suggestions);
     const lower = String(text || '').toLowerCase();
     const ids = /\b(all|both)\b/.test(lower) ? suggestions : suggestions.slice(0, 1);
     return ids.map((courseId) => ({ type: 'add_course', courseId }));
@@ -198,29 +204,33 @@ function toolCatalogCourseIds() {
     .map((course) => course.id);
 }
 
-function validateFinalActions(actions, context, debug, allowActions) {
+async function validateFinalActions(actions, context, debug, allowActions) {
   if (!allowActions) return [];
 
   let workingSchedule = [...context.schedule];
   const validated = [];
 
-  asArray(actions).forEach((action) => {
-    const validation = validateUiAction(action, workingSchedule);
+  for (const action of asArray(actions)) {
+    const validation = await validateUiAction(action, workingSchedule);
     debug.finalActionValidation.push({ action, validation });
-    if (!validation.ok) return;
+    if (!validation.ok) continue;
 
     validated.push(validation.action);
     if (validation.action.type === 'add_course') {
       workingSchedule.push(validation.action.courseId);
-    } else {
+    } else if (validation.action.type === 'remove_course') {
       workingSchedule = workingSchedule.filter((id) => id !== validation.action.courseId);
+    } else if (validation.action.type === 'replace_course') {
+      workingSchedule = workingSchedule
+        .filter((id) => id !== validation.action.removeCourseId)
+        .concat(validation.action.courseId);
     }
-  });
+  }
 
   return validated;
 }
 
-function buildApiResponse(content, context, debug, requestMessages) {
+async function buildApiResponse(content, context, debug, requestMessages) {
   const { parsed, raw } = parseFinalJson(content);
   const final = parsed && typeof parsed === 'object'
     ? {
@@ -230,11 +240,11 @@ function buildApiResponse(content, context, debug, requestMessages) {
     : { text: raw };
   const latestText = latestUserText(requestMessages);
   const allowActions = explicitScheduleChangeRequested(latestText, requestMessages);
-  let uiActions = validateFinalActions(final.uiActions, context, debug, allowActions);
+  let uiActions = await validateFinalActions(final.uiActions, context, debug, allowActions);
   if (allowActions && uiActions.length === 0) {
-    const fallbackActions = extractRequestedUiActions(latestText, context.schedule, requestMessages);
+    const fallbackActions = await extractRequestedUiActions(latestText, context.schedule, requestMessages);
     debug.fallbackActionExtraction = fallbackActions;
-    uiActions = validateFinalActions(fallbackActions, context, debug, true);
+    uiActions = await validateFinalActions(fallbackActions, context, debug, true);
   }
   const text = String(final.text || raw || 'I found a grounded answer from the course data, but could not format it cleanly.').trim();
 
@@ -242,18 +252,20 @@ function buildApiResponse(content, context, debug, requestMessages) {
     message: {
       role: 'agent',
       text,
-      suggestions: sanitizeSuggestions(final.suggestions),
+      suggestions: await sanitizeSuggestions(final.suggestions),
     },
     uiActions,
     debug,
   };
 }
 
-function buildLocalActionFallback(body = {}, reason) {
+async function buildLocalActionFallback(body = {}, reason) {
   const messages = asArray(body.messages);
   const context = {
     profile: normalizeProfile(body.profile),
     schedule: normalizeSchedule(body.schedule),
+    activeSem: body.activeSem || null,
+    planningTermLabel: body.planningTermLabel || null,
   };
   const latestText = latestUserText(messages);
   if (!explicitScheduleChangeRequested(latestText, messages)) return null;
@@ -264,20 +276,20 @@ function buildLocalActionFallback(body = {}, reason) {
     finalActionValidation: [],
     localFallbackReason: reason ? publicErrorMessage(reason) : 'Model unavailable',
   };
-  const requestedActions = extractRequestedUiActions(latestText, context.schedule, messages);
-  const uiActions = validateFinalActions(requestedActions, context, debug, true);
+  const requestedActions = await extractRequestedUiActions(latestText, context.schedule, messages);
+  const uiActions = await validateFinalActions(requestedActions, context, debug, true);
   if (!uiActions.length) return null;
 
   const descriptions = uiActions.map((action) => {
     const course = getCourse(action.courseId);
-    const verb = action.type === 'add_course' ? 'add' : 'remove';
-    return `${verb} ${course.id} (${course.name})`;
+    const verb = action.type === 'add_course' ? 'add' : action.type === 'remove_course' ? 'remove' : 'replace with';
+    return `${verb} ${action.courseId}${course ? ` (${course.name})` : ''}`;
   });
 
   return {
     message: {
       role: 'agent',
-      text: `The model is unavailable, but I validated this schedule change locally: ${descriptions.join(', ')}.`,
+      text: `The model is unavailable, but I validated this active-semester schedule change locally: ${descriptions.join(', ')}.`,
       suggestions: [],
     },
     uiActions,
@@ -285,10 +297,12 @@ function buildLocalActionFallback(body = {}, reason) {
   };
 }
 
-async function runAgentChat({ messages, profile, schedule }) {
+async function runAgentChat({ messages, profile, schedule, activeSem, planningTermLabel }) {
   const context = {
     profile: normalizeProfile(profile),
     schedule: normalizeSchedule(schedule),
+    activeSem: activeSem || null,
+    planningTermLabel: planningTermLabel || null,
   };
   const debug = {
     model: OPENROUTER_MODEL,
@@ -296,7 +310,7 @@ async function runAgentChat({ messages, profile, schedule }) {
     finalActionValidation: [],
   };
 
-  const modelMessages = buildModelMessages(messages, context.profile, context.schedule);
+  const modelMessages = buildModelMessages(messages, context.profile, context.schedule, context.activeSem, context.planningTermLabel);
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
     const completion = await callOpenRouter({
@@ -323,15 +337,15 @@ async function runAgentChat({ messages, profile, schedule }) {
       tool_calls: toolCalls,
     });
 
-    toolCalls.forEach((toolCall) => {
-      const executed = executeToolCall(toolCall, context);
+    for (const toolCall of toolCalls) {
+      const executed = await executeToolCall(toolCall, context);
       debug.toolCalls.push(executed);
       modelMessages.push({
         role: 'tool',
         tool_call_id: toolCall.id,
         content: JSON.stringify(executed.result),
       });
-    });
+    }
   }
 
   modelMessages.push({

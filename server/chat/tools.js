@@ -1,20 +1,23 @@
 const mockData = require('../../shared/mock-data.js');
+const { fetchCurrentCourse, searchCurrentCourses } = require('../current/fireroad');
+const { normalizeCourseId } = require('../current/normalize');
+const { createHistoryRepo } = require('../history/repo');
 
 const asArray = (value) => (Array.isArray(value) ? value : []);
 const unique = (items) => [...new Set(items)];
 
 const getCourse = (id) => {
-  const normalized = String(id || '').trim().toLowerCase();
-  return mockData.catalog.find((course) => course.id.toLowerCase() === normalized);
+  const normalized = normalizeCourseId(id);
+  return mockData.catalog.find((course) => normalizeCourseId(course.id) === normalized);
 };
 
-const getMatch = (id) => mockData.matchScores[id] || { total: 0, interest: 0, workload: 0, reqValue: 0 };
+const getMatch = (id) => mockData.matchScores[normalizeCourseId(id)] || { total: 0, interest: 0, workload: 0, reqValue: 0 };
 
 function normalizeSchedule(schedule) {
   const ids = [];
   asArray(schedule).forEach((id) => {
-    const course = getCourse(id);
-    if (course && !ids.includes(course.id)) ids.push(course.id);
+    const normalized = normalizeCourseId(id);
+    if (normalized && !ids.includes(normalized)) ids.push(normalized);
   });
   return ids;
 }
@@ -24,7 +27,7 @@ function normalizeProfile(profile) {
   return {
     ...mockData.profile,
     ...incoming,
-    taken: asArray(incoming.taken).length ? asArray(incoming.taken).map(String) : mockData.profile.taken,
+    taken: asArray(incoming.taken).length ? asArray(incoming.taken).map(normalizeCourseId) : mockData.profile.taken,
     remainingReqs: asArray(incoming.remainingReqs).length ? asArray(incoming.remainingReqs).map(String) : mockData.profile.remainingReqs,
     preferences: {
       ...mockData.profile.preferences,
@@ -43,32 +46,22 @@ function profileForTool(args = {}, context = {}) {
   return normalizeProfile(hasProfileArgs ? args.profile : context.profile);
 }
 
-function courseSummary(course) {
+function currentCourseSummary(course) {
   if (!course) return null;
   const match = getMatch(course.id);
   return {
     id: course.id,
     name: course.name,
     units: course.units,
-    schedule: course.schedule,
+    schedule: course.scheduleDisplay,
     area: course.area,
-    satisfies: course.satisfies,
-    prereqs: course.prereqs,
-    workload_hours_per_week: course.hydrant,
-    rating_overall: course.rating.overall,
+    requirements: course.requirements || [],
+    prerequisitesRaw: course.prerequisitesRaw || '',
+    workload_hours_per_week: course.totalHours,
+    rating: course.rating,
+    enrollmentNumber: course.enrollmentNumber,
     match_score: match.total,
     desc: course.desc,
-  };
-}
-
-function courseDetail(course) {
-  if (!course) return null;
-  return {
-    ...courseSummary(course),
-    instructor: course.instructor,
-    rating: course.rating,
-    topics: course.topics,
-    quote: course.quote,
   };
 }
 
@@ -76,12 +69,13 @@ function hasTime(course) {
   return course && Array.isArray(course.days) && course.days.length && course.time && course.time.end > course.time.start;
 }
 
-function detectConflicts(courses) {
+function detectConflicts(courseIds) {
+  const mockCourses = courseIds.map(getCourse).filter(Boolean);
   const conflicts = [];
-  for (let i = 0; i < courses.length; i += 1) {
-    for (let j = i + 1; j < courses.length; j += 1) {
-      const a = courses[i];
-      const b = courses[j];
+  for (let i = 0; i < mockCourses.length; i += 1) {
+    for (let j = i + 1; j < mockCourses.length; j += 1) {
+      const a = mockCourses[i];
+      const b = mockCourses[j];
       if (!hasTime(a) || !hasTime(b)) continue;
 
       const sharedDays = a.days.filter((day) => b.days.includes(day));
@@ -102,14 +96,14 @@ function detectConflicts(courses) {
   return conflicts;
 }
 
-function summarizeSchedule(args = {}, context = {}) {
+async function summarizeSemesterPlan(args = {}, context = {}) {
   const schedule = scheduleForTool(args, context);
   const profile = profileForTool(args, context);
-  const courses = schedule.map(getCourse).filter(Boolean);
+  const courses = (await Promise.all(schedule.map(fetchCurrentCourse))).filter(Boolean);
   const coveredSet = new Set();
 
   courses.forEach((course) => {
-    course.satisfies.forEach((req) => coveredSet.add(req));
+    asArray(course.requirements).forEach((req) => coveredSet.add(req));
   });
 
   const coveredRequirements = [...coveredSet].sort();
@@ -118,81 +112,39 @@ function summarizeSchedule(args = {}, context = {}) {
   const fulfilledRequirements = unique([...completedBeforeSchedule, ...coveredRequirements]);
 
   return {
-    schedule,
-    courses: courses.map(courseSummary),
+    semesterPlan: schedule,
+    courses: courses.map(currentCourseSummary),
     courseCount: courses.length,
-    totalUnits: courses.reduce((total, course) => total + course.units, 0),
-    estimatedWorkloadHours: Number(courses.reduce((total, course) => total + course.hydrant, 0).toFixed(1)),
+    totalUnits: courses.reduce((total, course) => total + (Number(course.units) || 0), 0),
+    estimatedWorkloadHours: Number(courses.reduce((total, course) => total + (Number(course.totalHours) || 0), 0).toFixed(1)),
     coveredRequirements,
     remainingRequirements,
     completedBeforeSchedule,
     fulfilledRequirements,
-    conflicts: detectConflicts(courses),
+    conflicts: detectConflicts(schedule),
   };
 }
 
-function scoreSearchResult(course, query, tokens) {
-  if (!query) return getMatch(course.id).total || 1;
-
-  const haystack = [
-    course.id,
-    course.name,
-    course.desc,
-    course.area,
-    course.satisfies.join(' '),
-    course.prereqs.join(' '),
-  ].join(' ').toLowerCase();
-
-  let score = 0;
-  if (course.id.toLowerCase() === query) score += 100;
-  if (course.id.toLowerCase().includes(query)) score += 40;
-  if (course.name.toLowerCase().includes(query)) score += 30;
-  if (course.desc.toLowerCase().includes(query)) score += 12;
-  if (course.area.toLowerCase().includes(query)) score += 8;
-  if (course.satisfies.some((req) => req.toLowerCase().includes(query))) score += 12;
-
-  tokens.forEach((token) => {
-    if (haystack.includes(token)) score += 5;
+async function searchCurrentCoursesTool(args = {}) {
+  const result = await searchCurrentCourses({
+    query: args.query || '',
+    maxResults: args.max_results || 8,
+    areas: args.areas,
+    requirements: args.requirements || args.satisfies,
+    maxWorkload: args.max_workload,
   });
-
-  return score;
-}
-
-function searchCourses(args = {}) {
-  const query = String(args.query || '').trim().toLowerCase();
-  const tokens = query.split(/\s+/).filter(Boolean);
-  const maxResults = Math.max(1, Math.min(Number(args.max_results) || 5, 10));
-  const areas = asArray(args.areas).map((area) => String(area).toLowerCase());
-  const satisfies = asArray(args.satisfies).map((req) => String(req).toLowerCase());
-  const maxWorkload = Number(args.max_workload) || null;
-
-  const results = mockData.catalog
-    .filter((course) => !course._stub || course.id.toLowerCase() === query)
-    .filter((course) => !areas.length || areas.includes(course.area.toLowerCase()))
-    .filter((course) => !satisfies.length || satisfies.every((req) => course.satisfies.map((r) => r.toLowerCase()).includes(req)))
-    .filter((course) => !maxWorkload || course.hydrant <= maxWorkload)
-    .map((course) => ({ course, score: scoreSearchResult(course, query, tokens) }))
-    .filter((result) => result.score > 0 || !query)
-    .sort((a, b) => b.score - a.score || getMatch(b.course.id).total - getMatch(a.course.id).total)
-    .slice(0, maxResults)
-    .map(({ course, score }) => ({
-      ...courseSummary(course),
-      search_score: score,
-    }));
-
   return {
-    query,
-    filters: { areas, satisfies, max_workload: maxWorkload },
-    results,
+    ...result,
+    results: result.results.map(currentCourseSummary),
   };
 }
 
-function getCourseTool(args = {}) {
-  const course = getCourse(args.course_id || args.courseId);
+async function getCurrentCourseTool(args = {}) {
+  const course = await fetchCurrentCourse(args.course_id || args.courseId);
   if (!course) {
-    return { found: false, reason: `No course found for ${args.course_id || args.courseId || 'unknown id'}` };
+    return { found: false, reason: `No current course found for ${args.course_id || args.courseId || 'unknown id'}` };
   }
-  return { found: true, course: courseDetail(course) };
+  return { found: true, course: currentCourseSummary(course), detail: course };
 }
 
 function isMlCourse(course) {
@@ -201,11 +153,11 @@ function isMlCourse(course) {
 }
 
 function isTheoryCourse(course) {
-  const text = `${course.name} ${course.desc} ${(course.topics || []).map((topic) => topic.title).join(' ')}`.toLowerCase();
+  const text = `${course.name} ${course.desc} ${course.prerequisitesRaw || ''}`.toLowerCase();
   return /theory|probabilistic|statistical|automata|computability|complexity|kernel|bayesian|proof/.test(text);
 }
 
-function recommendCourses(args = {}, context = {}) {
+async function recommendCourses(args = {}, context = {}) {
   const schedule = scheduleForTool(args, context);
   const profile = profileForTool(args, context);
   const maxResults = Math.max(1, Math.min(Number(args.max_results) || 5, 10));
@@ -214,18 +166,22 @@ function recommendCourses(args = {}, context = {}) {
     ? asArray(args.target_requirements).map(String)
     : profile.remainingReqs;
   const scheduledSet = new Set(schedule);
-  const takenSet = new Set([...asArray(profile.taken).map(String), ...schedule]);
+  const takenSet = new Set([...asArray(profile.taken).map(normalizeCourseId), ...schedule]);
 
-  const recommendations = mockData.catalog
-    .filter((course) => !course._stub)
+  const pool = await searchCurrentCourses({
+    query: '',
+    maxResults: Math.max(maxResults * 8, 40),
+    maxWorkload,
+  });
+
+  const recommendations = pool.results
     .filter((course) => !scheduledSet.has(course.id))
-    .filter((course) => !maxWorkload || course.hydrant <= maxWorkload)
     .map((course) => {
       const match = getMatch(course.id);
       const reasons = [];
-      let rankScore = match.total || 0;
+      let rankScore = match.total || course.matchScore || course.searchScore || 1;
 
-      const reqHits = course.satisfies.filter((req) => targetRequirements.includes(req));
+      const reqHits = asArray(course.requirements).filter((req) => targetRequirements.includes(req));
       if (reqHits.length) {
         rankScore += reqHits.length * 12;
         reasons.push(`covers ${reqHits.join(', ')}`);
@@ -243,91 +199,142 @@ function recommendCourses(args = {}, context = {}) {
         reasons.push('fits theory-leaning style');
       }
 
-      if (course.hydrant <= 10) {
+      if (course.totalHours && course.totalHours <= 10) {
         rankScore += 3;
         reasons.push('lighter workload');
-      } else if (course.hydrant >= 13) {
+      } else if (course.totalHours && course.totalHours >= 13) {
         reasons.push('heavier workload');
       }
 
-      const missingPrereqs = course.prereqs.filter((prereq) => !takenSet.has(prereq));
+      const prereqText = String(course.prerequisitesRaw || '');
+      const missingPrereqs = [...prereqText.matchAll(/\b\d{1,2}\.[A-Z0-9.]+/gi)]
+        .map((matchResult) => normalizeCourseId(matchResult[0]))
+        .filter((id) => id && !takenSet.has(id));
       if (missingPrereqs.length) {
-        rankScore -= missingPrereqs.length * 4;
-        reasons.push(`check prereqs: ${missingPrereqs.join(', ')}`);
+        rankScore -= Math.min(missingPrereqs.length, 3) * 4;
+        reasons.push(`check prereqs: ${unique(missingPrereqs).join(', ')}`);
       }
 
       return {
-        ...courseSummary(course),
+        ...currentCourseSummary(course),
         rank_score: rankScore,
         reasons,
-        missingPrereqs,
+        missingPrereqs: unique(missingPrereqs),
       };
     })
-    .sort((a, b) => b.rank_score - a.rank_score || b.match_score - a.match_score)
+    .sort((a, b) => b.rank_score - a.rank_score || b.match_score - a.match_score || a.id.localeCompare(b.id))
     .slice(0, maxResults);
 
   return {
-    schedule,
+    semesterPlan: schedule,
     targetRequirements,
     recommendations,
   };
 }
 
-function validateUiAction(action, schedule) {
+async function validateUiAction(action, schedule) {
   if (!action || typeof action !== 'object') {
     return { ok: false, reason: 'Action must be an object.' };
   }
 
   const type = action.type;
-  const course = getCourse(action.courseId || action.course_id);
+  const courseId = normalizeCourseId(action.courseId || action.course_id);
+  const course = await fetchCurrentCourse(courseId);
   const currentSchedule = normalizeSchedule(schedule);
 
-  if (!['add_course', 'remove_course'].includes(type)) {
-    return { ok: false, reason: `Unsupported action type: ${type || 'missing'}.` };
+  if (!['add_course', 'remove_course', 'replace_course'].includes(type)) {
+    return { ok: false, reason: `Unsupported action type: ${type || 'missing'}. Only current-semester add/remove/replace is allowed.` };
   }
 
   if (!course) {
-    return { ok: false, reason: `Course ${action.courseId || action.course_id || 'unknown'} does not exist in the catalog.` };
+    return { ok: false, reason: `Course ${courseId || 'unknown'} does not exist in the current catalog.` };
+  }
+
+  if (type === 'replace_course') {
+    const removeCourseId = normalizeCourseId(action.removeCourseId || action.remove_course_id);
+    if (!removeCourseId || !currentSchedule.includes(removeCourseId)) {
+      return { ok: false, reason: 'replace_course requires removeCourseId that is already in the current semester plan.' };
+    }
+    if (currentSchedule.includes(course.id)) {
+      return { ok: false, reason: `${course.id} is already in the current semester plan.` };
+    }
+    return {
+      ok: true,
+      action: { type: 'replace_course', removeCourseId, courseId: course.id },
+      course: currentCourseSummary(course),
+    };
   }
 
   if (type === 'add_course') {
-    if (course._stub) return { ok: false, reason: `${course.id} is only a completed-course stub in this demo catalog.` };
-    if (currentSchedule.includes(course.id)) return { ok: false, reason: `${course.id} is already in the schedule.` };
-    return { ok: true, action: { type, courseId: course.id }, course: courseSummary(course) };
+    if (currentSchedule.includes(course.id)) return { ok: false, reason: `${course.id} is already in the current semester plan.` };
+    return { ok: true, action: { type, courseId: course.id }, course: currentCourseSummary(course) };
   }
 
   if (!currentSchedule.includes(course.id)) {
-    return { ok: false, reason: `${course.id} is not currently in the schedule.` };
+    return { ok: false, reason: `${course.id} is not currently in the current semester plan.` };
   }
-  return { ok: true, action: { type, courseId: course.id }, course: courseSummary(course) };
+  return { ok: true, action: { type, courseId: course.id }, course: currentCourseSummary(course) };
 }
 
-function validateUiActionTool(args = {}, context = {}) {
+async function validateUiActionTool(args = {}, context = {}) {
   const schedule = scheduleForTool(args, context);
   return validateUiAction(args.action, schedule);
 }
 
-function sanitizeSuggestions(suggestions) {
-  return unique(asArray(suggestions)
-    .map((id) => getCourse(id))
-    .filter((course) => course && !course._stub)
-    .map((course) => course.id))
-    .slice(0, 5);
+async function sanitizeSuggestions(suggestions) {
+  const ids = unique(asArray(suggestions).map(normalizeCourseId).filter(Boolean)).slice(0, 5);
+  const courses = await Promise.all(ids.map(fetchCurrentCourse));
+  return courses.filter(Boolean).map((course) => course.id);
+}
+
+function getCourseHistorySummary(args = {}) {
+  const repo = createHistoryRepo();
+  const course = repo.getCourseById(args.course_id || args.courseId);
+  if (!course) return { found: false, reason: `No history record found for ${args.course_id || args.courseId || 'unknown id'}` };
+  const stats = repo.getCoursePolicyStats(course.id);
+  const aliases = repo.getCourseAliases(course.id);
+  const offerings = repo.listCourseOfferings(course.id);
+  return {
+    found: true,
+    course,
+    aliases,
+    stats: {
+      offeringCount: stats.offering_count,
+      homepageCount: stats.homepage_count,
+      syllabusCount: stats.syllabus_count,
+      attendancePolicyCount: stats.attendance_policy_count,
+      gradingPolicyCount: stats.grading_policy_count,
+    },
+    offerings: offerings.slice(0, 8),
+  };
+}
+
+function getOfferingHistory(args = {}) {
+  const repo = createHistoryRepo();
+  const offering = repo.getOfferingById(args.offering_id || args.offeringId);
+  if (!offering) return { found: false, reason: `No history offering found for ${args.offering_id || args.offeringId || 'unknown id'}` };
+  return {
+    found: true,
+    offering,
+    documents: repo.listOfferingDocuments(offering.id),
+    attendancePolicy: repo.getLatestAttendancePolicy(offering.id),
+    gradingPolicy: repo.getLatestGradingPolicy(offering.id),
+  };
 }
 
 const toolSchemas = [
   {
     type: 'function',
     function: {
-      name: 'search_courses',
-      description: 'Search the current MIT demo catalog by course id, name, description, area, requirements, and workload.',
+      name: 'search_current_courses',
+      description: 'Search the current MIT course catalog by id, name, description, instructor, requirements, area, and workload. Use for current-semester planning only.',
       parameters: {
         type: 'object',
         properties: {
           query: { type: 'string' },
           max_results: { type: 'number' },
           areas: { type: 'array', items: { type: 'string' } },
-          satisfies: { type: 'array', items: { type: 'string' } },
+          requirements: { type: 'array', items: { type: 'string' } },
           max_workload: { type: 'number' },
         },
         required: ['query'],
@@ -337,8 +344,8 @@ const toolSchemas = [
   {
     type: 'function',
     function: {
-      name: 'get_course',
-      description: 'Get detailed information for one course in the current catalog.',
+      name: 'get_current_course',
+      description: 'Get normalized current catalog information for one course.',
       parameters: {
         type: 'object',
         properties: {
@@ -351,8 +358,8 @@ const toolSchemas = [
   {
     type: 'function',
     function: {
-      name: 'summarize_schedule',
-      description: 'Summarize total units, covered requirements, remaining profile requirements, and obvious time conflicts.',
+      name: 'summarize_semester_plan',
+      description: 'Summarize the active next-semester plan: total units, estimated workload, covered requirements, remaining profile requirements, and obvious current-semester time conflicts.',
       parameters: {
         type: 'object',
         properties: {
@@ -367,7 +374,7 @@ const toolSchemas = [
     type: 'function',
     function: {
       name: 'recommend_courses',
-      description: 'Deterministically rank courses for the student using match scores, requirements, workload, and profile preferences.',
+      description: 'Deterministically rank current catalog courses for the active next-semester plan using match scores, requirements, workload, and profile preferences.',
       parameters: {
         type: 'object',
         properties: {
@@ -385,15 +392,16 @@ const toolSchemas = [
     type: 'function',
     function: {
       name: 'validate_ui_action',
-      description: 'Validate an add/remove course UI action against the current schedule before returning it to the browser.',
+      description: 'Validate a current-semester add/remove/replace UI action. Reject future-term, multi-semester, and roadmap mutations.',
       parameters: {
         type: 'object',
         properties: {
           action: {
             type: 'object',
             properties: {
-              type: { type: 'string', enum: ['add_course', 'remove_course'] },
+              type: { type: 'string', enum: ['add_course', 'remove_course', 'replace_course'] },
               courseId: { type: 'string' },
+              removeCourseId: { type: 'string' },
             },
             required: ['type', 'courseId'],
           },
@@ -403,29 +411,59 @@ const toolSchemas = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'get_course_history_summary',
+      description: 'Get read-only historical offering and policy coverage summary for one course. Use as context or risk signal; do not use it to mutate a plan.',
+      parameters: {
+        type: 'object',
+        properties: {
+          course_id: { type: 'string' },
+        },
+        required: ['course_id'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_offering_history',
+      description: 'Get read-only historical documents, attendance policy, and grading policy for one offering id.',
+      parameters: {
+        type: 'object',
+        properties: {
+          offering_id: { type: 'number' },
+        },
+        required: ['offering_id'],
+      },
+    },
+  },
 ];
 
 const toolHandlers = {
-  search_courses: searchCourses,
-  get_course: getCourseTool,
-  summarize_schedule: summarizeSchedule,
+  search_current_courses: searchCurrentCoursesTool,
+  get_current_course: getCurrentCourseTool,
+  summarize_semester_plan: summarizeSemesterPlan,
   recommend_courses: recommendCourses,
   validate_ui_action: validateUiActionTool,
+  get_course_history_summary: getCourseHistorySummary,
+  get_offering_history: getOfferingHistory,
 };
 
 module.exports = {
   asArray,
-  courseSummary,
+  currentCourseSummary,
   getCourse,
-  getCourseTool,
+  getCurrentCourseTool,
   getMatch,
   mockData,
   normalizeProfile,
   normalizeSchedule,
   recommendCourses,
   sanitizeSuggestions,
-  searchCourses,
-  summarizeSchedule,
+  searchCurrentCoursesTool,
+  summarizeSemesterPlan,
   toolHandlers,
   toolSchemas,
   validateUiAction,

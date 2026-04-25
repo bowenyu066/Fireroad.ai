@@ -135,6 +135,8 @@ function createHistoryRepo(database = getDb()) {
       return database.prepare(`
         SELECT
           COUNT(DISTINCT o.id) AS offering_count,
+          COUNT(DISTINCT CASE WHEN o.homepage_url IS NOT NULL AND o.homepage_url != '' THEN o.id END) AS homepage_count,
+          COUNT(DISTINCT CASE WHEN o.syllabus_url IS NOT NULL AND o.syllabus_url != '' THEN o.id END) AS syllabus_count,
           COUNT(DISTINCT ap.offering_id) AS attendance_policy_count,
           COUNT(DISTINCT gp.offering_id) AS grading_policy_count
         FROM offerings o

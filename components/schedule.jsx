@@ -1,9 +1,9 @@
-/* global React, FRDATA, Icon, MatchBar, AreaDot, useApp */
-const { useState, useEffect, useRef, useMemo } = React;
+/* global React, FRDATA, Icon, MatchBar, AreaDot */
+const { useState, useEffect, useRef } = React;
 
 // ============== ICS export ==============
 const exportToICS = (courses) => {
-  // MIT Spring 2025: Feb 3 – May 16
+  // Prototype calendar export uses the current demo term dates.
   const SEM_START = new Date(2025, 1, 3); // Feb 3 is a Monday
   const SEM_UNTIL = '20250517T035959Z';   // May 16 23:59 EDT in UTC
 
@@ -32,7 +32,7 @@ const exportToICS = (courses) => {
       `SUMMARY:${c.id} – ${c.name}`,
       `DESCRIPTION:${desc}`,
       'LOCATION:MIT',
-      `UID:${c.id}-spring2025@fireroad.ai`,
+      `UID:${c.id}-next-semester@fireroad.ai`,
       'END:VEVENT',
     );
   });
@@ -43,7 +43,7 @@ const exportToICS = (courses) => {
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href     = url;
-  a.download = 'fireroad-spring-2025.ics';
+  a.download = 'fireroad-next-semester.ics';
   a.click();
   URL.revokeObjectURL(url);
 };
@@ -181,33 +181,49 @@ const CalendarView = ({ courses }) => {
 };
 
 // ============== Schedule panel (left) ==============
-const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, viewMode, setViewMode }) => {
-  const { fourYearPlan, setFourYearPlan, activeSem, setActiveSem } = useApp();
-  const [showSemPicker, setShowSemPicker] = useState(false);
+const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, viewMode, setViewMode, planningTermLabel = 'Next Semester' }) => {
   const [showCoursePicker, setShowCoursePicker] = useState(false);
+  const [catalog, setCatalog] = useState(() => FRDATA.catalog.filter(c => !c._stub));
+  const [courseMap, setCourseMap] = useState(() => Object.fromEntries(FRDATA.catalog.map((course) => [course.id, course])));
 
-  const semIds = activeSem === 'S25' ? schedule : (fourYearPlan[activeSem] || []);
-  const courses = semIds.map((id) => FRDATA.getCourse(id)).filter(Boolean);
+  useEffect(() => {
+    let cancelled = false;
+    FRDATA.fetchCurrentSearch('', 80).then((courses) => {
+      if (cancelled) return;
+      setCatalog(courses);
+      setCourseMap((current) => ({
+        ...current,
+        ...Object.fromEntries(courses.map((course) => [course.id, course])),
+      }));
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all(schedule.map((id) => FRDATA.fetchCurrentCourse(id))).then((courses) => {
+      if (cancelled) return;
+      setCourseMap((current) => ({
+        ...current,
+        ...Object.fromEntries(courses.filter(Boolean).map((course) => [course.id, course])),
+      }));
+    });
+    return () => { cancelled = true; };
+  }, [schedule.join('|')]);
+
+  const courses = schedule.map((id) => courseMap[id] || FRDATA.getCourse(id)).filter(Boolean);
   const totalUnits = courses.reduce((s, c) => s + c.units, 0);
   const reqsCovered = new Set();
   courses.forEach((c) => c.satisfies.forEach((r) => reqsCovered.add(r)));
-  const available = FRDATA.catalog.filter(c => !c._stub && !semIds.includes(c.id));
+  const available = catalog.filter(c => !schedule.includes(c.id));
 
   const removeCourse = (id) => {
-    if (activeSem === 'S25') {
-      setSchedule(s => s.filter(x => x !== id));
-    } else {
-      setFourYearPlan(p => ({ ...p, [activeSem]: (p[activeSem] || []).filter(x => x !== id) }));
-    }
+    setSchedule(s => s.filter(x => x !== id));
   };
 
   const addCourseToSem = (id) => {
-    if (semIds.includes(id)) { setShowCoursePicker(false); return; }
-    if (activeSem === 'S25') {
-      setSchedule(s => [...s, id]);
-    } else {
-      setFourYearPlan(p => ({ ...p, [activeSem]: [...(p[activeSem] || []), id] }));
-    }
+    if (schedule.includes(id)) { setShowCoursePicker(false); return; }
+    setSchedule(s => [...s, id]);
     setShowCoursePicker(false);
   };
 
@@ -216,39 +232,13 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, viewM
       {/* Header */}
       <div style={{ padding: '20px 24px 14px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <div style={{ position: 'relative' }}>
-            <button
-              onClick={() => { setShowSemPicker(v => !v); setShowCoursePicker(false); }}
-              className="display"
-              style={{ fontSize: 22, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text)' }}
-            >
-              {FRDATA.semesterLabels[activeSem]}
-              <Icon name={showSemPicker ? 'chevronUp' : 'chevronDown'} size={14} style={{ color: 'var(--text-secondary)' }} />
-            </button>
-            {showSemPicker && (
-              <div style={{
-                position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 100,
-                background: 'var(--surface)', border: '1px solid var(--border)',
-                borderRadius: 'var(--r-md)', padding: 4, minWidth: 190,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-              }}>
-                {FRDATA.semesterOrder.map((sem) => (
-                  <button
-                    key={sem}
-                    onClick={() => { setActiveSem(sem); setShowSemPicker(false); setShowCoursePicker(false); }}
-                    style={{
-                      width: '100%', textAlign: 'left', padding: '8px 12px', borderRadius: 6,
-                      fontSize: 13, display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      background: activeSem === sem ? 'var(--accent-soft)' : 'transparent',
-                      color: activeSem === sem ? 'var(--accent)' : 'var(--text)',
-                    }}
-                  >
-                    <span>{FRDATA.semesterLabels[sem]}</span>
-                    {activeSem === sem && <Icon name="check" size={12} />}
-                  </button>
-                ))}
-              </div>
-            )}
+          <div>
+            <div className="display" style={{ fontSize: 22, fontWeight: 600, color: 'var(--text)' }}>
+              {planningTermLabel}
+            </div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 4 }}>
+              Active semester plan
+            </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {courses.length > 0 && (
@@ -306,7 +296,7 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, viewM
                 match={FRDATA.getMatch(c.id)}
                 onRemove={removeCourse}
                 onOpen={onOpenCourse}
-                justAdded={activeSem === 'S25' && justAddedId === c.id}
+                justAdded={justAddedId === c.id}
               />
             ))}
           </div>
@@ -316,7 +306,7 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, viewM
 
         <button
           className="btn"
-          onClick={() => { setShowCoursePicker(v => !v); setShowSemPicker(false); }}
+          onClick={() => { setShowCoursePicker(v => !v); }}
           style={{
             width: '100%', marginTop: 14, padding: '12px',
             border: '1px dashed var(--border-strong)', background: 'transparent',
@@ -382,194 +372,51 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, viewM
   );
 };
 
-// ============== 4-Year Plan view ==============
-const FourYearPlan = () => {
-  const { fourYearPlan, setFourYearPlan, activeSem, setActiveSem } = useApp();
-  const [addingTo, setAddingTo] = useState(null);
+window.SchedulePanel = SchedulePanel;
 
-  const semCourses = (sem) => (fourYearPlan[sem] || []).map((id) => FRDATA.getCourse(id)).filter(Boolean);
-
-  const removeCourseFrom = (sem, id) =>
-    setFourYearPlan(p => ({ ...p, [sem]: (p[sem] || []).filter(x => x !== id) }));
-
-  const addCourseTo = (sem, id) => {
-    if (!id) return;
-    setFourYearPlan(p => {
-      const cur = p[sem] || [];
-      return cur.includes(id) ? p : { ...p, [sem]: [...cur, id] };
-    });
-    setAddingTo(null);
-  };
-
-  return (
-    <div style={{ padding: '24px 32px', height: '100%', overflow: 'auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
-        <div>
-          <h2 className="display" style={{ fontSize: 22, fontWeight: 600, margin: 0 }}>4-Year Plan</h2>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>
-            Drag courses across semesters · Color-coded by department
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 16, fontSize: 11, fontFamily: 'var(--font-mono)' }}>
-          {[['cs', 'Course 6'], ['math', 'Course 18'], ['hass', 'HASS'], ['physics', 'Course 8']].map(([k, l]) => (
-            <span key={k} style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-secondary)' }}>
-              <AreaDot area={k} /> {l}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(8, minmax(0, 1fr))', gap: 10,
-        marginBottom: 32,
-      }}>
-        {FRDATA.semesterOrder.map((sem) => {
-          const courses = semCourses(sem);
-          const units = courses.reduce((s, c) => s + c.units, 0);
-          const isActive = sem === activeSem;
-          return (
-            <div key={sem} style={{
-              background: 'var(--surface)',
-              border: '1px solid ' + (isActive ? 'var(--accent)' : 'var(--border)'),
-              borderRadius: 'var(--r-md)', padding: 12, minHeight: 280,
-            }}>
-              <button
-                onClick={() => { setActiveSem(sem); setAddingTo(null); }}
-                style={{
-                  width: '100%', display: 'flex', justifyContent: 'space-between',
-                  alignItems: 'center', marginBottom: 10, textAlign: 'left',
-                }}
-                title={`Plan ${FRDATA.semesterLabels[sem]}`}
-              >
-                <span className="mono" style={{ fontSize: 11, color: isActive ? 'var(--accent)' : 'var(--text-secondary)', fontWeight: isActive ? 600 : 400 }}>
-                  {FRDATA.semesterLabels[sem]}
-                </span>
-                {isActive && <span className="mono" style={{ fontSize: 9, color: 'var(--accent)' }}>PLANNING</span>}
-              </button>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minHeight: 200 }}>
-                {courses.map((c) => (
-                  <div key={c.id} style={{
-                    padding: '7px 6px 7px 10px', borderRadius: 6,
-                    background: 'var(--surface-2)',
-                    borderLeft: `3px solid var(--course-${c.area})`,
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4,
-                  }}>
-                    <div style={{ minWidth: 0 }}>
-                      <div className="mono" style={{ fontSize: 11, fontWeight: 600 }}>{c.id}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2,
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {c.name}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => removeCourseFrom(sem, c.id)}
-                      style={{ color: 'var(--text-tertiary)', flexShrink: 0, padding: 2, marginTop: 1 }}
-                    >
-                      <Icon name="x" size={10} />
-                    </button>
-                  </div>
-                ))}
-                {courses.length === 0 && addingTo !== sem && (
-                  <div style={{
-                    flex: 1, border: '1px dashed var(--border)', borderRadius: 6,
-                    minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'var(--text-tertiary)', fontSize: 11,
-                  }}>
-                    empty
-                  </div>
-                )}
-              </div>
-
-              {addingTo === sem ? (
-                <div style={{ marginTop: 8 }}>
-                  <select
-                    autoFocus
-                    defaultValue=""
-                    onChange={(e) => addCourseTo(sem, e.target.value)}
-                    style={{
-                      width: '100%', padding: '5px 8px', fontSize: 11,
-                      borderRadius: 6, border: '1px solid var(--border)', background: 'var(--surface)',
-                    }}
-                  >
-                    <option value="">Pick a course…</option>
-                    {FRDATA.catalog.filter(c => !c._stub && !(fourYearPlan[sem] || []).includes(c.id)).map(c => (
-                      <option key={c.id} value={c.id}>{c.id} — {c.name}</option>
-                    ))}
-                  </select>
-                  <button onClick={() => setAddingTo(null)} style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 4 }}>cancel</button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setAddingTo(sem)}
-                  style={{
-                    width: '100%', marginTop: 8, padding: '4px', fontSize: 10, borderRadius: 6,
-                    border: '1px dashed var(--border)', color: 'var(--text-tertiary)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-                  }}
-                >
-                  <Icon name="plus" size={10} /> Add
-                </button>
-              )}
-
-              <div style={{
-                marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border)',
-                fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--text-tertiary)',
-                display: 'flex', justifyContent: 'space-between',
-              }}>
-                <span>{courses.length} {courses.length === 1 ? 'class' : 'classes'}</span>
-                <span>{units}u</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Requirements progress */}
-      <div style={{
-        background: 'var(--surface)', border: '1px solid var(--border)',
-        borderRadius: 'var(--r-md)', padding: 24,
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16 }}>
-          <h3 className="display" style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Requirements</h3>
-          <span className="mono" style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-            {FRDATA.allReqs.filter((r) => r.done).length} of {FRDATA.allReqs.length} fulfilled
-          </span>
-        </div>
-
-        {/* Big bar */}
-        <div className="match-bar green" style={{ height: 8, marginBottom: 20 }}>
-          <span style={{ width: `${(FRDATA.allReqs.filter((r) => r.done).length / FRDATA.allReqs.length) * 100}%` }} />
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 }}>
-          {FRDATA.allReqs.map((r) => (
-            <div key={r.id} style={{
-              display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px',
-              borderRadius: 6, border: '1px solid var(--border)',
-              background: r.done ? 'rgba(34, 197, 94, 0.06)' : 'transparent',
-            }}>
-              <span style={{
-                width: 14, height: 14, borderRadius: 4,
-                border: '1px solid ' + (r.done ? 'var(--success)' : 'var(--border-strong)'),
-                background: r.done ? 'var(--success)' : 'transparent',
-                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', flexShrink: 0,
-              }}>
-                {r.done && <Icon name="check" size={10} />}
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="mono" style={{ fontSize: 12, color: r.done ? 'var(--text)' : 'var(--text-secondary)' }}>{r.id}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.label}</div>
-              </div>
-              {r.sub && <span className="mono" style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>{r.sub}</span>}
-            </div>
-          ))}
-        </div>
+// Legacy display-only interface kept for future long-range visualization.
+// It is intentionally not mounted from the main planner and has no edit/drop/move behavior.
+const FourYearPlan = ({ plan = FRDATA.fourYearPlan, onOpenCourse = () => {} }) => (
+  <div style={{ padding: 24, height: '100%', overflow: 'auto' }}>
+    <div style={{ marginBottom: 18 }}>
+      <h2 className="display" style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>Long-Range Display</h2>
+      <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>
+        Read-only interface reserved for future roadmap display.
       </div>
     </div>
-  );
-};
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10 }}>
+      {FRDATA.semesterOrder.map((sem) => {
+        const courses = (plan[sem] || []).map((id) => FRDATA.getCourse(id)).filter(Boolean);
+        return (
+          <div key={sem} style={{
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: 'var(--r-md)', padding: 12, minHeight: 150,
+          }}>
+            <div className="mono" style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 10 }}>
+              {FRDATA.semesterLabels[sem] || sem}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {courses.map((course) => (
+                <button
+                  key={course.id}
+                  onClick={() => onOpenCourse(course.id)}
+                  style={{
+                    textAlign: 'left', padding: '7px 8px', borderRadius: 6,
+                    background: 'var(--surface-2)', display: 'flex', alignItems: 'center', gap: 8,
+                  }}
+                >
+                  <AreaDot area={course.area} />
+                  <span className="mono" style={{ fontSize: 11 }}>{course.id}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{course.name}</span>
+                </button>
+              ))}
+              {!courses.length && <span style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>No display items</span>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+);
 
-window.SchedulePanel = SchedulePanel;
 window.FourYearPlan = FourYearPlan;

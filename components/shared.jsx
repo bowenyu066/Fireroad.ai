@@ -26,6 +26,7 @@ const Icon = ({ name, size = 16, ...rest }) => {
     sun: 'M12 3v2M12 19v2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M3 12h2M19 12h2M5.6 18.4l1.4-1.4M17 7l1.4-1.4',
     moon: 'M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z',
     book: 'M4 19.5A2.5 2.5 0 016.5 17H20V3H6.5A2.5 2.5 0 004 5.5v14zM4 19.5A2.5 2.5 0 006.5 22H20',
+    calendar: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z',
     clock: 'M12 6v6l4 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
     grid: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
     list: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
@@ -115,11 +116,12 @@ const ThemeToggle = () => {
   );
 };
 
-// ============== Top bar (planner / detail) ==============
-const TopBar = ({ tab, setTab, showTabs = true }) => {
-  const { route, setRoute, profile, authState, signOut, resetOnboarding } = useApp();
+const TopBar = ({ planningTermLabel }) => {
+  const { setRoute, profile, authState, signOut, resetOnboarding, planningTermLabel: activePlanningTermLabel } = useApp();
   const isLocalDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-  const initials = (profile.name || 'User').split(' ').map((s) => s[0]).join('');
+  const displayName = profile?.name || authState?.user?.email?.split('@')[0] || 'User';
+  const initials = displayName.split(' ').map((s) => s[0]).join('');
+  const termLabel = planningTermLabel || activePlanningTermLabel || 'Next Semester';
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -132,28 +134,15 @@ const TopBar = ({ tab, setTab, showTabs = true }) => {
         </button>
       </div>
 
-      {showTabs && (
-        <div style={{
-          display: 'flex', gap: 2, padding: 3, borderRadius: 10,
-          background: 'var(--surface-2)', border: '1px solid var(--border)',
-        }}>
-          {[['semester', 'Semester'], ['fouryear', '4-Year Plan']].map(([id, label]) => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              style={{
-                padding: '6px 14px', fontSize: 13, fontWeight: 500, borderRadius: 7,
-                background: tab === id ? 'var(--bg)' : 'transparent',
-                color: tab === id ? 'var(--text)' : 'var(--text-secondary)',
-                border: tab === id ? '1px solid var(--border)' : '1px solid transparent',
-                transition: 'all 160ms',
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8, padding: '7px 13px',
+        borderRadius: 999, background: 'var(--surface-2)', border: '1px solid var(--border)',
+        color: 'var(--text-secondary)', fontSize: 12,
+      }}>
+        <Icon name="calendar" size={14} />
+        <span className="mono" style={{ color: 'var(--text)' }}>{termLabel}</span>
+        <span>planner</span>
+      </div>
 
       <div style={{ flex: '1 1 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
         <ThemeToggle />
@@ -188,7 +177,7 @@ const TopBar = ({ tab, setTab, showTabs = true }) => {
           }}>
             {initials}
           </div>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{profile.name}</span>
+          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{displayName}</span>
         </button>
         {signOut && (
           <button

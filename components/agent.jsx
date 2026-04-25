@@ -6,6 +6,7 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
   const scrollRef = useRef(null);
+  const { activeSem, planningTermLabel } = useApp();
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -27,6 +28,8 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
           messages: nextMessages,
           profile,
           schedule,
+          activeSem,
+          planningTermLabel,
         }),
       });
 
@@ -119,6 +122,17 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
 
 const MessageBubble = ({ msg, onAddCourse, onOpenCourse }) => {
   const isUser = msg.role === 'user';
+  const [suggestedCourses, setSuggestedCourses] = useState([]);
+  const suggestionsKey = (msg.suggestions || []).join('|');
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all((msg.suggestions || []).map((id) => FRDATA.fetchCurrentCourse(id))).then((courses) => {
+      if (!cancelled) setSuggestedCourses(courses.filter(Boolean));
+    });
+    return () => { cancelled = true; };
+  }, [suggestionsKey]);
+
   return (
     <div style={{
       display: 'flex', flexDirection: 'column',
@@ -135,25 +149,23 @@ const MessageBubble = ({ msg, onAddCourse, onOpenCourse }) => {
         {msg.text}
       </div>
 
-      {msg.suggestions && msg.suggestions.length > 0 && (
+      {suggestedCourses.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-          {msg.suggestions.map((id) => {
-            const c = FRDATA.getCourse(id);
-            if (!c) return null;
+          {suggestedCourses.map((c) => {
             return (
-              <div key={id} style={{
+              <div key={c.id} style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 padding: '6px 6px 6px 10px', borderRadius: 999,
                 background: 'var(--surface-2)', border: '1px solid var(--border)',
                 fontSize: 12,
               }}>
-                <button onClick={() => onOpenCourse(id)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <button onClick={() => onOpenCourse(c.id)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <AreaDot area={c.area} size={6} />
                   <span className="mono">{c.id}</span>
                   <span style={{ color: 'var(--text-secondary)' }}>{c.name}</span>
                 </button>
                 <button
-                  onClick={() => onAddCourse(id)}
+                  onClick={() => onAddCourse(c.id)}
                   style={{
                     padding: '3px 9px', borderRadius: 999,
                     background: 'var(--accent)', color: '#fff', fontSize: 11, fontWeight: 500,
@@ -188,8 +200,16 @@ const TypingDots = () => (
 // ============== Recommendations panel (bottom-right) ==============
 const Recommendations = ({ schedule, onAddCourse, onOpenCourse }) => {
   const [sort, setSort] = useState('match'); // match | workload | units
+  const [recs, setRecs] = useState(() => FRDATA.catalog.filter((c) => !schedule.includes(c.id) && !c._stub));
 
-  const recs = FRDATA.catalog.filter((c) => !schedule.includes(c.id));
+  useEffect(() => {
+    let cancelled = false;
+    FRDATA.fetchCurrentSearch('', 40).then((courses) => {
+      if (!cancelled) setRecs(courses.filter((c) => !schedule.includes(c.id)));
+    });
+    return () => { cancelled = true; };
+  }, [schedule.join('|')]);
+
   const sorted = [...recs].sort((a, b) => {
     if (sort === 'match') return FRDATA.getMatch(b.id).total - FRDATA.getMatch(a.id).total;
     if (sort === 'workload') return a.hydrant - b.hydrant;

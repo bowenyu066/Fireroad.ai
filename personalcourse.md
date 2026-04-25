@@ -10,6 +10,14 @@ This file is the planned durable store for one student's course history and reco
 - standing: prefrosh | freshman | sophomore | junior | senior | meng
 - gpa: optional; not collected for prefrosh
 
+## Planning Scope
+
+- primary_planning_surface: active_semester
+- editable_plan_state: fourYearPlan[activeSem]
+- four_year_plan_role: canonical_term_aware_store_with_active_semester_ui
+
+The durable student profile stores term-aware planned-course history in `fourYearPlan`. The current app edits only `fourYearPlan[activeSem]`; cross-semester moves and broad 4-year roadmap mutations are out of scope unless explicitly requested.
+
 ## Inputs
 
 - transcript: not_provided

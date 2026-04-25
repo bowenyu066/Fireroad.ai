@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post('/', async (req, res) => {
   if (!process.env.OPENROUTER_API_KEY) {
-    const fallback = buildLocalActionFallback(req.body, new Error('OPENROUTER_API_KEY is not set'));
+    const fallback = await buildLocalActionFallback(req.body, new Error('OPENROUTER_API_KEY is not set'));
     if (fallback) return res.json(fallback);
 
     return res.status(503).json({
@@ -27,7 +27,7 @@ router.post('/', async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error('[agent error]', error);
-    const fallback = buildLocalActionFallback(req.body, error);
+    const fallback = await buildLocalActionFallback(req.body, error);
     if (fallback) return res.json(fallback);
 
     const message = publicErrorMessage(error);

@@ -1,7 +1,7 @@
 # Fireroad.ai — Claude Design Brief
 
 ## What We're Building
-An AI-powered MIT course planner called **Fireroad.ai**. Students describe their goals and preferences in natural language, upload their transcript, and the AI agent recommends a personalized course schedule — for a single semester or all four years. The app also scores every course on a 0–100 match scale so students can compare options at a glance.
+An AI-powered MIT course planner called **Fireroad.ai**. Students describe their goals and preferences in natural language, upload their transcript, and the AI agent recommends a personalized active-semester course schedule. The current product focus is active-semester planning: `fourYearPlan[activeSem]` is the editable surface for recommendations, workload tradeoffs, requirement checks, and schedule changes. The app persists the full `fourYearPlan` object so term-aware state survives future work, but there is no cross-semester drag/drop workflow in the main product path. A legacy read-only long-range display interface may remain in code for future work, but it is not part of the active UI. The app also scores every course on a 0–100 match scale so students can compare options at a glance.
 
 Target users: MIT undergraduates and MEng students.
 
@@ -88,15 +88,14 @@ This is the main app view. **Two-panel layout**: left panel for the schedule, ri
 ### Top Bar
 ```
 Logo "fireroad.ai" (top left)
-Tab switcher (top center): [Semester View] [4-Year Plan]
+Current context pill (top center): [Next Semester planner]
 User avatar + name (top right)
 ```
 
 ### Left Panel — Schedule View
 
-**Tab: Semester View**
 ```
-Header: "Spring 2025" with a small dropdown arrow to change semester
+Header: "Next Semester"
 Below: a vertical list of added courses
 
 Each course card shows:
@@ -115,15 +114,6 @@ At bottom of list:
 
 [+ Add course manually] button
 Toggle: [Manual mode] [Agent mode]  ← toggle switch
-```
-
-**Tab: 4-Year Plan**
-```
-8-column grid (Fall/Spring for 4 years)
-Each cell is a semester with up to 5 course pills
-Color-coded by subject area (CS = blue, Math = amber, HASS = teal)
-Requirement completion bar at bottom
-"X of 17 requirements fulfilled"
 ```
 
 ### Right Panel — Agent + Recommendations
@@ -159,6 +149,10 @@ Sort controls: [Match Score ▾] [Workload] [Units]
 ## Page 3 — Course Detail Page
 
 Opens when user clicks a course. Can be a modal overlay or a new page.
+
+Course Detail has two tabs:
+- `Current`: current catalog/Fireroad snapshot plus personalized fit for the next-semester plan.
+- `Historical`: read-only historical offerings, documents, attendance, grading, evidence, confidence, and review status.
 
 ### Layout: Two columns
 
@@ -223,7 +217,6 @@ Student quote:
 - Match score bars animate in on page load (left to right fill)
 - Agent chat: typing indicator (three dots) while LLM is thinking
 - Transcript upload: drag-over state changes border color to MIT red
-- Switching between Semester / 4-Year tabs: smooth crossfade
 - When agent adds a course to the schedule, the card slides in from the right panel to the left panel
 
 ---

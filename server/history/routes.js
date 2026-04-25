@@ -28,9 +28,15 @@ router.get('/course/:courseId', asyncHandler(async (req, res) => {
   res.json({
     course,
     aliases,
-    offerings,
+    offerings: offerings.map((offering) => ({
+      ...offering,
+      attendancePolicy: repo.getLatestAttendancePolicy(offering.id),
+      gradingPolicy: repo.getLatestGradingPolicy(offering.id),
+    })),
     stats: {
       offeringCount: stats.offering_count,
+      homepageCount: stats.homepage_count,
+      syllabusCount: stats.syllabus_count,
       attendancePolicyCount: stats.attendance_policy_count,
       gradingPolicyCount: stats.grading_policy_count,
       hasPolicyCount: Math.max(stats.attendance_policy_count, stats.grading_policy_count),

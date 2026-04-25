@@ -56,3 +56,5 @@ Fields include:
 - `schemaVersion`
 
 Transcript and resume parsers can later write their results into the same user document or split them into subcollections without changing the current login flow.
+
+Older local test data may still contain `semesterPlan`; the app reads it as a migration fallback into `fourYearPlan[activeSem]`, but new writes use the term-aware `fourYearPlan` and `activeSem` shape.

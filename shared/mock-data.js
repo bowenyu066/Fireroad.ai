@@ -243,7 +243,7 @@
   const agentMessages = [
     {
       role: 'agent',
-      text: "Hi Alex - I read your transcript and preferences. Based on your strong math background and ML research goals, I'd start with 6.3900 (Intro to ML) this semester. It's project-based with solid theory, and your calibration suggests ~9.5 hrs/week - well within your bandwidth. Want me to add it?",
+      text: "Hi Alex - I read your transcript and preferences. Based on your strong math background and ML research goals, I'd start with 6.3900 (Intro to ML) for next semester. It's project-based with solid theory, and your calibration suggests ~9.5 hrs/week - well within your bandwidth. Want me to add it?",
       suggestions: ['6.3900'],
     },
   ];

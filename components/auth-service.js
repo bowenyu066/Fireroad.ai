@@ -242,6 +242,8 @@
     await api.firestoreMod.setDoc(firestoreUserRef(user.uid), {
       onboardingCompleted: false,
       profile: null,
+      semesterPlan: null,
+      planningTermLabel: null,
       fourYearPlan: null,
       activeSem: null,
       onboarding: null,

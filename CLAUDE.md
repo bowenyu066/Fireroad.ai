@@ -4,47 +4,72 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Running the App
 
-There is no build step and no package manager. Open `index.html` directly in a browser, or serve it with any static file server to avoid CORS issues when loading local scripts:
+There is no frontend build step. The app is served by a small Node/Express backend that also exposes the OpenRouter-backed chat API and the local history database routes.
 
 ```bash
-python3 -m http.server 8080
-# then open http://localhost:8080
+npm install
+export OPENROUTER_API_KEY="your_openrouter_key"
+# Optional:
+export OPENROUTER_MODEL="openai/gpt-4.1-mini"
+npm run dev
 ```
 
-The app runs fully in-browser: React 18, ReactDOM, and Babel standalone are loaded from CDN via `<script>` tags in `index.html`. JSX is transpiled at runtime by Babel.
+Open http://localhost:3000. `npm run dev` initializes/seeds the local history database before starting the server.
+
+The frontend still uses React 18, ReactDOM, and Babel standalone from CDN via `<script>` tags in `index.html`; JSX is transpiled at runtime by Babel.
+
+## Product Priority
+
+The current product focus is active-semester planning. Treat `fourYearPlan[activeSem]` as the single editable schedule and the primary surface for recommendations, workload checks, requirement summaries, and chat-driven add/remove actions.
+
+Keep `fourYearPlan` and `activeSem` as the canonical frontend/persistence state because they preserve term-aware data. Do not add cross-semester drag/drop flows unless explicitly requested. `FourYearPlan` is kept only as a legacy read-only component export for future display work and should not be mounted from the main planner.
 
 ## Architecture
 
-**No bundler. No npm. No build.** All JavaScript files are loaded as ordered `<script>` tags in `index.html`:
+**No bundler. No frontend build.** All browser JavaScript files are loaded as ordered `<script>` tags in `index.html`:
 
 1. `data.js` — mock data layer, exposed as `window.FRDATA`
 2. `components/shared.jsx` — design system primitives (`Icon`, `Logo`, `MatchBar`, `AreaDot`, `ThemeToggle`, `TopBar`) and the `AppCtx` React context; all exported to `window`
 3. `components/onboarding.jsx` — 3-step onboarding flow
-4. `components/schedule.jsx` — `SchedulePanel`, `CalendarView`, `FourYearPlan`
+4. `components/schedule.jsx` — `SchedulePanel`, `CalendarView`; also exports a legacy read-only `FourYearPlan` interface that is not mounted in the main app
 5. `components/agent.jsx` — `AgentPanel` (chat), `Recommendations` panel
-6. `components/course-detail.jsx` — full course detail view
+6. `components/course-detail.jsx` — `CourseDetailShell`, `CurrentCourseView`, `HistoricalCourseView`
 7. `app.jsx` — root `App` component and `Planner` layout; renders into `#root`
 
 **Load order matters.** Each file uses `/* global ... */` comments to declare its dependencies from earlier scripts, and exports its own components to `window` at the bottom (e.g., `window.AgentPanel = AgentPanel`). Never reorder the script tags.
 
 ## State and Routing
 
-- **Global state** lives in `App` via `useState`: `theme`, `route`, `profile`, `schedule`, `messages`
+- **Global state** lives in `App` via `useState`: `theme`, `route`, `profile`, `fourYearPlan`, `activeSem`, `messages`
+- **Schedule** is the active semester array at `fourYearPlan[activeSem]`; agent mutations target only that active array.
 - **Routing** is a plain object `{ name: 'onboarding' | 'planner' | 'course', id? }` stored in `route` state — no router library
-- **Context** (`AppCtx`) provides `theme`, `setTheme`, `route`, `setRoute`, `profile`, `setProfile` to all components via `useApp()`
+- **Context** (`AppCtx`) provides `theme`, `setTheme`, `route`, `setRoute`, `profile`, `setProfile`, `fourYearPlan`, `setFourYearPlan`, `activeSem`, `setActiveSem`, and `planningTermLabel` to components via `useApp()`
 - Theme is persisted to `localStorage` under the key `fr-theme`
 
 ## Data Layer (`FRDATA`)
 
-`window.FRDATA` (defined in `data.js`) is the single source of truth for all mock data:
+`window.FRDATA` (defined in `data.js`) is now a browser adapter and fallback/seed layer. Current course data should come from `/api/current`, which reads and normalizes the local snapshot at `data/courses.json`:
 
 - `FRDATA.catalog` — array of course objects with `id`, `name`, `units`, `schedule`, `days`, `time`, `satisfies`, `prereqs`, `hydrant`, `rating`, `topics`, `area`
 - `FRDATA.profile` — mock student profile (taken courses, preferences, calibration, remaining requirements)
 - `FRDATA.matchScores` — match score breakdown per course (`total`, `interest`, `workload`, `reqValue`)
-- `FRDATA.fourYearPlan` — semester-keyed object mapping semesters (`'F23'`…`'S27'`) to course ID arrays
-- `FRDATA.getCourse(id)` / `FRDATA.getMatch(id)` — lookup helpers
+- `FRDATA.fourYearPlan`, `FRDATA.semesterLabels`, `FRDATA.semesterOrder`, `FRDATA.defaultActiveSem` — term-aware seed plan data; the editable schedule is `fourYearPlan[activeSem]`
+- `FRDATA.fetchCurrentCourse(id)` / `FRDATA.fetchCurrentSearch(q)` / `FRDATA.fetchCurrentCatalog()` — server-backed current catalog helpers with mock fallback
+- `FRDATA.getCourse(id)` / `FRDATA.getMatch(id)` — fallback lookup helpers
 
 Course `area` is computed from course ID prefix: `6.` → `cs`, `18.` → `math`, `8.` → `physics`, `7.` → `bio`, HASS-prefix numbers → `hass`.
+
+### Current Catalog Generation
+
+`data/courses.json` is generated by `scripts/fetch_courses.py` from `https://fireroad.mit.edu/courses/all?full=true`. The script writes a filtered current catalog snapshot: it excludes `is_historical` courses and keeps only subjects with `offered_fall` or `offered_spring`.
+
+Run it with:
+
+```bash
+python3 scripts/fetch_courses.py
+```
+
+Do not treat `data/courses.json` as a full per-semester history. It is not hand-authored, and its provenance must stay documented if the source URL, filter, output path, or schema changes.
 
 ## Design System
 
@@ -56,9 +81,12 @@ Course area colors follow the pattern `var(--course-cs)`, `var(--course-math)`, 
 
 ## Backend Integration Points
 
-The app is currently fully mocked. Stubbed integration points to wire up later:
+The app has a small real backend, while transcript parsing and some student-data persistence remain prototype-level:
 
-- `AgentPanel` (`components/agent.jsx`): `mockAgentReply()` replaces `window.fireroadSocket?.emit('chat', ...)` — the commented socket call shows the intended pattern
+- `AgentPanel` (`components/agent.jsx`): calls `POST /api/chat`, which runs the OpenRouter-backed tool-calling agent from `server/chat/*`.
+- `server/current/*`: normalizes the local `data/courses.json` catalog snapshot for frontend current views, recommendations, and agent tools. Override with `CURRENT_CATALOG_PATH` when needed.
+- `server/history/*`: SQLite-backed read-only historical offerings/documents/policies.
+- `server/chat/prompt.js`: keep the agent focused on the active semester and reject cross-semester roadmap mutations unless explicitly requested.
 - Match scores in `FRDATA.matchScores` should come from `POST /api/score-courses`
 - Transcript parsing in `Onboarding` Step 2 uses a `setTimeout` to simulate `POST /api/parse-transcript`
 - The workload estimate in `CourseDetail` uses `profile.calibration` (0–1 float) — calibration should eventually be computed server-side
@@ -67,3 +95,7 @@ The app is currently fully mocked. Stubbed integration points to wire up later:
 
 - Minimum viewport is 1100px wide (`body { min-width: 1100px }`); mobile layout is not supported
 - The `?v=2` cache-busting query params on all local script/stylesheet URLs must be bumped manually when making changes that might be cached
+
+## Documentation Maintenance
+
+Multiple agents may work in this repository concurrently. When changing setup, scripts, generated data, API contracts, schema assumptions, product scope, or agent behavior, update the relevant documentation in the same change. At minimum, keep `README.md`, this file, `agent.md`, and nearby domain docs consistent with the code. Do not leave generated-data provenance or agent contracts for a later agent to rediscover.

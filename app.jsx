@@ -1,43 +1,49 @@
-/* global React, ReactDOM, FRDATA, FRAuth, AuthGate, Onboarding, ProfilePage, TopBar, SchedulePanel, FourYearPlan, AgentPanel, Recommendations, CourseDetail, AppCtx */
+/* global React, ReactDOM, FRDATA, FRAuth, AuthGate, Onboarding, ProfilePage, TopBar, SchedulePanel, AgentPanel, Recommendations, CourseDetail, AppCtx */
 const { useState, useEffect } = React;
 
-const Planner = ({ schedule, setSchedule, messages, setMessages }) => {
+const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLabel }) => {
   const { setRoute, profile } = React.useContext(AppCtx);
-  const [tab, setTab] = useState('semester');
   const [justAddedId, setJustAddedId] = useState(null);
   const [viewMode, setViewMode] = useState('list');
 
-  const onAddCourse = (id) => {
+  const onAddCourse = async (id) => {
     if (schedule.includes(id)) return;
-    const c = FRDATA.getCourse(id);
-    const newUnits = schedule.reduce((s, x) => s + FRDATA.getCourse(x).units, 0) + c.units;
+    const c = await FRDATA.fetchCurrentCourse(id);
+    if (!c) return;
+    const newUnits = schedule.reduce((s, x) => s + (FRDATA.getCourse(x)?.units || 0), 0) + c.units;
     setSchedule((s) => [...s, id]);
     setJustAddedId(id);
     setTimeout(() => setJustAddedId(null), 800);
     setMessages((m) => [...m, {
       role: 'agent',
-      text: `Added ${c.id} (${c.name}). You're at ${newUnits} units. Want me to suggest something to balance the workload?`,
+      text: `Added ${c.id} (${c.name}) to ${planningTermLabel}. You're at about ${newUnits} units. Want me to suggest something to balance the workload?`,
     }]);
   };
 
   const applyUiActions = (actions) => {
     if (!Array.isArray(actions) || actions.length === 0) return;
 
-    const addActions = actions.filter((action) => action.type === 'add_course' && FRDATA.getCourse(action.courseId));
-    const lastAdded = addActions.length ? FRDATA.getCourse(addActions[addActions.length - 1].courseId).id : null;
+    const addActions = actions.filter((action) => action.type === 'add_course' || action.type === 'replace_course');
+    const lastAdded = addActions.length ? addActions[addActions.length - 1].courseId : null;
 
     setSchedule((current) => {
       let next = [...current];
       actions.forEach((action) => {
-        const course = FRDATA.getCourse(action.courseId);
-        if (!course) return;
+        const courseId = String(action.courseId || '').trim().toUpperCase();
+        const removeCourseId = String(action.removeCourseId || '').trim().toUpperCase();
+        if (!courseId && action.type !== 'replace_course') return;
 
-        if (action.type === 'add_course' && !next.includes(course.id)) {
-          next = [...next, course.id];
+        if (action.type === 'add_course' && !next.includes(courseId)) {
+          next = [...next, courseId];
         }
 
         if (action.type === 'remove_course') {
-          next = next.filter((id) => id !== course.id);
+          next = next.filter((id) => id !== courseId);
+        }
+
+        if (action.type === 'replace_course' && removeCourseId && courseId) {
+          next = next.filter((id) => id !== removeCourseId);
+          if (!next.includes(courseId)) next = [...next, courseId];
         }
       });
       return next;
@@ -53,37 +59,30 @@ const Planner = ({ schedule, setSchedule, messages, setMessages }) => {
 
   return (
     <div className="fade-in" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <TopBar tab={tab} setTab={setTab} />
+      <TopBar planningTermLabel={planningTermLabel} />
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 'calc(100vh - 65px)' }}>
-        {tab === 'semester' ? (
-          <>
-            <div style={{ flex: '1.3', borderRight: '1px solid var(--border)', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-              <SchedulePanel
-                schedule={schedule} setSchedule={setSchedule}
-                justAddedId={justAddedId} onOpenCourse={onOpenCourse}
-                viewMode={viewMode} setViewMode={setViewMode}
-              />
-            </div>
-            <div style={{ flex: '1', minWidth: 380, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ flex: '1 1 0', minHeight: 0, borderBottom: '1px solid var(--border)' }}>
-                <AgentPanel
-                  messages={messages} setMessages={setMessages}
-                  profile={profile} schedule={schedule}
-                  onAddCourse={onAddCourse} onOpenCourse={onOpenCourse}
-                  onApplyUiActions={applyUiActions}
-                />
-              </div>
-              <div style={{ flex: '1 1 0', minHeight: 0 }}>
-                <Recommendations schedule={schedule} onAddCourse={onAddCourse} onOpenCourse={onOpenCourse} />
-              </div>
-            </div>
-          </>
-        ) : (
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <FourYearPlan />
+        <div style={{ flex: '1.3', borderRight: '1px solid var(--border)', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          <SchedulePanel
+            schedule={schedule} setSchedule={setSchedule}
+            justAddedId={justAddedId} onOpenCourse={onOpenCourse}
+            viewMode={viewMode} setViewMode={setViewMode}
+            planningTermLabel={planningTermLabel}
+          />
+        </div>
+        <div style={{ flex: '1', minWidth: 380, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: '1 1 0', minHeight: 0, borderBottom: '1px solid var(--border)' }}>
+            <AgentPanel
+              messages={messages} setMessages={setMessages}
+              profile={profile} schedule={schedule}
+              onAddCourse={onAddCourse} onOpenCourse={onOpenCourse}
+              onApplyUiActions={applyUiActions}
+            />
           </div>
-        )}
+          <div style={{ flex: '1 1 0', minHeight: 0 }}>
+            <Recommendations schedule={schedule} onAddCourse={onAddCourse} onOpenCourse={onOpenCourse} />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -95,13 +94,24 @@ const App = () => {
     taken: [...FRDATA.profile.taken],
     preferences: { ...FRDATA.profile.preferences },
   });
-  const freshFourYearPlan = () => JSON.parse(JSON.stringify(FRDATA.fourYearPlan));
+  const freshFourYearPlan = () => JSON.parse(JSON.stringify(FRDATA.fourYearPlan || {}));
+  const defaultActiveSem = FRDATA.defaultActiveSem || 'S25';
+  const normalizeSavedFourYearPlan = (saved, activeSem) => {
+    const base = freshFourYearPlan();
+    if (saved?.fourYearPlan && typeof saved.fourYearPlan === 'object') {
+      return { ...base, ...saved.fourYearPlan };
+    }
+    if (Array.isArray(saved?.semesterPlan)) {
+      return { ...base, [activeSem]: [...saved.semesterPlan] };
+    }
+    return base;
+  };
 
   const [theme, setTheme] = useState(() => localStorage.getItem('fr-theme') || 'light');
   const [route, setRoute] = useState({ name: 'onboarding' });
   const [profile, setProfile] = useState(freshProfile);
   const [fourYearPlan, setFourYearPlan] = useState(freshFourYearPlan);
-  const [activeSem, setActiveSem] = useState('S25');
+  const [activeSem, setActiveSem] = useState(defaultActiveSem);
   const [messages, setMessages] = useState(FRDATA.agentMessages);
   const [authState, setAuthState] = useState(() => FRAuth.getState());
   const [dataReady, setDataReady] = useState(false);
@@ -128,19 +138,21 @@ const App = () => {
       .then((saved) => {
         if (cancelled) return;
         const completed = Boolean(saved?.onboardingCompleted);
+        const baseProfile = freshProfile();
         const nextProfile = saved?.profile ? {
-          ...freshProfile(),
+          ...baseProfile,
           ...saved.profile,
           taken: [...(saved.profile.taken || [])],
-          preferences: { ...freshProfile().preferences, ...(saved.profile.preferences || {}) },
+          preferences: { ...baseProfile.preferences, ...(saved.profile.preferences || {}) },
         } : {
-          ...freshProfile(),
+          ...baseProfile,
           name: authState.user.email.split('@')[0],
         };
 
+        const nextActiveSem = saved?.activeSem || defaultActiveSem;
         setProfile(nextProfile);
-        setFourYearPlan(saved?.fourYearPlan || freshFourYearPlan());
-        setActiveSem(saved?.activeSem || 'S25');
+        setActiveSem(nextActiveSem);
+        setFourYearPlan(normalizeSavedFourYearPlan(saved, nextActiveSem));
         setOnboardingCompleted(completed);
         setRoute({ name: completed ? 'planner' : 'onboarding' });
         setDataReady(true);
@@ -149,8 +161,8 @@ const App = () => {
         if (cancelled) return;
         console.error(err);
         setProfile({ ...freshProfile(), name: authState.user.email.split('@')[0] });
+        setActiveSem(defaultActiveSem);
         setFourYearPlan(freshFourYearPlan());
-        setActiveSem('S25');
         setOnboardingCompleted(false);
         setRoute({ name: 'onboarding' });
         setDataReady(true);
@@ -159,11 +171,12 @@ const App = () => {
     return () => { cancelled = true; };
   }, [authState.status, authState.user?.uid]);
 
-  // schedule always reflects the active planning semester
   const schedule = fourYearPlan[activeSem] || [];
-  const setSchedule = (updater) => setFourYearPlan(p => {
-    const cur = p[activeSem] || [];
-    return { ...p, [activeSem]: typeof updater === 'function' ? updater(cur) : updater };
+  const planningTermLabel = FRDATA.semesterLabels?.[activeSem] || FRDATA.planningTermLabel || activeSem;
+  const setSchedule = (updater) => setFourYearPlan((currentPlan) => {
+    const currentSchedule = currentPlan[activeSem] || [];
+    const nextSchedule = typeof updater === 'function' ? updater(currentSchedule) : updater;
+    return { ...currentPlan, [activeSem]: nextSchedule };
   });
 
   useEffect(() => {
@@ -223,14 +236,14 @@ const App = () => {
     await FRAuth.resetUserData();
     const nextProfile = { ...freshProfile(), name: authState.user?.email?.split('@')[0] || '' };
     setProfile(nextProfile);
+    setActiveSem(defaultActiveSem);
     setFourYearPlan(freshFourYearPlan());
-    setActiveSem('S25');
     setOnboardingCompleted(false);
     setRoute({ name: 'onboarding' });
   };
 
   const ctx = {
-    theme, setTheme, route, setRoute, profile, setProfile, fourYearPlan, setFourYearPlan, activeSem, setActiveSem,
+    theme, setTheme, route, setRoute, profile, setProfile, fourYearPlan, setFourYearPlan, activeSem, setActiveSem, planningTermLabel,
     authState, dataReady, onboardingCompleted, saveState,
     completeOnboarding, resetOnboarding, signOut: FRAuth.signOut,
   };
@@ -246,7 +259,7 @@ const App = () => {
           <>
             {route.name === 'onboarding' && <Onboarding />}
             {route.name === 'planner' && (
-              <Planner schedule={schedule} setSchedule={setSchedule} messages={messages} setMessages={setMessages} />
+              <Planner schedule={schedule} setSchedule={setSchedule} messages={messages} setMessages={setMessages} planningTermLabel={planningTermLabel} />
             )}
             {route.name === 'course' && (
               <CourseDetail
