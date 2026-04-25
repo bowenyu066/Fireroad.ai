@@ -1,4 +1,4 @@
-/* global React, ReactDOM, FRDATA, Onboarding, TopBar, SchedulePanel, FourYearPlan, AgentPanel, Recommendations, CourseDetail, AppCtx */
+/* global React, ReactDOM, FRDATA, Onboarding, ProfilePage, TopBar, SchedulePanel, FourYearPlan, AgentPanel, Recommendations, CourseDetail, AppCtx */
 const { useState, useEffect } = React;
 
 const Planner = ({ schedule, setSchedule, messages, setMessages }) => {
@@ -81,7 +81,7 @@ const Planner = ({ schedule, setSchedule, messages, setMessages }) => {
           </>
         ) : (
           <div style={{ flex: 1, minWidth: 0 }}>
-            <FourYearPlan schedule={schedule} setSchedule={setSchedule} fourYearPlan={FRDATA.fourYearPlan} />
+            <FourYearPlan />
           </div>
         )}
       </div>
@@ -93,8 +93,16 @@ const App = () => {
   const [theme, setTheme] = useState(() => localStorage.getItem('fr-theme') || 'light');
   const [route, setRoute] = useState({ name: 'onboarding' });
   const [profile, setProfile] = useState(FRDATA.profile);
-  const [schedule, setSchedule] = useState([]);
+  const [fourYearPlan, setFourYearPlan] = useState(FRDATA.fourYearPlan);
+  const [activeSem, setActiveSem] = useState('S25');
   const [messages, setMessages] = useState(FRDATA.agentMessages);
+
+  // schedule always reflects the active planning semester
+  const schedule = fourYearPlan[activeSem] || [];
+  const setSchedule = (updater) => setFourYearPlan(p => {
+    const cur = p[activeSem] || [];
+    return { ...p, [activeSem]: typeof updater === 'function' ? updater(cur) : updater };
+  });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -106,7 +114,7 @@ const App = () => {
     setSchedule((s) => [...s, id]);
   };
 
-  const ctx = { theme, setTheme, route, setRoute, profile, setProfile };
+  const ctx = { theme, setTheme, route, setRoute, profile, setProfile, fourYearPlan, setFourYearPlan, activeSem, setActiveSem };
 
   return (
     <AppCtx.Provider value={ctx}>
@@ -122,6 +130,7 @@ const App = () => {
           onAdd={addCourse}
         />
       )}
+      {route.name === 'profile' && <ProfilePage />}
     </AppCtx.Provider>
   );
 };

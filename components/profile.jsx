@@ -1,0 +1,232 @@
+/* global React, Icon, TopBar, useApp */
+const { useState } = React;
+
+const ProfilePage = () => {
+  const { profile, setProfile, setRoute } = useApp();
+
+  const [draft, setDraft] = useState({
+    ...profile,
+    preferences: { ...profile.preferences },
+    taken: [...profile.taken],
+  });
+  const [newCourse, setNewCourse] = useState('');
+  const [saved, setSaved] = useState(false);
+
+  const upd = (k, v) => setDraft((d) => ({ ...d, [k]: v }));
+  const updPref = (k, v) => setDraft((d) => ({ ...d, preferences: { ...d.preferences, [k]: v } }));
+
+  const save = () => {
+    setProfile(draft);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const removeCourse = (id) => upd('taken', draft.taken.filter((c) => c !== id));
+  const addCourse = () => {
+    const id = newCourse.trim();
+    if (!id || draft.taken.includes(id)) return;
+    upd('taken', [...draft.taken, id]);
+    setNewCourse('');
+  };
+
+  const initials = draft.name.split(' ').map((s) => s[0]).join('');
+  const majorKey = draft.major.replace('Course ', '');
+
+  return (
+    <div className="fade-in" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <TopBar showTabs={false} />
+
+      <div style={{ maxWidth: 700, margin: '0 auto', padding: '48px 32px 80px' }}>
+
+        {/* Avatar header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 44 }}>
+          <div style={{
+            width: 60, height: 60, borderRadius: '50%', background: 'var(--accent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff', fontSize: 22, fontWeight: 600, flexShrink: 0,
+          }}>
+            {initials}
+          </div>
+          <div>
+            <h1 className="display" style={{ margin: 0, fontSize: 26, fontWeight: 600 }}>
+              {draft.name || 'Your Profile'}
+            </h1>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 3 }}>
+              {draft.major} · {draft.year}
+            </div>
+          </div>
+        </div>
+
+        {/* Basic info */}
+        <PSection title="Basic Info">
+          <PField label="Name">
+            <PInput value={draft.name} onChange={(v) => upd('name', v)} placeholder="Your name" />
+          </PField>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <PField label="Major / Program">
+              <PSelect value={majorKey} onChange={(v) => upd('major', `Course ${v}`)} options={[
+                ['6-2', 'Course 6-2 — EE & CS'],
+                ['6-3', 'Course 6-3 — CS & Engineering'],
+                ['6-7', 'Course 6-7 — CS & Mol. Bio'],
+                ['6-9', 'Course 6-9 — CS & Cognition'],
+                ['18', 'Course 18 — Mathematics'],
+                ['8', 'Course 8 — Physics'],
+                ['16', 'Course 16 — AeroAstro'],
+                ['Other', 'Other'],
+              ]} />
+            </PField>
+            <PField label="Year">
+              <PSelect value={draft.year} onChange={(v) => upd('year', v)} options={[
+                ['Freshman', 'Freshman'], ['Sophomore', 'Sophomore'],
+                ['Junior', 'Junior'], ['Senior', 'Senior'], ['MEng', 'MEng'],
+              ]} />
+            </PField>
+          </div>
+        </PSection>
+
+        {/* Preferences */}
+        <PSection title="Preferences">
+          <PField label="ML / AI goal">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                ['research', 'I want to do ML research'],
+                ['apply',    'I want to apply ML to another field'],
+                ['engineer', 'I want to work in ML engineering'],
+                ['curious',  'Just curious / exploring'],
+              ].map(([v, l]) => (
+                <PRadio key={v} value={v} current={draft.preferences.goal} onClick={(val) => updPref('goal', val)}>{l}</PRadio>
+              ))}
+            </div>
+          </PField>
+          <PField label="Learning style">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                ['theory', 'Theory and proofs (psets, derivations)'],
+                ['build',  'Building things (projects, implementations)'],
+                ['mix',    'Mix of both'],
+              ].map(([v, l]) => (
+                <PRadio key={v} value={v} current={draft.preferences.style} onClick={(val) => updPref('style', val)}>{l}</PRadio>
+              ))}
+            </div>
+          </PField>
+          <PField label="Math background">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                ['strong', 'Very strong (math olympiad / real analysis)'],
+                ['solid',  'Solid (18.06 felt manageable)'],
+                ['needs',  'Needs work'],
+              ].map(([v, l]) => (
+                <PRadio key={v} value={v} current={draft.preferences.math} onClick={(val) => updPref('math', val)}>{l}</PRadio>
+              ))}
+            </div>
+          </PField>
+        </PSection>
+
+        {/* Completed courses */}
+        <PSection title="Completed Courses">
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: 8, padding: 14,
+            border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
+            background: 'var(--surface)', minHeight: 64,
+          }}>
+            {draft.taken.map((id) => (
+              <span key={id} className="mono" style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '5px 8px 5px 10px', borderRadius: 999,
+                background: 'var(--surface-2)', border: '1px solid var(--border)', fontSize: 12,
+              }}>
+                {id}
+                <button onClick={() => removeCourse(id)} style={{ display: 'inline-flex', color: 'var(--text-tertiary)' }}>
+                  <Icon name="x" size={12} />
+                </button>
+              </span>
+            ))}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <input
+                className="mono"
+                placeholder="6.006"
+                value={newCourse}
+                onChange={(e) => setNewCourse(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && addCourse()}
+                style={{
+                  fontSize: 12, width: 70, padding: '5px 8px',
+                  border: '1px dashed var(--border-strong)', borderRadius: 999,
+                  background: 'transparent',
+                }}
+              />
+              <button onClick={addCourse} style={{ color: 'var(--text-secondary)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <Icon name="plus" size={12} /> Add
+              </button>
+            </div>
+          </div>
+        </PSection>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 8 }}>
+          <button className="btn btn-ghost" onClick={() => setRoute({ name: 'planner' })} style={{ padding: '10px 20px' }}>
+            Cancel
+          </button>
+          <button className="btn btn-primary" onClick={save} style={{ padding: '10px 24px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            {saved ? <><Icon name="check" size={14} /> Saved!</> : 'Save changes'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PSection = ({ title, children }) => (
+  <div style={{ marginBottom: 36 }}>
+    <div style={{ marginBottom: 18, paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
+      <span className="display" style={{ fontSize: 15, fontWeight: 600 }}>{title}</span>
+    </div>
+    {children}
+  </div>
+);
+
+const PField = ({ label, children }) => (
+  <div style={{ marginBottom: 18 }}>
+    <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 8, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+      {label}
+    </label>
+    {children}
+  </div>
+);
+
+const PInput = ({ value, onChange, placeholder }) => (
+  <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} style={{
+    width: '100%', padding: '11px 14px', borderRadius: 'var(--r-md)',
+    border: '1px solid var(--border)', background: 'var(--surface)', fontSize: 14,
+  }} />
+);
+
+const PSelect = ({ value, onChange, options }) => (
+  <select value={value} onChange={(e) => onChange(e.target.value)} style={{
+    width: '100%', padding: '11px 14px', borderRadius: 'var(--r-md)',
+    border: '1px solid var(--border)', background: 'var(--surface)', fontSize: 14, appearance: 'none',
+    backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A8F9A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",
+    backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
+  }}>
+    {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+  </select>
+);
+
+const PRadio = ({ value, current, onClick, children }) => (
+  <button type="button" onClick={() => onClick(value)} style={{
+    width: '100%', textAlign: 'left', padding: '12px 16px', borderRadius: 'var(--r-md)',
+    border: '1px solid ' + (current === value ? 'var(--accent)' : 'var(--border)'),
+    background: current === value ? 'var(--accent-soft)' : 'var(--surface)',
+    display: 'flex', alignItems: 'center', gap: 12, transition: 'all 140ms',
+  }}>
+    <span style={{
+      width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+      border: '1.5px solid ' + (current === value ? 'var(--accent)' : 'var(--border-strong)'),
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      {current === value && <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)' }} />}
+    </span>
+    <span style={{ fontSize: 14, color: 'var(--text)' }}>{children}</span>
+  </button>
+);
+
+window.ProfilePage = ProfilePage;

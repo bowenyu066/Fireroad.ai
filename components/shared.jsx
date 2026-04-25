@@ -28,6 +28,7 @@ const Icon = ({ name, size = 16, ...rest }) => {
     clock: 'M12 6v6l4 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
     grid: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
     list: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
+    download: 'M12 16V4M8 12l4 4 4-4M4 20h16',
   };
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...rest}>
@@ -60,7 +61,7 @@ const MatchBar = ({ score, animated = true, width = 120, showNumber = true, comp
     return () => clearTimeout(t);
   }, [score, animated]);
 
-  const cls = score >= 85 ? 'green' : score >= 70 ? '' : 'amber';
+  const cls = score >= 90 ? 'green' : score >= 80 ? 'orange' : score >= 60 ? 'yellow' : 'red';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <div className={`match-bar ${cls}`} style={{ width, height: compact ? 4 : 6 }}>
@@ -147,10 +148,16 @@ const TopBar = ({ tab, setTab, showTabs = true }) => {
 
       <div style={{ flex: '1 1 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
         <ThemeToggle />
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 10, padding: '4px 10px 4px 4px',
-          borderRadius: 999, background: 'var(--surface)', border: '1px solid var(--border)',
-        }}>
+        <button
+          onClick={() => setRoute({ name: 'profile' })}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '4px 10px 4px 4px',
+            borderRadius: 999, background: 'var(--surface)', border: '1px solid var(--border)',
+            transition: 'border-color 160ms, background 160ms',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.background = 'var(--surface-2)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--surface)'; }}
+        >
           <div style={{
             width: 24, height: 24, borderRadius: '50%', background: 'var(--accent)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -159,7 +166,7 @@ const TopBar = ({ tab, setTab, showTabs = true }) => {
             {profile.name.split(' ').map((s) => s[0]).join('')}
           </div>
           <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{profile.name}</span>
-        </div>
+        </button>
       </div>
     </div>
   );

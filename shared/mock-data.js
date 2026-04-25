@@ -23,7 +23,7 @@
     taken: ['6.006', '18.06', '6.009', '8.02', '18.02', '6.100A', '21H.001'],
     calibration: 0.85,
     preferences: {
-      goal: 'ML research',
+      goal: 'research',
       style: 'theory',
       math: 'strong',
     },
