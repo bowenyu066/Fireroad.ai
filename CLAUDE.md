@@ -88,7 +88,7 @@ The app has a small real backend, while transcript parsing and some student-data
 - `server/history/*`: SQLite-backed read-only historical offerings/documents/policies.
 - `server/chat/prompt.js`: keep the agent focused on the active semester and reject cross-semester roadmap mutations unless explicitly requested.
 - Match scores in `FRDATA.matchScores` should come from `POST /api/score-courses`
-- Transcript parsing in `Onboarding` Step 2 uses a `setTimeout` to simulate `POST /api/parse-transcript`
+- First-entry onboarding calls `/api/onboarding/*` for PDF text extraction, prompt execution, course import, and course-preference updates. The browser persists returned `personalCourseMarkdown` through Firebase client auth.
 - The workload estimate in `CourseDetail` uses `profile.calibration` (0–1 float) — calibration should eventually be computed server-side
 
 ## Key Constraints
@@ -98,4 +98,4 @@ The app has a small real backend, while transcript parsing and some student-data
 
 ## Documentation Maintenance
 
-Multiple agents may work in this repository concurrently. When changing setup, scripts, generated data, API contracts, schema assumptions, product scope, or agent behavior, update the relevant documentation in the same change. At minimum, keep `README.md`, this file, `agent.md`, and nearby domain docs consistent with the code. Do not leave generated-data provenance or agent contracts for a later agent to rediscover.
+Multiple agents may work in this repository concurrently. When changing setup, scripts, generated data, API contracts, schema assumptions, product scope, or agent behavior, update the relevant documentation in the same change. At minimum, keep `README.md`, this file, prompt Markdown files, and nearby domain docs consistent with the code. Do not leave generated-data provenance or agent contracts for a later agent to rediscover.
