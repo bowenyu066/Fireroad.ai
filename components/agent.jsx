@@ -2,7 +2,7 @@
 const { useState, useEffect, useRef } = React;
 
 // ============== Agent / chat panel (top-right) ==============
-const AgentPanel = ({ messages, setMessages, onAddCourse, onOpenCourse }) => {
+const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onOpenCourse, onApplyUiActions }) => {
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
   const scrollRef = useRef(null);
@@ -11,22 +11,47 @@ const AgentPanel = ({ messages, setMessages, onAddCourse, onOpenCourse }) => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, typing]);
 
-  const send = () => {
-    if (!input.trim()) return;
+  const send = async () => {
+    if (!input.trim() || typing) return;
     const userMsg = { role: 'user', text: input.trim() };
-    setMessages((m) => [...m, userMsg]);
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
     setInput('');
     setTyping(true);
 
-    // Socket placeholder for backend integration
-    // window.fireroadSocket?.emit('chat', { message: userMsg.text });
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: nextMessages,
+          profile,
+          schedule,
+        }),
+      });
 
-    // Mock canned response
-    setTimeout(() => {
-      const reply = mockAgentReply(userMsg.text);
-      setMessages((m) => [...m, reply]);
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        const text = payload?.message?.text || payload?.error || 'The agent is unavailable right now. Manual planning still works.';
+        throw new Error(text);
+      }
+
+      if (payload?.message) {
+        setMessages((m) => [...m, payload.message]);
+      }
+
+      if (Array.isArray(payload?.uiActions) && payload.uiActions.length > 0) {
+        onApplyUiActions(payload.uiActions);
+      }
+    } catch (error) {
+      setMessages((m) => [...m, {
+        role: 'agent',
+        text: error.message || 'The agent is unavailable right now. Manual planning still works.',
+        suggestions: [],
+      }]);
+    } finally {
       setTyping(false);
-    }, 1100);
+    }
   };
 
   return (
@@ -159,36 +184,6 @@ const TypingDots = () => (
     ))}
   </div>
 );
-
-const mockAgentReply = (text) => {
-  const t = text.toLowerCase();
-  if (t.includes('ml') || t.includes('machine learning')) {
-    return {
-      role: 'agent',
-      text: "Looking at your profile — strong math, theory-leaning, ML research goal — 6.3900 is the cleanest entry point. If you've already got that, 6.S898 (Deep Learning) builds on it well. Both?",
-      suggestions: ['6.3900', '6.S898'],
-    };
-  }
-  if (t.includes('hass') || t.includes('humanities')) {
-    return {
-      role: 'agent',
-      text: "You still need HASS-A and HASS-S. 21M.301 (Harmony I) is well-rated and lighter (~8h/wk) — pairs nicely with a heavier technical load.",
-      suggestions: ['21M.301', '14.01'],
-    };
-  }
-  if (t.includes('light') || t.includes('easy')) {
-    return {
-      role: 'agent',
-      text: "For a lighter semester I'd swap 6.7900 for 6.3900 — same area, much friendlier workload. 14.01 is also a solid HASS-S that won't burn you out.",
-      suggestions: ['6.3900', '14.01'],
-    };
-  }
-  return {
-    role: 'agent',
-    text: "Got it. Want me to build a draft schedule that hits CI-M and REST while keeping workload under ~50h/wk? Or pick courses one by one?",
-    suggestions: [],
-  };
-};
 
 // ============== Recommendations panel (bottom-right) ==============
 const Recommendations = ({ schedule, onAddCourse, onOpenCourse }) => {

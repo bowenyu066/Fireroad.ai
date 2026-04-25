@@ -2,7 +2,7 @@
 const { useState, useEffect } = React;
 
 const Planner = ({ schedule, setSchedule, messages, setMessages }) => {
-  const { setRoute } = React.useContext(AppCtx);
+  const { setRoute, profile } = React.useContext(AppCtx);
   const [tab, setTab] = useState('semester');
   const [justAddedId, setJustAddedId] = useState(null);
   const [viewMode, setViewMode] = useState('list');
@@ -18,6 +18,35 @@ const Planner = ({ schedule, setSchedule, messages, setMessages }) => {
       role: 'agent',
       text: `Added ${c.id} (${c.name}). You're at ${newUnits} units. Want me to suggest something to balance the workload?`,
     }]);
+  };
+
+  const applyUiActions = (actions) => {
+    if (!Array.isArray(actions) || actions.length === 0) return;
+
+    const addActions = actions.filter((action) => action.type === 'add_course' && FRDATA.getCourse(action.courseId));
+    const lastAdded = addActions.length ? FRDATA.getCourse(addActions[addActions.length - 1].courseId).id : null;
+
+    setSchedule((current) => {
+      let next = [...current];
+      actions.forEach((action) => {
+        const course = FRDATA.getCourse(action.courseId);
+        if (!course) return;
+
+        if (action.type === 'add_course' && !next.includes(course.id)) {
+          next = [...next, course.id];
+        }
+
+        if (action.type === 'remove_course') {
+          next = next.filter((id) => id !== course.id);
+        }
+      });
+      return next;
+    });
+
+    if (lastAdded) {
+      setJustAddedId(lastAdded);
+      setTimeout(() => setJustAddedId(null), 800);
+    }
   };
 
   const onOpenCourse = (id) => setRoute({ name: 'course', id });
@@ -40,7 +69,9 @@ const Planner = ({ schedule, setSchedule, messages, setMessages }) => {
               <div style={{ flex: '1 1 0', minHeight: 0, borderBottom: '1px solid var(--border)' }}>
                 <AgentPanel
                   messages={messages} setMessages={setMessages}
+                  profile={profile} schedule={schedule}
                   onAddCourse={onAddCourse} onOpenCourse={onOpenCourse}
+                  onApplyUiActions={applyUiActions}
                 />
               </div>
               <div style={{ flex: '1 1 0', minHeight: 0 }}>
@@ -59,7 +90,7 @@ const Planner = ({ schedule, setSchedule, messages, setMessages }) => {
 };
 
 const App = () => {
-  const [theme, setTheme] = useState(() => localStorage.getItem('fr-theme') || 'dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem('fr-theme') || 'light');
   const [route, setRoute] = useState({ name: 'onboarding' });
   const [profile, setProfile] = useState(FRDATA.profile);
   const [schedule, setSchedule] = useState([]);
