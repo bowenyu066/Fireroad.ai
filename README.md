@@ -68,4 +68,4 @@ The seed script currently imports the demo `6.*` courses from `shared/mock-data.
 
 ## Documentation Maintenance
 
-Multiple agents may work in this repository at the same time. Any change that alters setup, data generation, API contracts, product scope, scripts, schemas, or agent behavior must update the relevant docs in the same change (`README.md`, `CLAUDE.md`, `agent.md`, or the closest domain doc). Treat generated-data provenance, including the `data/courses.json` generation rule above, as maintained project state.
+Multiple agents may work in this repository at the same time. Any change that alters setup, data generation, API contracts, product scope, scripts, schemas, prompt assets, or agent behavior must update the relevant docs in the same change (`README.md`, `CLAUDE.md`, prompt files, or the closest domain doc). Treat generated-data provenance, including the `data/courses.json` generation rule above, as maintained project state.

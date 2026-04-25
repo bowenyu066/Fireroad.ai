@@ -101,4 +101,4 @@ The app has a small real backend, while transcript parsing and some student-data
 
 ## Documentation Maintenance
 
-Multiple agents may work in this repository concurrently. When changing setup, scripts, generated data, API contracts, schema assumptions, product scope, or agent behavior, update the relevant documentation in the same change. At minimum, keep `README.md`, this file, `agent.md`, and nearby domain docs consistent with the code. Do not leave generated-data provenance or agent contracts for a later agent to rediscover.
+Multiple agents may work in this repository concurrently. When changing setup, scripts, generated data, API contracts, schema assumptions, product scope, prompt assets, or agent behavior, update the relevant documentation in the same change. At minimum, keep `README.md`, this file, prompt files, and nearby domain docs consistent with the code. Do not leave generated-data provenance or agent contracts for a later agent to rediscover.
