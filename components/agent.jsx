@@ -15,16 +15,70 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, typing]);
 
+  const updateStreamingMessage = (id, updater) => {
+    setMessages((current) => current.map((message) => (
+      message.id === id ? { ...message, ...updater(message) } : message
+    )));
+  };
+
+  const readAgentStream = async (response, handlers) => {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    const handleBlock = (block) => {
+      const lines = block.split(/\r?\n/);
+      let event = 'message';
+      const dataLines = [];
+      lines.forEach((line) => {
+        if (line.startsWith('event:')) event = line.slice(6).trim();
+        if (line.startsWith('data:')) dataLines.push(line.slice(5).trimStart());
+      });
+      if (!dataLines.length) return;
+      const raw = dataLines.join('\n');
+      const data = raw ? JSON.parse(raw) : {};
+      if (handlers[event]) handlers[event](data);
+    };
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const blocks = buffer.split(/\r?\n\r?\n/);
+      buffer = blocks.pop() || '';
+      blocks.forEach(handleBlock);
+    }
+    buffer += decoder.decode();
+    if (buffer.trim()) handleBlock(buffer);
+  };
+
   const send = async () => {
     if (!input.trim() || typing) return;
     const userMsg = { role: 'user', text: input.trim() };
     const nextMessages = [...messages, userMsg];
-    setMessages(nextMessages);
+    const agentMessageId = `agent-${Date.now()}`;
+    const clientRequestId = `chat-${Date.now().toString(36)}`;
+    const placeholder = {
+      id: agentMessageId,
+      role: 'agent',
+      text: '',
+      status: 'Thinking...',
+      suggestions: [],
+      streaming: true,
+    };
+    setMessages([...nextMessages, placeholder]);
     setInput('');
     setTyping(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      console.debug('[agent stream] start', {
+        clientRequestId,
+        activeSem,
+        schedule,
+        messageCount: nextMessages.length,
+        latestUserText: userMsg.text,
+      });
+      const response = await fetch('/api/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -37,25 +91,60 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
         }),
       });
 
-      const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        const text = payload?.message?.text || payload?.error || 'The agent is unavailable right now. Manual planning still works.';
-        throw new Error(text);
+        const text = await response.text().catch(() => '');
+        console.error('[agent stream] http error', { clientRequestId, status: response.status, text });
+        throw new Error(`The agent returned HTTP ${response.status}. Check the server logs for this request.`);
       }
 
-      if (payload?.message) {
-        setMessages((m) => [...m, payload.message]);
-      }
-
-      if (Array.isArray(payload?.uiActions) && payload.uiActions.length > 0) {
-        onApplyUiActions(payload.uiActions);
-      }
+      await readAgentStream(response, {
+        status: ({ text }) => {
+          console.debug('[agent stream] status', { clientRequestId, text });
+          updateStreamingMessage(agentMessageId, (message) => ({
+            status: message.text ? '' : text,
+          }));
+        },
+        delta: ({ text }) => updateStreamingMessage(agentMessageId, (message) => ({
+          text: `${message.text || ''}${text || ''}`,
+          status: '',
+        })),
+        final: (payload) => {
+          console.debug('[agent stream] final', {
+            clientRequestId,
+            textLength: payload?.message?.text?.length || 0,
+            suggestions: payload?.message?.suggestions || [],
+            uiActions: payload?.uiActions || [],
+            debug: payload?.debug,
+          });
+          if (payload?.message) {
+            updateStreamingMessage(agentMessageId, () => ({
+              ...payload.message,
+              id: agentMessageId,
+              streaming: false,
+              status: '',
+            }));
+          }
+          if (Array.isArray(payload?.uiActions) && payload.uiActions.length > 0) {
+            onApplyUiActions(payload.uiActions);
+          }
+        },
+        error: (payload) => {
+          console.error('[agent stream] sse error', { clientRequestId, payload });
+          throw new Error(payload?.message?.text || payload?.error || 'The agent is unavailable right now. Manual planning still works.');
+        },
+      });
     } catch (error) {
-      setMessages((m) => [...m, {
+      console.error('[agent stream] failed', { clientRequestId, error });
+      const failedToFetch = String(error && error.message || '').includes('Failed to fetch');
+      updateStreamingMessage(agentMessageId, () => ({
         role: 'agent',
-        text: error.message || 'The agent is unavailable right now. Manual planning still works.',
+        text: failedToFetch
+          ? 'Failed to reach /api/chat/stream. Restart the dev server and check the server terminal logs.'
+          : (error.message || 'The agent is unavailable right now. Manual planning still works.'),
         suggestions: [],
-      }]);
+        streaming: false,
+        status: '',
+      }));
     } finally {
       setTyping(false);
     }
@@ -91,7 +180,7 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
       {/* Messages */}
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
         {messages.map((m, i) => <MessageBubble key={i} msg={m} onAddCourse={onAddCourse} onOpenCourse={onOpenCourse} />)}
-        {typing && <TypingDots />}
+        {typing && !messages.some((message) => message.streaming) && <TypingDots />}
       </div>
 
       {/* Input */}
@@ -124,10 +213,69 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
   );
 };
 
+const escapeHtml = (value) => String(value || '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+const renderInlineMarkdown = (value) => {
+  let html = escapeHtml(value);
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  return html;
+};
+
+const renderMarkdown = (value) => {
+  const lines = String(value || '').split('\n');
+  const blocks = [];
+  let paragraph = [];
+  let listItems = [];
+
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    blocks.push(`<p>${renderInlineMarkdown(paragraph.join(' '))}</p>`);
+    paragraph = [];
+  };
+  const flushList = () => {
+    if (!listItems.length) return;
+    blocks.push(`<ul>${listItems.map((item) => `<li>${renderInlineMarkdown(item)}</li>`).join('')}</ul>`);
+    listItems = [];
+  };
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flushParagraph();
+      flushList();
+      return;
+    }
+
+    const bullet = trimmed.match(/^[-*]\s+(.+)$/);
+    if (bullet) {
+      flushParagraph();
+      listItems.push(bullet[1]);
+      return;
+    }
+
+    flushList();
+    paragraph.push(trimmed);
+  });
+
+  flushParagraph();
+  flushList();
+  return blocks.join('');
+};
+
 const MessageBubble = ({ msg, onAddCourse, onOpenCourse }) => {
   const isUser = msg.role === 'user';
   const [suggestedCourses, setSuggestedCourses] = useState([]);
   const suggestionsKey = (msg.suggestions || []).join('|');
+  const displayText = msg.text || (msg.streaming ? msg.status || 'Thinking...' : '');
+  const messageHtml = renderMarkdown(displayText);
 
   useEffect(() => {
     let cancelled = false;
@@ -146,11 +294,13 @@ const MessageBubble = ({ msg, onAddCourse, onOpenCourse }) => {
         maxWidth: '88%',
         padding: '10px 14px', borderRadius: 'var(--r-md)',
         background: isUser ? 'var(--accent)' : 'var(--surface)',
-        color: isUser ? '#fff' : 'var(--text)',
+        color: isUser ? '#fff' : (msg.streaming && !msg.text ? 'var(--text-secondary)' : 'var(--text)'),
         border: isUser ? 'none' : '1px solid var(--border)',
         fontSize: 13, lineHeight: 1.55,
       }}>
-        {msg.text}
+        {isUser ? displayText : (
+          <div className="chat-markdown" dangerouslySetInnerHTML={{ __html: messageHtml }} />
+        )}
       </div>
 
       {suggestedCourses.length > 0 && (

@@ -21,6 +21,7 @@ npm install
 export OPENROUTER_API_KEY="your_openrouter_key"
 # Optional:
 export OPENROUTER_MODEL="openai/gpt-4.1-mini"
+export OPENROUTER_TIMEOUT_MS=20000
 npm run dev
 ```
 
@@ -32,6 +33,9 @@ Open http://localhost:3000.
 
 - `GET /api/health` checks server status and whether an OpenRouter key is configured.
 - `POST /api/chat` accepts `{ messages, profile, schedule, activeSem, studentName }` where `schedule` is `fourYearPlan[activeSem]`, and returns an agent message plus validated `uiActions`.
+- `POST /api/chat/stream` accepts the same payload and returns Server-Sent Events (`status`, `delta`, `final`, `error`, `done`) so the chat panel can stream the agent's `text` while still applying final validated `uiActions`.
+- Chat requests log request-scoped diagnostics in the server terminal as `[agent <id>] ...`, including model rounds, tool call arguments, current-catalog result summaries, final JSON parsing, and UI action validation. The browser console also logs `[agent stream] ...` for stream start/status/final/failure events.
+- Agent message text is rendered as a small safe Markdown subset in the chat UI, so model responses should use real newline-separated Markdown bullets instead of one-line pseudo-lists.
 - `GET /api/current/course/:courseId` returns normalized current catalog data.
 - `GET /api/current/search?q=...` searches current catalog data.
 - `GET /api/current/catalog` returns a normalized current catalog snapshot.

@@ -11,6 +11,7 @@ npm install
 export OPENROUTER_API_KEY="your_openrouter_key"
 # Optional:
 export OPENROUTER_MODEL="openai/gpt-4.1-mini"
+export OPENROUTER_TIMEOUT_MS=20000
 npm run dev
 ```
 
@@ -89,6 +90,9 @@ Course area colors follow the pattern `var(--course-cs)`, `var(--course-math)`, 
 The app has a small real backend, while transcript parsing and some student-data persistence remain prototype-level:
 
 - `AgentPanel` (`components/agent.jsx`): calls `POST /api/chat`, including `studentName`, which runs the OpenRouter-backed tool-calling agent from `server/chat/*`.
+- `AgentPanel` prefers `POST /api/chat/stream` for Server-Sent Events. The stream sends status and text deltas, then a final validated payload with suggestions and `uiActions`.
+- Chat routes emit request-scoped server logs as `[agent <id>] ...`. Preserve this logging when touching agent/tool behavior; it is the primary way to debug model rounds, tool call args/results, final JSON parsing, and validated UI actions.
+- Agent message text is rendered as a limited Markdown subset in `components/agent.jsx`; keep model-facing prompts aligned so responses use real Markdown lists and no raw HTML.
 - `server/current/*`: normalizes the local `data/courses.json` catalog snapshot for frontend current views, recommendations, and agent tools. Override with `CURRENT_CATALOG_PATH` when needed.
 - `server/history/*`: SQLite-backed read-only historical offerings/documents/policies.
 - `server/chat/prompt.js`: keep the agent focused on the active semester and reject cross-semester roadmap mutations unless explicitly requested.
