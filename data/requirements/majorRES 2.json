@@ -1,0 +1,142 @@
+{
+  "title-no-degree": "Russian and Eurasian Studies",
+  "list-id": "majorRES.reql",
+  "title": "Bachelor of Science in Humanities (Russian and Eurasian Studies)",
+  "medium-title": "21 Major (RES)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "Students majoring in Russian and Eurasian Studies may substitute two subjects for the pre-thesis tutorial and thesis.",
+      "reqs": [
+        {
+          "req": "21.THT"
+        },
+        {
+          "req": "21.THU"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "A minimum of nine subjects (108 units) beyond the pre-thesis and thesis. The list of restricted electives below is not exhaustive. Additional information may be obtained from the advisor for the program, Professor Elizabeth Wood, E51-282, 617-253-3255, or from the SHASS academic administrator, Andrea Wirth, 4-240, 617-253-4441. Two intermediate subjects in the Russian language are required to satisfy Area I. Students with the equivalent proficiency, but who are not native speakers, can either take two advanced language subjects beyond Level IV (highly recommended) or two additional subjects from Areas II, III, and IV. Native speakers may substitute other subjects with the permission of the program advisor. Students who are not required to take Area I subjects must take at least one subject from each other area.",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "21G.613"
+            },
+            {
+              "req": "21G.614"
+            }
+          ],
+          "title": "Area I: Language"
+        },
+        {
+          "threshold": {
+            "cutoff": 7,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "threshold": {
+                    "cutoff": 7,
+                    "criterion": "subjects",
+                    "type": "LTE"
+                  },
+                  "req": "Harvard/Wellesley subjects",
+                  "plain-string": true,
+                  "threshold-desc": "select at most 7"
+                },
+                {
+                  "req": "21G.077"
+                },
+                {
+                  "req": "21G.618"
+                }
+              ],
+              "title": "Area II: Humanities and the Arts"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "threshold": {
+                    "cutoff": 7,
+                    "criterion": "subjects",
+                    "type": "LTE"
+                  },
+                  "req": "Harvard/Wellesley subjects",
+                  "plain-string": true,
+                  "threshold-desc": "select at most 7"
+                },
+                {
+                  "req": "17.569"
+                },
+                {
+                  "req": "21H.245"
+                }
+              ],
+              "title": "Area III: Social Sciences"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "threshold": {
+                    "cutoff": 7,
+                    "criterion": "subjects",
+                    "type": "LTE"
+                  },
+                  "req": "Harvard/Wellesley subjects",
+                  "plain-string": true,
+                  "threshold-desc": "select at most 7"
+                },
+                {
+                  "req": "21H.244"
+                }
+              ],
+              "title": "Area IV: Historical Studies"
+            }
+          ],
+          "distinct-threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "threshold-desc": "select any 7 from at least 2 categories"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Restricted Electives"
+    }
+  ],
+  "short-title": "21",
+  "desc": "This program is intended for students seeking an interdisciplinary program of study centered on Russia and Eurasia. The program is regional in spirit, meaning that students can take courses in a wide range of countries of East/Central Europe, the Slavic states, and Central Asia."
+}

@@ -1,0 +1,226 @@
+{
+  "title-no-degree": "African and African Diaspora Studies",
+  "list-id": "majorAFADS.reql",
+  "title": "Bachelor of Science in Humanities (African and African Diaspora Studies)",
+  "medium-title": "21 Major (African Studies)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "As noted in the degree chart, the program consists of at least eight subjects beyond the introductory subject (24.912[J] Black Matters: Introduction to Black Studies), pre-thesis tutorial (21.THT), and thesis (21.THU).",
+      "reqs": [
+        {
+          "req": "21.THT"
+        },
+        {
+          "req": "21.THU"
+        },
+        {
+          "req": "24.912"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "any",
+      "desc": "Students are expected to have two intermediate (Levels III and IV) subjects in either the official language of the region of study or two subjects at any level in an indigenous African language or non-English official language of the region of study. In cases where the student is specializing in Anglophone Africa or an English-speaking region of the diaspora, and does not undertake study of an indigenous language, or is a native speaker of the official language(s) of a country or region of emphasis, this component would be replaced by literature or other humanities subjects.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "2 intermediate language subjects",
+          "plain-string": true,
+          "threshold-desc": "select any 2"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "21G.303"
+            },
+            {
+              "req": "21G.304"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "21G.703"
+            },
+            {
+              "req": "21G.704"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "21G.803"
+            },
+            {
+              "req": "21G.804"
+            }
+          ],
+          "threshold-desc": "select all"
+        }
+      ],
+      "threshold-desc": "select any",
+      "title": "Area I: Language"
+    },
+    {
+      "distinct-threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "threshold-desc": "select any 6 from at least 2 categories",
+      "title": "Additional Areas",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21L.007"
+            },
+            {
+              "req": "21L.504"
+            },
+            {
+              "req": "21M.030"
+            },
+            {
+              "req": "21M.226"
+            },
+            {
+              "req": "21M.293"
+            },
+            {
+              "req": "21M.460"
+            },
+            {
+              "req": "21W.742"
+            },
+            {
+              "req": "WGS.142"
+            }
+          ],
+          "title": "Area II: Humanities and the Arts"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "11.164"
+            },
+            {
+              "req": "11.166"
+            },
+            {
+              "req": "17.523"
+            },
+            {
+              "req": "17.571"
+            },
+            {
+              "req": "21A.306"
+            },
+            {
+              "req": "21A.308"
+            },
+            {
+              "req": "21A.442"
+            },
+            {
+              "req": "24.908"
+            },
+            {
+              "req": "WGS.150"
+            },
+            {
+              "req": "WGS.225"
+            },
+            {
+              "req": "WGS.228"
+            }
+          ],
+          "title": "Area III: Social Sciences"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21H.165"
+            },
+            {
+              "req": "21H.229"
+            },
+            {
+              "req": "21H.319"
+            },
+            {
+              "req": "21H.358"
+            },
+            {
+              "req": "21H.385"
+            },
+            {
+              "req": "STS.048"
+            },
+            {
+              "req": "STS.088"
+            },
+            {
+              "req": "WGS.220"
+            }
+          ],
+          "title": "Area IV: Historical Studies"
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "LTE"
+          },
+          "req": "appropriate Harvard/Wellesley subjects",
+          "plain-string": true,
+          "threshold-desc": "select at most 3"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 6,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "The eight subjects for the major—at least five of which must be MIT subjects—should be arranged in four areas of study; students should select two subjects that contribute to language training, and six subjects that together draw from Areas II, III, and IV:"
+    }
+  ],
+  "short-title": "21",
+  "desc": "The African and African Diaspora Studies program is designed for students interested in the contributions, cultures, and experiences of peoples of African descent on the African continent and across the diaspora. The goal of the program is to emphasize the importance of Africa and people of African descent in the world's cultural, economic, and social developments, and to provide a balance between language, humanistic, historical, and contemporary study. Building on MIT's strengths in understanding science and technology, the program provides students the opportunity to study interactions of people of African descent with contemporary technology sectors, such as digital media, artificial intelligence, aerospace, genetics, and climate change mitigation. It also includes the study of economic and political systems as they reflect the African continent and areas of the African diaspora, and the histories, languages, and literatures of Africans and peoples of African descent elsewhere."
+}
