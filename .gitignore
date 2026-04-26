@@ -4,3 +4,4 @@ npm-debug.log*
 server-start*.log
 .env
 .ka
+.vercel
