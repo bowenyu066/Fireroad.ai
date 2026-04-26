@@ -378,6 +378,7 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
 };
 
 const App = () => {
+  const PLAN_DRAFT_KEY = 'fr-fouryear-plan-draft-v1';
   const freshProfile = () => ({
     name: '',
     kerberos: '',
@@ -402,11 +403,22 @@ const App = () => {
   };
   const emptyFourYearPlan = () => Object.fromEntries((FRDATA.semesterOrder || []).map((id) => [id, []]));
   const mergePlanWithMarkdown = (plan, markdown) => {
-    const parsedCourseIds = new Set(PersonalCourse.parseCourseRows(markdown || '').map((course) => course.id));
+    const parsedCourses = PersonalCourse.parseCourseRows(markdown || '');
     const completedPlan = PersonalCourse.planFromCompletedCourses(markdown || '');
+    const completedCourseIdsWithKnownTerm = new Set(parsedCourses
+      .filter((course) => course.status === 'completed' && PersonalCourse.termIdFromLabel(course.term))
+      .map((course) => course.id));
+    const priorCreditCourseIds = new Set(parsedCourses
+      .filter((course) => course.status === 'prior_credit')
+      .map((course) => course.id));
     const next = Object.fromEntries(Object.entries(plan || {}).map(([termId, courseIds]) => [
       termId,
-      Array.isArray(courseIds) ? courseIds.filter((courseId) => !parsedCourseIds.has(PersonalCourse.normalizeCourseId(courseId))) : [],
+      Array.isArray(courseIds)
+        ? courseIds.filter((courseId) => {
+          const normalized = PersonalCourse.normalizeCourseId(courseId);
+          return !priorCreditCourseIds.has(normalized) && !completedCourseIdsWithKnownTerm.has(normalized);
+        })
+        : [],
     ]));
     Object.entries(completedPlan).forEach(([termId, courseIds]) => {
       const existing = Array.isArray(next[termId]) ? next[termId] : [];
@@ -482,6 +494,36 @@ const App = () => {
     }
     return mergePlanWithMarkdown(base, markdown);
   };
+  const planDraftUserKey = (user = authState.user) => `${PLAN_DRAFT_KEY}:${user?.uid || user?.email || 'anonymous'}`;
+  const writePlanDraft = (plan, sem, user = authState.user) => {
+    if (!user || !plan || typeof plan !== 'object') return;
+    try {
+      localStorage.setItem(planDraftUserKey(user), JSON.stringify({
+        fourYearPlan: plan,
+        activeSem: sem,
+        user: user.email || user.uid || '',
+        updatedAtClient: new Date().toISOString(),
+      }));
+    } catch (error) {
+      console.warn('[plan draft] failed to write local backup', error);
+    }
+  };
+  const readPlanDraft = (user = authState.user) => {
+    if (!user) return null;
+    try {
+      const parsed = JSON.parse(localStorage.getItem(planDraftUserKey(user)) || 'null');
+      if (!parsed || typeof parsed !== 'object' || !parsed.fourYearPlan || typeof parsed.fourYearPlan !== 'object') return null;
+      return parsed;
+    } catch (error) {
+      console.warn('[plan draft] failed to read local backup', error);
+      return null;
+    }
+  };
+  const isDraftNewerThanSaved = (draft, saved) => {
+    const draftMs = Date.parse(draft?.updatedAtClient || '');
+    const savedMs = Date.parse(saved?.updatedAtClient || '');
+    return Number.isFinite(draftMs) && (!Number.isFinite(savedMs) || draftMs > savedMs);
+  };
 
   const [theme, setTheme] = useState(() => localStorage.getItem('fr-theme') || 'light');
   const [route, setRoute] = useState({ name: 'onboarding' });
@@ -495,6 +537,8 @@ const App = () => {
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [notification, setNotification] = useState(null);
   const [saveState, setSaveState] = useState('idle');
+  const [autosaveEnabled, setAutosaveEnabled] = useState(false);
+  const saveQueueRef = useRef(Promise.resolve());
 
   useEffect(() => {
     const unsubscribe = FRAuth.subscribe(setAuthState);
@@ -508,10 +552,12 @@ const App = () => {
     if (authState.status !== 'signedIn') {
       setDataReady(false);
       setOnboardingCompleted(false);
+      setAutosaveEnabled(false);
       return () => { cancelled = true; };
     }
 
     setDataReady(false);
+    setAutosaveEnabled(false);
     FRAuth.loadUserData()
       .then((saved) => {
         if (cancelled) return;
@@ -532,7 +578,16 @@ const App = () => {
           name: authState.user.email.split('@')[0],
         };
 
-        const nextActiveSem = resolveSavedActiveSem(saved);
+        const localDraft = readPlanDraft(authState.user);
+        const effectiveSaved = localDraft && isDraftNewerThanSaved(localDraft, saved)
+          ? {
+            ...(saved || {}),
+            fourYearPlan: localDraft.fourYearPlan,
+            activeSem: localDraft.activeSem || saved?.activeSem,
+            updatedAtClient: localDraft.updatedAtClient,
+          }
+          : saved;
+        const nextActiveSem = resolveSavedActiveSem(effectiveSaved);
         const nextPersonalCourseMarkdown = typeof saved?.personalCourseMarkdown === 'string'
           ? saved.personalCourseMarkdown
           : (saved?.onboarding?.personalCourseMarkdown
@@ -544,24 +599,37 @@ const App = () => {
         if (nextPersonalCourseMarkdown) localStorage.setItem('fr-personalcourse-draft', nextPersonalCourseMarkdown);
         setMessages(personalizeAgentMessages(nextProfile));
         setActiveSem(nextActiveSem);
-        setFourYearPlan(normalizeSavedFourYearPlan(saved, nextActiveSem, nextPersonalCourseMarkdown));
+        setFourYearPlan(normalizeSavedFourYearPlan(effectiveSaved, nextActiveSem, nextPersonalCourseMarkdown));
         setOnboardingCompleted(completed);
         setRoute({ name: completed ? 'planner' : 'onboarding' });
         setDataReady(true);
+        setAutosaveEnabled(true);
       })
       .catch((err) => {
         if (cancelled) return;
         console.error(err);
+        const localDraft = readPlanDraft(authState.user);
         const nextProfile = { ...freshProfile(), name: authState.user.email.split('@')[0] };
         const nextPersonalCourseMarkdown = localStorage.getItem('fr-personalcourse-draft') || '';
+        const nextPlan = localDraft?.fourYearPlan || emptyFourYearPlan();
+        const nextActiveSem = localDraft?.activeSem || defaultActiveSem;
+        const recoveredLocalPlan = Boolean(localDraft);
         setProfile(deriveProfileFromMarkdown(nextProfile, nextPersonalCourseMarkdown));
         setPersonalCourseMarkdown(nextPersonalCourseMarkdown);
         setMessages(personalizeAgentMessages(nextProfile));
-        setActiveSem(defaultActiveSem);
-        setFourYearPlan(emptyFourYearPlan());
-        setOnboardingCompleted(false);
-        setRoute({ name: 'onboarding' });
+        setActiveSem(nextActiveSem);
+        setFourYearPlan(nextPlan);
+        setOnboardingCompleted(recoveredLocalPlan);
+        setRoute({ name: recoveredLocalPlan ? 'planner' : 'onboarding' });
         setDataReady(true);
+        setAutosaveEnabled(false);
+        setNotification({
+          tone: 'error',
+          title: 'Could not sync saved plan',
+          detail: recoveredLocalPlan
+            ? 'Restored your local plan backup for this session. Changes will not sync until reload succeeds.'
+            : 'Could not load your saved plan. I will not overwrite remote data with an empty plan.',
+        });
       });
 
     return () => { cancelled = true; };
@@ -572,7 +640,9 @@ const App = () => {
   const setSchedule = (updater) => setFourYearPlan((currentPlan) => {
     const currentSchedule = currentPlan[activeSem] || [];
     const nextSchedule = typeof updater === 'function' ? updater(currentSchedule) : updater;
-    return { ...currentPlan, [activeSem]: nextSchedule };
+    const nextPlan = { ...currentPlan, [activeSem]: nextSchedule };
+    writePlanDraft(nextPlan, activeSem);
+    return nextPlan;
   });
 
   useEffect(() => {
@@ -581,16 +651,19 @@ const App = () => {
   }, [theme]);
 
   useEffect(() => {
-    if (authState.status !== 'signedIn' || !dataReady) return undefined;
+    if (authState.status !== 'signedIn' || !dataReady || !autosaveEnabled) return undefined;
     const timer = setTimeout(() => {
       setSaveState('saving');
-      FRAuth.saveUserData({
+      const payload = {
         onboardingCompleted,
         profile,
         personalCourseMarkdown,
         fourYearPlan,
         activeSem,
-      }).then(() => {
+      };
+      writePlanDraft(fourYearPlan, activeSem);
+      saveQueueRef.current = saveQueueRef.current.catch(() => {}).then(() => FRAuth.saveUserData(payload));
+      saveQueueRef.current.then(() => {
         setSaveState('saved');
         setTimeout(() => setSaveState('idle'), 1000);
       }).catch((err) => {
@@ -600,7 +673,19 @@ const App = () => {
     }, 450);
 
     return () => clearTimeout(timer);
-  }, [authState.status, dataReady, onboardingCompleted, profile, personalCourseMarkdown, fourYearPlan, activeSem]);
+  }, [authState.status, dataReady, autosaveEnabled, onboardingCompleted, profile, personalCourseMarkdown, fourYearPlan, activeSem]);
+
+  useEffect(() => {
+    if (authState.status !== 'signedIn' || !dataReady) return undefined;
+    const persistBeforeUnload = () => writePlanDraft(fourYearPlan, activeSem);
+    window.addEventListener('pagehide', persistBeforeUnload);
+    window.addEventListener('beforeunload', persistBeforeUnload);
+    return () => {
+      window.removeEventListener('pagehide', persistBeforeUnload);
+      window.removeEventListener('beforeunload', persistBeforeUnload);
+    };
+  }, [authState.status, dataReady, fourYearPlan, activeSem]);
+
 
   const addCourse = async (id) => {
     const courseId = String(id || '').trim().toUpperCase();
@@ -631,6 +716,7 @@ const App = () => {
     setProfile(hydratedProfile);
     setPersonalCourseMarkdown(personalCourseMarkdown || '');
     setFourYearPlan(hydratedFourYearPlan);
+    writePlanDraft(hydratedFourYearPlan, activeSem);
     if (personalCourseMarkdown) localStorage.setItem('fr-personalcourse-draft', personalCourseMarkdown);
     setMessages(personalizeAgentMessages(hydratedProfile));
     setRoute({ name: 'planner' });
@@ -660,7 +746,9 @@ const App = () => {
     localStorage.removeItem('fr-personalcourse-draft');
     setMessages(personalizeAgentMessages(nextProfile));
     setActiveSem(defaultActiveSem);
-    setFourYearPlan(emptyFourYearPlan());
+    const nextPlan = emptyFourYearPlan();
+    setFourYearPlan(nextPlan);
+    writePlanDraft(nextPlan, defaultActiveSem);
     setOnboardingCompleted(false);
     setRoute({ name: 'onboarding' });
   };
@@ -706,6 +794,7 @@ const App = () => {
     setPersonalCourseMarkdown(markdown);
     localStorage.setItem('fr-personalcourse-draft', markdown);
     setFourYearPlan(nextFourYearPlan);
+    writePlanDraft(nextFourYearPlan, activeSem);
 
     try {
       await FRAuth.saveUserData({

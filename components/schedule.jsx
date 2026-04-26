@@ -69,6 +69,18 @@ const exportToICS = (courses) => {
   URL.revokeObjectURL(url);
 };
 
+const fallbackScheduleCourse = (id) => ({
+  id: String(id || '').trim().toUpperCase(),
+  name: 'Course details loading',
+  units: 0,
+  area: 'other',
+  requirements: [],
+  satisfies: [],
+  days: [],
+  time: { start: 0, end: 0 },
+  schedule: 'Schedule TBD',
+});
+
 // ============== Schedule course card (left panel) ==============
 const ScheduleCard = ({ course, onRemove, onOpen, justAdded, notOffered }) => {
   const [removing, setRemoving] = useState(false);
@@ -899,7 +911,10 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
     return () => { cancelled = true; };
   }, [schedule.join('|')]);
 
-  const courses = schedule.map((id) => courseMap[id] || FRDATA.getCourse(id)).filter(Boolean);
+  const courses = schedule.map((id) => {
+    const courseId = String(id || '').trim().toUpperCase();
+    return courseMap[courseId] || FRDATA.getCourse(courseId) || fallbackScheduleCourse(courseId);
+  }).filter((course) => course.id);
   const totalUnits = courses.reduce((s, c) => s + c.units, 0);
   const reqsCovered = new Set();
   courses.forEach((c) => (c.requirements || c.satisfies || []).forEach((r) => reqsCovered.add(r)));
