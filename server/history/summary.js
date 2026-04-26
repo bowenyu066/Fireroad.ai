@@ -207,7 +207,7 @@ function buildAttendancePolicySummary(policy) {
   if (!policy) {
     return {
       status: 'missing',
-      summaryText: 'Attendance: not extracted',
+      summaryText: 'Attendance: Not specified in the available source.',
       evidencePreview: '',
     };
   }
@@ -253,7 +253,7 @@ function buildGradingPolicySummary(policy) {
   if (!policy) {
     return {
       status: 'missing',
-      summaryText: 'Grading: not extracted',
+      summaryText: 'Grading: Not specified in the available source.',
       evidencePreview: '',
     };
   }
@@ -317,7 +317,7 @@ function buildOfferingSummary(offering, documents = [], attendancePolicy = null,
   const sourcePhrase = sourceTypes.length ? `sources: ${sourceTypes.join(', ')}` : 'no sources captured yet';
   const policyPhrase = policyText(attendancePolicy, gradingPolicy);
   const generatedSummary = `${present(offering.term)} offering of ${title}; ${sourcePhrase}; ${policyPhrase}.`;
-  const offeringMarkdown = looksLikeOfferingMarkdown(offering.notes) ? previewMarkdown(offering.notes) : '';
+  const offeringMarkdown = looksLikeOfferingMarkdown(offering.notes) ? normalizeDisplayMarkdown(previewMarkdown(offering.notes)) : '';
 
   return {
     id: offering.id,
@@ -334,7 +334,7 @@ function buildOfferingSummary(offering, documents = [], attendancePolicy = null,
     attendancePolicySummary: buildAttendancePolicySummary(attendancePolicy),
     gradingPolicySummary: buildGradingPolicySummary(gradingPolicy),
     offeringMarkdownText: offeringMarkdown,
-    offeringSummaryText: markdownSection(offeringMarkdown, 'Course Format') || previewText(offering.notes, 360) || generatedSummary,
+    offeringSummaryText: previewMarkdownAsText(offeringMarkdown, 360) || previewText(offering.notes, 360) || generatedSummary,
     homepageUrl: offering.homepageUrl,
     syllabusUrl: offering.syllabusUrl,
     ocwUrl: offering.ocwUrl,
@@ -367,15 +367,22 @@ function previewMarkdown(text, maxLength = 1400) {
 function looksLikeOfferingMarkdown(text) {
   const raw = String(text || '');
   return raw.includes('**Course Format:**')
+    || raw.includes('**Attendance:**')
+    || raw.includes('**Grading:**')
     || raw.includes('**Attendance Policy:**')
     || raw.includes('**Grading Policy:**');
 }
 
-function markdownSection(text, label) {
-  const raw = String(text || '');
-  const pattern = new RegExp(`\\*\\*${label}:\\*\\*\\s*([\\s\\S]*?)(?=\\n\\n\\*\\*|$)`, 'i');
-  const match = raw.match(pattern);
-  return match ? previewText(match[1], 360) : '';
+function normalizeDisplayMarkdown(text) {
+  return String(text || '')
+    .replace(/\*\*Attendance Policy:\*\*/gi, '**Attendance:**')
+    .replace(/\*\*Grading Policy:\*\*/gi, '**Grading:**');
+}
+
+function previewMarkdownAsText(text, maxLength = 360) {
+  return previewText(String(text || '')
+    .replace(/\*\*/g, '')
+    .replace(/\s*\n+\s*/g, ' '), maxLength);
 }
 
 function parseExtractionJson(extractionRun) {

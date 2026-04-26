@@ -489,8 +489,62 @@ function explicitScheduleChangeRequested(text, messages = []) {
     return false;
   }
   const hasMutationVerb = /\b(add|put|include|enroll|register|remove|drop|delete|swap|replace)\b/.test(lower);
-  const hasCourseOrScheduleContext = /\b(schedule|plan|semester|course|class)\b/.test(lower) || extractCourseIdsFromText(lower).length > 0;
+  const hasCourseOrScheduleContext = /\b(schedules?|plans?|semesters?|courses?|class(?:es)?)\b/.test(lower) || extractCourseIdsFromText(lower).length > 0;
   return hasMutationVerb && hasCourseOrScheduleContext;
+}
+
+function normalizeMentionText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function singularizeMentionText(value) {
+  return normalizeMentionText(value)
+    .split(' ')
+    .map((word) => (word.length > 3 && word.endsWith('s') ? word.slice(0, -1) : word))
+    .join(' ')
+    .trim();
+}
+
+function mentionContains(text, alias) {
+  const normalizedText = ` ${normalizeMentionText(text)} `;
+  const normalizedAlias = normalizeMentionText(alias);
+  return normalizedAlias.length >= 4 && normalizedText.includes(` ${normalizedAlias} `);
+}
+
+function courseMentionAliases(courseId, course = {}) {
+  const id = String(courseId || '').trim();
+  const name = String(course.name || course.title || '').trim();
+  const aliases = [id, name, singularizeMentionText(name)];
+  const normalizedName = normalizeMentionText(name);
+
+  if (normalizedName.includes('introduction to machine learning')) {
+    aliases.push('intro to ml', 'intro ml', 'intro to machine learning', 'introduction to ml', 'machine learning');
+  } else if (normalizedName.includes('machine learning')) {
+    aliases.push('machine learning');
+  }
+
+  if (normalizedName === 'networks' || normalizedName.endsWith(' networks')) {
+    aliases.push('network', 'networks');
+  }
+
+  return [...new Set(aliases.map(normalizeMentionText).filter((alias) => alias.length >= 4))];
+}
+
+async function extractScheduledCourseMentions(text, schedule = []) {
+  const ids = [];
+  for (const courseId of normalizeSchedule(schedule)) {
+    const course = await resolveCurrentCourseSummary(courseId);
+    const aliases = courseMentionAliases(courseId, course || {});
+    if (aliases.some((alias) => mentionContains(text, alias))) {
+      ids.push(courseId);
+    }
+  }
+  return ids;
 }
 
 async function extractRequestedUiActions(text, schedule, messages = []) {
@@ -503,13 +557,17 @@ async function extractRequestedUiActions(text, schedule, messages = []) {
   }
 
   const lower = String(text || '').toLowerCase();
-  const mentionedIds = extractCourseIdsFromText(lower);
-
-  if (!mentionedIds.length) return [];
+  const explicitIds = extractCourseIdsFromText(lower);
+  const scheduledNameIds = /\b(remove|drop|delete|swap|replace)\b/.test(lower)
+    ? await extractScheduledCourseMentions(lower, schedule)
+    : [];
+  const mentionedIds = [...new Set([...explicitIds, ...scheduledNameIds])];
 
   if (/\b(remove|drop|delete)\b/.test(lower)) {
     return mentionedIds.map((courseId) => ({ type: 'remove_course', courseId }));
   }
+
+  if (!mentionedIds.length) return [];
 
   if (/\b(swap|replace)\b/.test(lower)) {
     return mentionedIds.map((courseId) => ({
@@ -578,10 +636,7 @@ async function buildProposalFromActions(actions, context, options = {}) {
   const validActions = asArray(actions);
   if (!validActions.length) return null;
   const actionItems = await Promise.all(validActions.map(describeUiAction));
-  const termLabel = context.planningTermLabel || context.activeSem || 'the active semester';
   const assumptions = [
-    `Applies only to ${termLabel}.`,
-    'Catalog availability was validated for this proposal.',
     ...(asArray(options.assumptions)),
   ];
   const warnings = [
@@ -599,6 +654,13 @@ async function buildProposalFromActions(actions, context, options = {}) {
   };
 }
 
+async function buildActionResponseText(actions, context) {
+  const descriptions = await Promise.all(asArray(actions).map(describeUiAction));
+  const termLabel = context.planningTermLabel || context.activeSem || 'the active semester';
+  if (!descriptions.length) return '';
+  return `Done. ${descriptions.join('; ')} in ${termLabel}.`;
+}
+
 async function buildApiResponse(content, context, debug, requestMessages, options = {}) {
   const log = context.log || (() => {});
   const raw = normalizeContentText(content);
@@ -614,8 +676,10 @@ async function buildApiResponse(content, context, debug, requestMessages, option
     debug.fallbackActionExtraction = fallbackActions;
     uiActions = await validateFinalActions(fallbackActions, context, debug, true);
   }
-  const text = (raw || 'I found a grounded answer from the course data, but could not format it cleanly.').trim();
-  const suggestions = await sanitizeSuggestions(extractCourseIdsFromText(text));
+  const text = (uiActions.length
+    ? await buildActionResponseText(uiActions, context)
+    : raw || 'I found a grounded answer from the course data, but could not format it cleanly.').trim();
+  const suggestions = uiActions.length ? [] : await sanitizeSuggestions(extractCourseIdsFromText(text));
   const traceSummary = options.traceSummary || buildTraceSummary(debug.toolCalls);
   const proposal = options.proposal || await buildProposalFromActions(uiActions, context);
   log('final:validated', {
@@ -642,6 +706,35 @@ async function buildApiResponse(content, context, debug, requestMessages, option
     uiActions,
     proposal,
     traceSummary,
+    debug: publicDebug(debug),
+  };
+}
+
+async function buildValidatedLocalActionResult(context, messages, debug, options = {}) {
+  if (!explicitScheduleChangeRequested(latestUserText(messages), messages)) return null;
+
+  const requestedActions = await extractRequestedUiActions(latestUserText(messages), context.schedule, messages);
+  debug.fallbackActionExtraction = requestedActions;
+  if (!requestedActions.length) return null;
+
+  const uiActions = await validateFinalActions(requestedActions, context, debug, true);
+  if (!uiActions.length) return null;
+
+  const proposal = await buildProposalFromActions(uiActions, context, {
+    source: options.source || 'local_validated_active_semester_request',
+    warnings: options.warnings,
+  });
+  const text = await buildActionResponseText(uiActions, context);
+
+  return {
+    message: {
+      role: 'agent',
+      text,
+      suggestions: [],
+      proposal,
+    },
+    uiActions,
+    proposal,
     debug: publicDebug(debug),
   };
 }
@@ -700,6 +793,9 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
     toolCalls: [],
     finalActionValidation: [],
   };
+
+  const localActionResult = await buildValidatedLocalActionResult(context, messages, debug);
+  if (localActionResult) return localActionResult;
 
   const modelMessages = buildModelMessages(messages, context);
   context.log('agent:start', {
@@ -790,9 +886,15 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
     toolCalls: [],
     finalActionValidation: [],
   };
-  const modelMessages = buildModelMessages(messages, context);
-
   const emit = (event) => onEvent(event);
+  if (explicitScheduleChangeRequested(latestUserText(messages), messages)) {
+    emit({ type: 'status', text: 'Validating proposed plan change' });
+    const localActionResult = await buildValidatedLocalActionResult(context, messages, debug);
+    if (localActionResult) return localActionResult;
+  }
+  const modelMessages = buildModelMessages(messages, context);
+  const suppressModelProgressText = explicitScheduleChangeRequested(latestUserText(messages), messages);
+
   context.log('agent:start', {
     mode: 'stream',
     activeSem: context.activeSem,
@@ -813,6 +915,7 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
     let streamedContent = '';
+    let emittedProgressContent = false;
     context.log('model:request', { mode: 'stream', round, messages: modelMessages.length, tools: toolSchemas.length });
     const completion = await callOpenRouterStream({
       messages: modelMessages,
@@ -823,6 +926,10 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
       max_tokens: 1000,
     }, (chunk) => {
       streamedContent += chunk || '';
+      if (chunk && !suppressModelProgressText) {
+        emittedProgressContent = true;
+        emit({ type: 'progress_text_delta', text: chunk });
+      }
     });
 
     const choice = completion.choices && completion.choices[0];
@@ -842,11 +949,11 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
     });
     if (!toolCalls.length) {
       const finalText = normalizeContentText(responseMessage.content) || streamedContent;
-      if (finalText) emit({ type: 'final_text_delta', text: finalText });
+      if (finalText && !emittedProgressContent && !suppressModelProgressText) emit({ type: 'final_text_delta', text: finalText });
       return buildApiResponse(finalText, context, debug, messages);
     }
 
-    const interimText = compactText(responseMessage.content || streamedContent, 500);
+    const interimText = emittedProgressContent || suppressModelProgressText ? '' : compactText(responseMessage.content || streamedContent, 500);
     if (interimText) emit({ type: 'progress_text', text: interimText });
     emit({ type: 'status', text: 'Checking course data...' });
     modelMessages.push({
@@ -889,11 +996,11 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
     max_tokens: 700,
   }, (chunk) => {
     finalStreamedContent += chunk || '';
+    if (chunk && !suppressModelProgressText) emit({ type: 'final_text_delta', text: chunk });
   });
   const responseMessage = completion.choices && completion.choices[0] && completion.choices[0].message;
   if (!responseMessage) throw new Error('OpenRouter returned no final assistant message.');
   const finalText = normalizeContentText(responseMessage.content) || finalStreamedContent;
-  if (finalText) emit({ type: 'final_text_delta', text: finalText });
   return buildApiResponse(finalText, context, debug, messages);
 }
 

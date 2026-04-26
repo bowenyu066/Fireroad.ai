@@ -362,8 +362,15 @@ const App = () => {
   }, [authState.status, dataReady, onboardingCompleted, profile, personalCourseMarkdown, fourYearPlan, activeSem]);
 
   const addCourse = (id) => {
-    if (schedule.includes(id)) return;
-    setSchedule((s) => [...s, id]);
+    const courseId = String(id || '').trim().toUpperCase();
+    if (!courseId || schedule.map((item) => String(item).toUpperCase()).includes(courseId)) return;
+    setSchedule((s) => [...s, courseId]);
+  };
+
+  const removeCourse = (id) => {
+    const courseId = String(id || '').trim().toUpperCase();
+    if (!courseId) return;
+    setSchedule((s) => s.filter((item) => String(item).toUpperCase() !== courseId));
   };
 
   const completeOnboarding = async ({ profile: nextProfile, onboarding, personalCourseMarkdown }) => {
@@ -429,9 +436,10 @@ const App = () => {
             {route.name === 'course' && (
               <CourseDetail
                 courseId={route.id}
-                inSchedule={schedule.includes(route.id)}
+                inSchedule={schedule.map((id) => String(id).toUpperCase()).includes(String(route.id).toUpperCase())}
                 onBack={() => setRoute({ name: 'planner' })}
                 onAdd={addCourse}
+                onRemove={removeCourse}
               />
             )}
             {route.name === 'profile' && <ProfilePage />}

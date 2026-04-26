@@ -3,7 +3,7 @@ const { useEffect, useState } = React;
 
 const CourseDetail = (props) => <CourseDetailShell {...props} />;
 
-const CourseDetailShell = ({ courseId, onBack, onAdd, inSchedule }) => {
+const CourseDetailShell = ({ courseId, onBack, onAdd, onRemove, inSchedule }) => {
   const [tab, setTab] = useState('overview');
   const [currentCourse, setCurrentCourse] = useState(null);
   const [currentError, setCurrentError] = useState('');
@@ -60,6 +60,7 @@ const CourseDetailShell = ({ courseId, onBack, onAdd, inSchedule }) => {
         setTab={setTab}
         onBack={onBack}
         onAdd={onAdd}
+        onRemove={onRemove}
         inSchedule={inSchedule}
       />
 
@@ -80,8 +81,11 @@ const CourseDetailShell = ({ courseId, onBack, onAdd, inSchedule }) => {
   );
 };
 
-const CourseHero = ({ course, summary, tab, setTab, onBack, onAdd, inSchedule }) => {
+const CourseHero = ({ course, summary, tab, setTab, onBack, onAdd, onRemove, inSchedule }) => {
   const offeringCount = summary.offeringCount || 0;
+  const enrollment = course.enrollmentNumber ? Math.round(course.enrollmentNumber) : null;
+  const canAct = inSchedule ? Boolean(onRemove) : Boolean(onAdd);
+  const buttonLabel = inSchedule ? '- Remove from schedule' : '+ Add to schedule';
   return (
     <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
       <div style={{ maxWidth: 1220, margin: '0 auto', padding: '18px 32px 30px' }}>
@@ -103,16 +107,24 @@ const CourseHero = ({ course, summary, tab, setTab, onBack, onAdd, inSchedule })
               <HeroChip label="Availability" value={availabilityLabel(course)} strong />
               <HeroChip label="Units" value={course.units || course.currentUnits || 'TBD'} />
               <HeroChip label="Instructor" value={course.instructorText || 'TBD'} />
-              <HeroChip label="Past offerings" value={offeringCount ? String(offeringCount) : 'None yet'} />
+              {enrollment && <HeroChip label="Enrollment" value={enrollment} />}
+              {course.catalogUrl && <HeroLinkChip label="Catalog" href={course.catalogUrl} value="Open" />}
+              {offeringCount > 0 && <HeroChip label="Past offerings" value={String(offeringCount)} />}
             </div>
           </div>
           <button
-            onClick={() => { onAdd(course.id); onBack(); }}
-            disabled={inSchedule}
-            className="btn btn-primary"
-            style={{ minWidth: 220, padding: '14px 18px', fontSize: 14, opacity: inSchedule ? 0.55 : 1 }}
+            onClick={() => inSchedule ? onRemove(course.id) : onAdd(course.id)}
+            disabled={!canAct}
+            className={inSchedule ? 'btn' : 'btn btn-primary'}
+            style={{
+              minWidth: 220,
+              padding: '14px 18px',
+              fontSize: 14,
+              borderColor: inSchedule ? 'var(--accent)' : undefined,
+              color: inSchedule ? 'var(--accent)' : undefined,
+            }}
           >
-            {inSchedule ? 'In your next-semester plan' : '+ Add to schedule'}
+            {buttonLabel}
           </button>
         </div>
 
@@ -138,7 +150,7 @@ const CourseHero = ({ course, summary, tab, setTab, onBack, onAdd, inSchedule })
             active={tab === 'offerings'}
             onClick={() => setTab('offerings')}
             label="Past Offerings"
-            description={offeringCount ? `${offeringCount} offerings found` : 'No offerings yet'}
+            description={offeringCount ? `${offeringCount} offerings found` : 'Teaching history'}
           />
         </div>
       </div>
@@ -191,18 +203,10 @@ const OverviewView = ({ course, loadingCurrent, currentError, historyState, offe
           </Notice>
         )}
 
-        <SectionBlock eyebrow="At a glance" title="Current course snapshot">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
+        <SectionBlock eyebrow="Schedule" title="Current meeting pattern">
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 12 }}>
             <FactCard label="Schedule" value={course.scheduleDisplay || 'Schedule TBD'} mono />
-            <FactCard label="Instructor" value={course.instructorText || 'TBD'} />
-            <FactCard label="Units" value={course.units || 'TBD'} mono />
-            <FactCard label="Enrollment" value={course.enrollmentNumber ? Math.round(course.enrollmentNumber) : 'Unavailable'} mono />
           </div>
-          {course.catalogUrl && (
-            <div style={{ marginTop: 14 }}>
-              <HistoryLink href={course.catalogUrl}>Current catalog</HistoryLink>
-            </div>
-          )}
         </SectionBlock>
 
         <SectionBlock eyebrow="Description" title="What this course covers">
@@ -293,11 +297,8 @@ const OverviewView = ({ course, loadingCurrent, currentError, historyState, offe
       <aside style={{ position: 'sticky', top: 18 }}>
         <InfoPanel title="Action">
           <p style={{ margin: '0 0 14px', color: 'var(--text-secondary)', lineHeight: 1.5, fontSize: 13 }}>
-            Add this course to your next-semester plan. Past offerings are read-only decision context.
+            Add this course from the header. Past offerings are read-only decision context.
           </p>
-          <SideRow k="Schedule" v={course.scheduleDisplay || 'TBD'} />
-          <SideRow k="Units" v={course.units || 'TBD'} />
-          <SideRow k="Instructor" v={course.instructorText || 'TBD'} />
         </InfoPanel>
 
         <InfoPanel title="Fit for your plan">
@@ -358,7 +359,7 @@ const OfferingPreview = ({ offering }) => (
 );
 
 const OfferingCard = ({ offering }) => {
-  const details = offeringDetailsForDisplay(offering);
+  const markdown = offeringMarkdownForDisplay(offering);
   const linkItems = sourceLinksForOffering(offering);
 
   return (
@@ -383,7 +384,7 @@ const OfferingCard = ({ offering }) => {
           {offering.titleSnapshot ? ` · ${offering.titleSnapshot}` : ''}
         </div>
 
-        <OfferingDetailRows details={details} />
+        <OfferingMarkdown markdown={markdown} />
 
         {linkItems.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 14 }}>
@@ -397,15 +398,26 @@ const OfferingCard = ({ offering }) => {
   );
 };
 
-const OfferingDetailRows = ({ details }) => (
+const OfferingMarkdown = ({ markdown }) => {
+  const paragraphs = String(markdown || '').split(/\n{2,}/).map((part) => part.trim()).filter(Boolean);
+  if (!paragraphs.length) {
+    return (
+      <p style={{ margin: '14px 0 0', color: 'var(--text-tertiary)', fontSize: 15, lineHeight: 1.5 }}>
+        Past offering details unavailable.
+      </p>
+    );
+  }
+
+  return (
   <div style={{ marginTop: 14, maxWidth: 900 }}>
-    {details.map((detail, index) => (
-      <p key={detail.label} style={{ margin: index ? '8px 0 0' : 0, color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.5 }}>
-        <strong style={{ color: 'var(--text)' }}>{detail.label}:</strong> {detail.text}
+    {paragraphs.map((paragraph, index) => (
+      <p key={`${paragraph.slice(0, 32)}-${index}`} style={{ margin: index ? '8px 0 0' : 0, color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.5 }}>
+        {renderMarkdownParts(paragraph)}
       </p>
     ))}
   </div>
-);
+  );
+};
 
 const SectionBlock = ({ eyebrow, title, children, strong }) => (
   <section style={{
@@ -466,6 +478,28 @@ const HeroChip = ({ label, value, strong }) => (
     <span className="eyebrow" style={{ color: 'inherit' }}>{label}</span>
     <span className="mono" style={{ color: strong ? '#2563eb' : 'var(--text)' }}>{value}</span>
   </span>
+);
+
+const HeroLinkChip = ({ label, value, href }) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noreferrer"
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 7,
+      padding: '7px 10px',
+      borderRadius: 999,
+      background: 'var(--bg)',
+      border: '1px solid var(--border)',
+      color: 'var(--text-secondary)',
+      fontSize: 12,
+    }}
+  >
+    <span className="eyebrow" style={{ color: 'inherit' }}>{label}</span>
+    <span className="mono" style={{ color: 'var(--text)' }}>{value}</span>
+  </a>
 );
 
 const TagRow = ({ items, tone }) => (
@@ -611,7 +645,7 @@ function policyCoverage(summary, kind) {
 function policyTrend(summary, offerings, kind) {
   const count = kind === 'attendance' ? summary.attendancePolicyCount : summary.gradingPolicyCount;
   if (!summary.offeringCount) return 'Unavailable';
-  if (!count) return 'Not extracted';
+  if (!count) return 'No explicit policy';
   const needle = kind === 'attendance' ? 'attendance unknown' : 'participation unknown';
   const unknown = offerings.filter((offering) => String(offering.offeringSummaryText || '').toLowerCase().includes(needle)).length;
   if (unknown >= count) return 'Unknown trend';
@@ -640,183 +674,32 @@ function sourceLinksForOffering(offering) {
 }
 
 function offeringDescription(offering) {
-  return compactCourseFormat(offering);
+  return plainTextFromOfferingMarkdown(offeringMarkdownForDisplay(offering), 190)
+    || offering.offeringSummaryText
+    || 'Past offering details unavailable.';
 }
 
-function offeringDetailsForDisplay(offering) {
-  const attendance = compactAttendance(offering);
-  const grading = compactGrading(offering);
-  return [
-    { label: 'Course Format', text: compactCourseFormat(offering) },
-    attendance && { label: 'Attendance', text: attendance },
-    grading && { label: 'Grading', text: grading },
-  ].filter(Boolean);
+function offeringMarkdownForDisplay(offering) {
+  return String(offering.offeringMarkdownText || offering.notes || offering.offeringSummaryText || '').trim();
 }
 
-function compactCourseFormat(offering) {
-  const courseFormat = extractMarkdownField(offering.offeringMarkdownText || offering.notes, 'Course Format');
-  const gradingText = [
-    offering.gradingPolicySummary?.summaryText,
-    extractMarkdownField(offering.offeringMarkdownText || offering.notes, 'Grading Policy'),
-  ].filter(Boolean).join(' ');
-  const text = `${courseFormat} ${offering.offeringSummaryText || ''} ${gradingText}`.toLowerCase();
-  const parts = [];
-
-  const meetings = [];
-  if (/\blectures?\b/.test(text)) meetings.push('lectures');
-  if (/\brecitations?\b|\btutorials?\b/.test(text)) meetings.push('recitations/tutorials');
-  if (/\blabs?\b|laborator/.test(text)) meetings.push('labs');
-  if (meetings.length) parts.push(meetings.join(' + '));
-
-  const work = [];
-  if (/\bhome\s?works?\b|\bproblem sets?\b|\bpsets?\b/.test(text)) work.push('homework');
-  if (/\bprogramming projects?\b/.test(text)) work.push('programming projects');
-  else if (/\bprojects?\b/.test(text)) work.push('projects');
-  if (/\bassignments?\b/.test(text) && !work.length) work.push('assignments');
-  if (/\bin-class problems?\b/.test(text)) work.push(text.includes('not graded') ? 'ungraded in-class problems' : 'in-class problems');
-  if (work.length) parts.push(work.join(' + '));
-
-  const exams = [];
-  if (/\bmidterm\b/.test(text)) exams.push('midterm');
-  if (/\bfinal\b/.test(text)) exams.push('final');
-  if (!exams.length && /\bexams?\b|\bquizzes?\b/.test(text)) exams.push('exams/quizzes');
-  if (exams.length) parts.push(`${exams.join(' + ')} exams`);
-
-  return parts.length ? sentenceCase(parts.join('; ')) : 'Format not specified in available source.';
-}
-
-function compactAttendance(offering) {
-  const summary = offering.attendancePolicySummary || {};
-  const markdownText = extractMarkdownField(offering.offeringMarkdownText || offering.notes, 'Attendance Policy');
-  const text = summary.summaryText || markdownText;
-  const lower = String(text || '').toLowerCase();
-  if (!text || /not specified|not extracted|unavailable|requirement unknown/.test(lower)) {
-    if (/not graded/.test(lower)) return 'In-class work not graded.';
-    return '';
-  }
-  return trimSentence(text.replace(/^attendance:\s*/i, ''), 150);
-}
-
-function compactGrading(offering) {
-  const summary = offering.gradingPolicySummary || {};
-  const weights = summary.weights || {};
-  const pieces = [];
-  const numberValue = (value) => Number.isFinite(Number(value)) ? Number(value) : null;
-  const percent = (value) => {
-    const numeric = numberValue(value);
-    if (numeric === null) return '';
-    return `${numeric > 0 && numeric <= 1 ? Math.round(numeric * 100) : Math.round(numeric)}%`;
-  };
-
-  const midterm = numberValue(weights.midterm);
-  const final = numberValue(weights.final);
-  if (midterm !== null || final !== null) {
-    const total = [midterm, final].filter((value) => value !== null).reduce((sum, value) => sum + value, 0);
-    const bits = [
-      midterm !== null ? `midterm ${percent(midterm)}` : null,
-      final !== null ? `final ${percent(final)}` : null,
-    ].filter(Boolean).join(', ');
-    pieces.push(`exams ${percent(total)}${bits ? ` (${bits})` : ''}`);
-  }
-
-  const homework = numberValue(weights.homework);
-  if (homework !== null) pieces.push(`homework ${percent(homework)}`);
-
-  const project = numberValue(weights.project);
-  if (project !== null) pieces.push(`projects ${percent(project)}`);
-
-  const lab = numberValue(weights.lab);
-  if (lab !== null) pieces.push(`labs ${percent(lab)}`);
-
-  const quiz = numberValue(weights.quiz);
-  if (quiz !== null) pieces.push(`quizzes ${percent(quiz)}`);
-
-  const raw = [
-    summary.summaryText,
-    extractMarkdownField(offering.offeringMarkdownText || offering.notes, 'Grading Policy'),
-  ].filter(Boolean).join(' ');
-  const noLatePattern = /late .*not\s+(?:be\s+)?accepted|not\s+(?:be\s+)?accepted.*late/i;
-  if (noLatePattern.test(raw)) pieces.push('no late assignments');
-
-  if (pieces.length) return sentenceCase(pieces.join('; '));
-
-  const parsedPieces = compactGradingFromText(raw);
-  if (parsedPieces.length) return sentenceCase(parsedPieces.join('; '));
-
-  const cleaned = String(raw || '')
-    .replace(/^grading:\s*/i, '')
-    .replace(/^grading policy:\s*/i, '')
-    .replace(/not specified in the available source\.?/i, '')
+function plainTextFromOfferingMarkdown(markdown, maxLength = 220) {
+  const value = String(markdown || '')
+    .replace(/\*\*/g, '')
+    .replace(/\s*\n+\s*/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
-  return cleaned ? trimSentence(cleaned, 180) : '';
+  if (!value) return '';
+  return value.length > maxLength ? `${value.slice(0, maxLength - 3).trim()}...` : value;
 }
 
-function compactGradingFromText(raw) {
-  const text = String(raw || '').replace(/\s+/g, ' ').trim();
-  if (!text) return [];
-  const pieces = [];
-  const percent = (value) => value ? `${Number(value)}%` : '';
-  const firstMatch = (patterns) => {
-    for (const pattern of patterns) {
-      const match = text.match(pattern);
-      if (match) return match.slice(1).find(Boolean);
+function renderMarkdownParts(text) {
+  return String(text || '').split(/(\*\*[^*]+\*\*)/g).filter(Boolean).map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={index} style={{ color: 'var(--text)' }}>{part.slice(2, -2)}</strong>;
     }
-    return '';
-  };
-
-  const examTotal = firstMatch([
-    /\bexams?(?:\s+\w+){0,3}\s+(\d+)%/i,
-    /(\d+)%\s+(?:of\s+the\s+grade\s+)?(?:for\s+)?exams?/i,
-  ]);
-  const midterm = firstMatch([/\bmidterm(?:\s+exam)?\s+(\d+)%/i]);
-  const final = firstMatch([/\bfinal(?:\s+exam)?\s+(\d+)%/i]);
-  if (examTotal || midterm || final) {
-    const bits = [
-      midterm ? `midterm ${percent(midterm)}` : null,
-      final ? `final ${percent(final)}` : null,
-    ].filter(Boolean).join(', ');
-    pieces.push(`exams ${percent(examTotal)}${bits ? ` (${bits})` : ''}`.replace(/\s+\(/, ' (').trim());
-  }
-
-  const homework = firstMatch([
-    /\bhomeworks?\s*=\s*(\d+)%/i,
-    /\bhomeworks?(?:\s+\w+){0,4}\s+(\d+)%/i,
-    /\bhomework\s+sets?(?:\s+\w+){0,4}\s+(\d+)%/i,
-    /(\d+)%\s+(?:combined\s+)?(?:for\s+)?(?:homeworks?|homework sets?)/i,
-  ]);
-  if (homework) pieces.push(`homework ${percent(homework)}`);
-
-  const projects = firstMatch([
-    /\bprojects?\s*=\s*(\d+)%/i,
-    /\bprojects?(?:\s+\w+){0,4}\s+(\d+)%/i,
-    /\b(?:three|3)\s+(?:programming\s+)?projects?\s+each\s+worth\s+(\d+)%/i,
-  ]);
-  if (projects) {
-    const eachProject = /each\s+worth/i.test(text) ? Number(projects) * 3 : Number(projects);
-    pieces.push(`projects ${percent(eachProject)}`);
-  }
-
-  if (/late .*not\s+(?:be\s+)?accepted|not\s+(?:be\s+)?accepted.*late/i.test(text)) pieces.push('no late assignments');
-  return pieces;
-}
-
-function sentenceCase(text) {
-  const value = String(text || '').trim();
-  return value ? value.charAt(0).toUpperCase() + value.slice(1) + (/[.!?]$/.test(value) ? '' : '.') : '';
-}
-
-function trimSentence(text, maxLength = 160) {
-  const value = String(text || '').replace(/\s+/g, ' ').trim();
-  if (value.length <= maxLength) return value;
-  return `${value.slice(0, maxLength - 3).trim()}...`;
-}
-
-function extractMarkdownField(markdown, label) {
-  const text = String(markdown || '');
-  if (!text.includes(`**${label}:**`)) return '';
-  const pattern = new RegExp(`\\*\\*${label}:\\*\\*\\s*([\\s\\S]*?)(?=\\n\\n\\*\\*|$)`, 'i');
-  const match = text.match(pattern);
-  return match ? match[1].replace(/\s+/g, ' ').trim() : '';
+    return <React.Fragment key={index}>{part}</React.Fragment>;
+  });
 }
 
 function sourceLabel(type) {

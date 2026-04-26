@@ -543,9 +543,6 @@ const ProposalCard = ({ proposal, onApplyUiActions }) => {
   const displayActionItems = actionItems
     .map((item, index) => coerceText(item) || uiActionLabel(actions[index]))
     .filter(Boolean);
-  const displayAssumptions = (Array.isArray(proposal.assumptions) ? proposal.assumptions : [])
-    .map(coerceText)
-    .filter(Boolean);
   const displayWarnings = (Array.isArray(proposal.warnings) ? proposal.warnings : [])
     .map(coerceText)
     .filter(Boolean);
@@ -579,11 +576,6 @@ const ProposalCard = ({ proposal, onApplyUiActions }) => {
       <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--text)' }}>
         {displayActionItems.map((item, index) => <li key={index}>{item}</li>)}
       </ul>
-      {displayAssumptions.length > 0 && (
-        <div style={{ marginTop: 8, color: 'var(--text-tertiary)', lineHeight: 1.45 }}>
-          {displayAssumptions.join(' · ')}
-        </div>
-      )}
       {displayWarnings.length > 0 && (
         <div style={{ marginTop: 8, color: 'var(--accent)', lineHeight: 1.45 }}>
           {displayWarnings.join(' · ')}

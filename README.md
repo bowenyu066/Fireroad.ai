@@ -102,10 +102,16 @@ Course history is offering-first and updated manually from manifests in `data/hi
 npm run history:import-manifest -- 6.3900
 npm run history:fetch-docs -- 6.3900
 OPENROUTER_API_KEY="your_openrouter_key" npm run history:extract-policies -- 6.3900
+OPENROUTER_API_KEY="your_openrouter_key" npm run history:ablate-markdown -- 6.3900 --limit 4 --jobs 4
+OPENROUTER_API_KEY="your_openrouter_key" npm run history:rewrite-markdown -- 6.3900 --jobs 4
 
 # Or run the full manual pipeline:
 npm run history:collect -- 6.3900
 ```
+
+`history:ablate-markdown` is read-only: it samples cached history documents, runs several prompt variants in parallel, scores whether the model produced concise display-ready offering Markdown, and prints comparison outputs. It does not write to `data/course_history.db`.
+
+`history:rewrite-markdown` reuses cached source documents and rewrites only each offering's display Markdown. Use it after prompt ablation when the source coverage is acceptable but the displayed wording needs regeneration.
 
 The `/api/history/*` routes are read-only. Chat and planner flows do not write history data.
 

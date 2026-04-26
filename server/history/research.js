@@ -16,7 +16,7 @@ try {
 
 const ROOT = path.join(__dirname, '..', '..');
 const COURSES_PATH = path.join(ROOT, 'data', 'courses.json');
-const PROMPT_VERSION = 'history-research-v1';
+const PROMPT_VERSION = 'history-research-v2';
 const DEFAULT_OPTIONS = {
   maxSearchQueries: 7,
   maxSearchResultsPerQuery: 8,
@@ -868,6 +868,13 @@ function heuristicParsed(seed, source, fetched) {
         title_snapshot: seed.title,
         instructor_text: seed.instructors.join(', ') || null,
         offering_summary: null,
+        offering_markdown: [
+          '**Course Format:** Not specified in the available source.',
+          '',
+          '**Attendance:** Not specified in the available source.',
+          '',
+          '**Grading:** Not specified in the available source.',
+        ].join('\n'),
         attendance: {
           attendance_required: 'unknown',
           attendance_counts_toward_grade: 'unknown',
@@ -910,10 +917,23 @@ function sourcePrompt(seed, source, fetched, options) {
       'If the source does not identify a dated past offering, return an empty offerings array.',
       'Use "yes", "no", or "unknown"; keep unknown distinct from no.',
       'Only extract attendance or grading when the source explicitly says it, and include a short evidence_text snippet.',
-      'For every offering, write offering_markdown yourself as concise student-facing Markdown.',
-      'Do not dump evidence snippets into offering_markdown.',
-      'Use exactly these bold labels in offering_markdown: **Course Format:**, **Attendance Policy:**, **Grading Policy:**.',
-      'If attendance or grading is not specified, say "Not specified in the available source."',
+      'For every offering, write offering_markdown as the complete student-facing display copy.',
+      'The app renders offering_markdown directly; downstream code will not extract or rewrite Course Format, Attendance, or Grading.',
+      'Use exactly these three bold labels in offering_markdown: **Course Format:**, **Attendance:**, **Grading:**.',
+      'Course Format means structure only: lectures, recitations/tutorials, labs, projects, homework/psets, quizzes, exams, studios, seminars, or notable meeting cadence.',
+      'Course Format must not summarize topic coverage, learning objectives, or general course description.',
+      'Write Course Format as up to three compact fragments in this order when supported: meeting structure; coursework; assessments.',
+      'Skip any Course Format fragment that is not explicitly supported by the source.',
+      'If some Course Format fragments are supported, do not append "Not specified"; use "Not specified in the available source." only when no format structure is available at all.',
+      'Invalid Course Format example: "lectures; programming assignments; Not specified in the available source." Correct it to "lectures; programming assignments."',
+      'Attendance requirements and grade-credit rules never belong in Course Format; put them only under Attendance or Grading.',
+      'Do not state absence such as "no final exam" or "no labs" unless the source explicitly says that absence.',
+      'Avoid rooms, exact times, and long schedule prose unless cadence is the only useful format signal.',
+      'Do not repeat instructor names in offering_markdown when instructor_text already contains them.',
+      'Keep each section to one short sentence or compact semicolon-separated fragments.',
+      'If attendance or grading is not specified, write "Not specified in the available source."',
+      'Do not say "not extracted".',
+      'Do not dump evidence snippets, source URLs, or raw schedule tables into offering_markdown.',
       'When writing percentages, use normal percentages like 10%, not decimal fractions like 0.1%.',
       'offering_summary is a one-sentence fallback; offering_markdown is the primary display copy.',
     ].join(' '),
@@ -938,7 +958,7 @@ function sourcePrompt(seed, source, fetched, options) {
             title_snapshot: 'course title if present',
             instructor_text: 'comma-separated instructors if present',
             offering_summary: 'one concise student-facing sentence about how this offering was taught',
-            offering_markdown: '**Course Format:** concise paragraph.\n\n**Attendance Policy:** concise sentence.\n\n**Grading Policy:** concise sentence.',
+            offering_markdown: '**Course Format:** lectures + recitations; weekly psets; midterm + final exam.\n\n**Attendance:** concise explicit policy, or Not specified in the available source.\n\n**Grading:** concise explicit grade breakdown/rules, or Not specified in the available source.',
             attendance: {
               attendance_required: 'yes|no|unknown',
               attendance_counts_toward_grade: 'yes|no|unknown',
@@ -1132,12 +1152,34 @@ function normalizeParsedOffering(offering, fallback, contextText = '') {
 function normalizeOfferingMarkdown(value) {
   const text = String(value || '').replace(/\r\n/g, '\n').trim();
   if (!text) return null;
-  const requiredLabels = ['**Course Format:**', '**Attendance Policy:**', '**Grading Policy:**'];
-  if (requiredLabels.every((label) => text.includes(label))) return text;
-  return text
+  const normalized = cleanOfferingMarkdown(text
     .replace(/^Course Format:/gim, '**Course Format:**')
-    .replace(/^Attendance Policy:/gim, '**Attendance Policy:**')
-    .replace(/^Grading Policy:/gim, '**Grading Policy:**');
+    .replace(/^Attendance Policy:/gim, '**Attendance:**')
+    .replace(/^Attendance:/gim, '**Attendance:**')
+    .replace(/^Grading Policy:/gim, '**Grading:**')
+    .replace(/^Grading:/gim, '**Grading:**')
+    .replace(/\*\*Attendance Policy:\*\*/gi, '**Attendance:**')
+    .replace(/\*\*Grading Policy:\*\*/gi, '**Grading:**'));
+  const requiredLabels = ['**Course Format:**', '**Attendance:**', '**Grading:**'];
+  if (requiredLabels.every((label) => normalized.includes(label))) return normalized;
+  return normalized;
+}
+
+function cleanOfferingMarkdown(markdown) {
+  return String(markdown || '').replace(/(\*\*Course Format:\*\*\s*)([^\n]+)/i, (match, label, body) => {
+    const fragments = String(body || '')
+      .replace(/[.]\s*$/, '')
+      .split(/\s*;\s*/)
+      .map((fragment) => fragment.trim())
+      .filter(Boolean);
+    if (fragments.length <= 1) return match;
+    const filtered = fragments.filter((fragment) => (
+      !/^Not specified in the available source\.?$/i.test(fragment)
+      && !/\b(attendance|attend|grade|credit|counts?\s+(?:for|toward))\b/i.test(fragment)
+    ));
+    if (!filtered.length) return `${label}Not specified in the available source.`;
+    return `${label}${filtered.join('; ')}.`;
+  });
 }
 
 function normalizeAttendance(attendance) {
@@ -1174,9 +1216,9 @@ function markdownQualityScore(markdown) {
   const text = String(markdown || '').trim();
   if (!text) return 0;
   const lower = text.toLowerCase();
-  const labels = ['**course format:**', '**attendance policy:**', '**grading policy:**']
+  const labels = ['**course format:**', '**attendance:**', '**grading:**']
     .filter((label) => lower.includes(label)).length;
-  const specifiedPolicies = ['**attendance policy:**', '**grading policy:**']
+  const specifiedPolicies = ['**attendance:**', '**grading:**']
     .filter((label) => {
       const index = lower.indexOf(label);
       if (index < 0) return false;
