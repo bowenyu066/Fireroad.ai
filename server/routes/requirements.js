@@ -58,7 +58,9 @@ async function expandWithGirCodes(courseIds) {
     let addedToHass = false;
     course.requirements.forEach((req) => {
       if (GIR_ATTR_CODES.has(req)) {
-        add(`GIR:${req}`, id);
+        const code = `GIR:${req}`;
+        add(code, id);
+        countMap[code] = (countMap[code] || 0) + 1;
       }
       if (HASS_CODES.has(req)) {
         if (req !== 'HASS') {

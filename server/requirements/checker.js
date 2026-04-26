@@ -68,7 +68,22 @@ function evaluate(node, takenSet, countMap = {}) {
     threshold = results.length;
   }
 
-  const satisfiedCount = results.filter((r) => r.satisfied).length;
+  // When criterion is "subjects", count total matching courses (expanding GIR/HASS codes
+  // via countMap) rather than counting how many children are satisfied.
+  let satisfiedCount;
+  if (node.threshold && node.threshold.criterion === 'subjects') {
+    satisfiedCount = results.reduce((sum, r, i) => {
+      const child = children[i];
+      if (child.req && !child.reqs) {
+        const id = String(child.req).toUpperCase();
+        if (countMap[id] !== undefined) return sum + countMap[id];
+      }
+      return sum + (r.satisfied ? 1 : 0);
+    }, 0);
+  } else {
+    satisfiedCount = results.filter((r) => r.satisfied).length;
+  }
+
   const satisfied = satisfiedCount >= threshold;
   const matched = [...new Set(results.flatMap((r) => r.matched))];
   const unmet = results
