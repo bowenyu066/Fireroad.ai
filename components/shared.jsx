@@ -124,18 +124,27 @@ const TopBar = ({ planningTermLabel }) => {
   const initials = displayName.split(' ').map((s) => s[0]).join('');
   const termLabel = planningTermLabel || activePlanningTermLabel || 'Next Semester';
   const generatedTerms = Array.isArray(termOptions) && termOptions.length ? termOptions : [{ id: activeSem || termLabel, label: termLabel }];
-  const terms = activeSem && !generatedTerms.some((term) => term.id === activeSem)
+  const allTerms = activeSem && !generatedTerms.some((term) => term.id === activeSem)
     ? [{ id: activeSem, label: termLabel }, ...generatedTerms]
     : generatedTerms;
+  const terms = allTerms.filter((t) => !/^SU\d+$/i.test(t.id));
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '14px 24px', borderBottom: '1px solid var(--border)',
       background: 'var(--bg)', position: 'sticky', top: 0, zIndex: 50,
     }}>
-      <div style={{ flex: '1 1 0', display: 'flex', alignItems: 'center', gap: 24 }}>
+      <div style={{ flex: '1 1 0', display: 'flex', alignItems: 'center', gap: 16 }}>
         <button onClick={() => setRoute({ name: 'planner' })} style={{ display: 'flex', alignItems: 'center' }}>
           <Logo />
+        </button>
+        <button
+          onClick={() => setRoute({ name: 'fouryear' })}
+          className="btn-ghost"
+          style={{ fontSize: 12, padding: '5px 10px', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-secondary)' }}
+        >
+          <Icon name="grid" size={13} />
+          4-Year Plan
         </button>
       </div>
 

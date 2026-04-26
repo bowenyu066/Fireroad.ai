@@ -525,6 +525,65 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
 };
 
 // ============== Requirements panel ==============
+const ReqRow = ({ group, depth = 0, expanded, toggle }) => {
+  const isOpen = !!expanded[depth + ':' + group.id];
+  const hasChildren = group.subGroups && group.subGroups.length > 0;
+  const statusColor = group.satisfied ? 'var(--success)' : group.isManual ? 'var(--warning)' : 'var(--border-strong)';
+  const indent = depth * 14;
+  const fontSize = depth === 0 ? 12 : depth === 1 ? 11 : 10;
+  const boxSize = depth === 0 ? 14 : 12;
+
+  return (
+    <div>
+      <button
+        onClick={() => toggle(depth + ':' + group.id)}
+        style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 7, padding: `${depth === 0 ? 5 : 3}px 0`, paddingLeft: indent, fontSize }}
+      >
+        <span style={{
+          width: boxSize, height: boxSize, borderRadius: 3, flexShrink: 0,
+          background: group.satisfied ? 'var(--success)' : 'transparent',
+          border: `1.5px solid ${statusColor}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#fff', fontSize: boxSize - 5, fontWeight: 700,
+        }}>
+          {group.satisfied ? '✓' : ''}
+        </span>
+        <span style={{ flex: 1, color: group.satisfied ? 'var(--text)' : depth === 0 ? 'var(--text-secondary)' : 'var(--text-tertiary)' }}>
+          {group.label}
+        </span>
+        {group.progress && !group.satisfied && (
+          <span className="mono" style={{ fontSize: fontSize - 1, color: 'var(--text-tertiary)' }}>{group.progress}</span>
+        )}
+        {(hasChildren || (!group.satisfied && !hasChildren)) && (
+          <Icon name={isOpen ? 'chevronUp' : 'chevronDown'} size={10} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
+        )}
+      </button>
+
+      {isOpen && hasChildren && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {group.subGroups.map(sub => (
+            <ReqRow key={sub.id} group={sub} depth={depth + 1} expanded={expanded} toggle={toggle} />
+          ))}
+        </div>
+      )}
+
+      {isOpen && !hasChildren && !group.satisfied && (
+        <div style={{ paddingLeft: indent + 21, paddingBottom: 5, fontSize: fontSize - 1, color: 'var(--text-tertiary)', lineHeight: 1.7 }}>
+          {group.isManual
+            ? <span style={{ color: 'var(--warning)' }}>Requires advisor verification</span>
+            : group.unmet.length > 0
+              ? <>Still needed: {group.unmet.map((id, i) => (
+                  <span key={id} className="mono" style={{ color: 'var(--text-secondary)' }}>
+                    {i > 0 ? ', ' : ''}{id}
+                  </span>
+                ))}</>
+              : null}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const RequirementsPanel = ({ schedule }) => {
   const { profile } = useApp();
   const [result, setResult] = useState(null);
@@ -573,79 +632,9 @@ const RequirementsPanel = ({ schedule }) => {
         <span style={{ width: `${pct}%`, transition: 'width 600ms cubic-bezier(0.2,0.8,0.2,1)' }} />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {result.groups.map(group => {
-          const isOpen = !!expanded[group.id];
-          const statusColor = group.satisfied ? 'var(--success)' : group.isManual ? 'var(--warning)' : 'var(--border-strong)';
-          return (
-            <div key={group.id}>
-              {/* Top-level requirement row */}
-              <button
-                onClick={() => toggle(group.id)}
-                style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', fontSize: 12 }}
-              >
-                <span style={{
-                  width: 14, height: 14, borderRadius: 3, flexShrink: 0,
-                  background: group.satisfied ? 'var(--success)' : 'transparent',
-                  border: `1.5px solid ${statusColor}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#fff', fontSize: 9, fontWeight: 700,
-                }}>
-                  {group.satisfied ? '✓' : ''}
-                </span>
-                <span style={{ flex: 1, color: group.satisfied ? 'var(--text)' : 'var(--text-secondary)' }}>
-                  {group.label}
-                </span>
-                {group.progress && !group.satisfied && (
-                  <span className="mono" style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{group.progress}</span>
-                )}
-                <Icon name={isOpen ? 'chevronUp' : 'chevronDown'} size={11} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
-              </button>
-
-              {/* Expanded: sub-groups (e.g. Centers → Data/Model/Decision/…) */}
-              {isOpen && group.subGroups && (
-                <div style={{ paddingLeft: 22, paddingBottom: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {group.subGroups.map(sub => {
-                    const subColor = sub.satisfied ? 'var(--success)' : sub.isManual ? 'var(--warning)' : 'var(--border-strong)';
-                    return (
-                      <div key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', fontSize: 11 }}>
-                        <span style={{
-                          width: 12, height: 12, borderRadius: 3, flexShrink: 0,
-                          background: sub.satisfied ? 'var(--success)' : 'transparent',
-                          border: `1.5px solid ${subColor}`,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#fff', fontSize: 8, fontWeight: 700,
-                        }}>
-                          {sub.satisfied ? '✓' : ''}
-                        </span>
-                        <span style={{ flex: 1, color: sub.satisfied ? 'var(--text)' : 'var(--text-tertiary)' }}>{sub.label}</span>
-                        {!sub.satisfied && sub.unmet.length > 0 && (
-                          <span className="mono" style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>
-                            e.g. {sub.unmet[0]}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Expanded: leaf-level unmet courses (when no sub-groups) */}
-              {isOpen && !group.subGroups && !group.satisfied && (
-                <div style={{ paddingLeft: 22, paddingBottom: 6, fontSize: 11, color: 'var(--text-tertiary)', lineHeight: 1.7 }}>
-                  {group.isManual
-                    ? 'Requires manual verification'
-                    : group.unmet.length > 0
-                      ? <>Still needed: {group.unmet.map((id, i) => (
-                          <span key={id} className="mono" style={{ color: 'var(--text-secondary)' }}>
-                            {i > 0 ? ', ' : ''}{id}
-                          </span>
-                        ))}</>
-                      : 'Not satisfied'}
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {result.groups.map(group => (
+          <ReqRow key={group.id} group={group} depth={0} expanded={expanded} toggle={toggle} />
+        ))}
       </div>
     </div>
   );
@@ -653,49 +642,129 @@ const RequirementsPanel = ({ schedule }) => {
 
 window.SchedulePanel = SchedulePanel;
 
-// Legacy display-only interface kept for future long-range visualization.
-// It is intentionally not mounted from the main planner and has no edit/drop/move behavior.
-const FourYearPlan = ({ plan = FRDATA.fourYearPlan, onOpenCourse = () => {} }) => (
-  <div style={{ padding: 24, height: '100%', overflow: 'auto' }}>
-    <div style={{ marginBottom: 18 }}>
-      <h2 className="display" style={{ fontSize: 20, fontWeight: 600, margin: 0 }}>Long-Range Display</h2>
-      <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>
-        Read-only interface reserved for future roadmap display.
-      </div>
-    </div>
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10 }}>
-      {FRDATA.semesterOrder.map((sem) => {
-        const courses = (plan[sem] || []).map((id) => FRDATA.getCourse(id)).filter(Boolean);
-        return (
-          <div key={sem} style={{
-            background: 'var(--surface)', border: '1px solid var(--border)',
-            borderRadius: 'var(--r-md)', padding: 12, minHeight: 150,
-          }}>
-            <div className="mono" style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 10 }}>
-              {FRDATA.semesterLabels[sem] || sem}
+// ============== 4-Year Plan page ==============
+const FourYearPlanPage = () => {
+  const { fourYearPlan, activeSem, setActiveSem, setRoute, profile } = useApp();
+  const semOrder  = FRDATA.semesterOrder || [];
+  const semLabels = FRDATA.semesterLabels || {};
+
+  const totalCourses = Object.values(fourYearPlan).flat().length;
+
+  const goPlanning = (sem) => { setActiveSem(sem); setRoute({ name: 'planner' }); };
+  const openCourse = (id) => setRoute({ name: 'course', id });
+
+  // Build year rows: each row is { fall: 'F26', iap: 'IAP27', spring: 'S27' }
+  const falls = semOrder.filter((s) => s.startsWith('F')).slice(0, 4);
+  const yearRows = falls.map((fall) => {
+    const yy = parseInt(fall.slice(1), 10);
+    const nextYY = String((yy + 1) % 100).padStart(2, '0');
+    return { fall, iap: `IAP${nextYY}`, spring: `S${nextYY}` };
+  });
+
+  const SemCol = ({ sem, isIAP = false }) => {
+    const courseIds = fourYearPlan[sem] || [];
+    const courses   = courseIds.map((id) => FRDATA.getCourse(id)).filter(Boolean);
+    const units     = courses.reduce((s, c) => s + (c.units || 0), 0);
+    const isActive  = sem === activeSem;
+
+    return (
+      <div style={{
+        background: 'var(--surface)',
+        border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}`,
+        borderRadius: 'var(--r-md)', padding: isIAP ? '12px 10px' : 16,
+        display: 'flex', flexDirection: 'column',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+          <div>
+            <div className="mono" style={{ fontSize: isIAP ? 10 : 11, fontWeight: isActive ? 600 : 400, color: isActive ? 'var(--accent)' : 'var(--text-secondary)' }}>
+              {semLabels[sem] || sem}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {courses.map((course) => (
-                <button
-                  key={course.id}
-                  onClick={() => onOpenCourse(course.id)}
-                  style={{
-                    textAlign: 'left', padding: '7px 8px', borderRadius: 6,
-                    background: 'var(--surface-2)', display: 'flex', alignItems: 'center', gap: 8,
-                  }}
-                >
-                  <AreaDot area={course.area} />
-                  <span className="mono" style={{ fontSize: 11 }}>{course.id}</span>
-                  <span style={{ fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{course.name}</span>
-                </button>
-              ))}
-              {!courses.length && <span style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>No display items</span>}
+            {isActive && (
+              <div style={{ fontSize: 9, color: 'var(--accent)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
+                Planning
+              </div>
+            )}
+          </div>
+          <span className="mono" style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>{units}u</span>
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minHeight: isIAP ? 60 : 80 }}>
+          {courses.map((c) => (
+            <button key={c.id} onClick={() => openCourse(c.id)} style={{
+              textAlign: 'left', padding: isIAP ? '4px 8px' : '6px 10px', borderRadius: 6,
+              background: 'var(--surface-2)',
+              borderLeft: `3px solid var(--course-${c.area || 'other'})`,
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--surface-3)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--surface-2)'; }}
+            >
+              <span className="mono" style={{ fontSize: 10, fontWeight: 600, flexShrink: 0 }}>{c.id}</span>
+              {!isIAP && <span style={{ fontSize: 10, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>}
+            </button>
+          ))}
+          {!courses.length && (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)', fontSize: 11 }}>
+              —
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={() => goPlanning(sem)}
+          style={{
+            marginTop: 10, padding: '5px 0', width: '100%', fontSize: 10, borderRadius: 6,
+            background: isActive ? 'var(--accent-soft)' : 'transparent',
+            color: isActive ? 'var(--accent)' : 'var(--text-tertiary)',
+            border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}`,
+            transition: 'all 140ms',
+          }}
+        >
+          {isActive ? 'Currently planning' : 'Plan →'}
+        </button>
+      </div>
+    );
+  };
+
+  return (
+    <div className="fade-in" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <TopBar showTabs={false} />
+
+      <div style={{ padding: '32px 32px 64px', maxWidth: 1400, margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 28 }}>
+          <div>
+            <h1 className="display" style={{ fontSize: 24, fontWeight: 600, margin: 0 }}>4-Year Plan</h1>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
+              {profile?.name ? `${profile.name} · ` : ''}{totalCourses} courses across all semesters
             </div>
           </div>
-        );
-      })}
-    </div>
-  </div>
-);
+          <button className="btn" onClick={() => setRoute({ name: 'planner' })} style={{ fontSize: 13, padding: '8px 16px' }}>
+            ← Back to planner
+          </button>
+        </div>
 
-window.FourYearPlan = FourYearPlan;
+        {/* Column headers */}
+        <div style={{ display: 'grid', gridTemplateColumns: '4fr 2fr 4fr', gap: 12, marginBottom: 8 }}>
+          {['Fall', 'IAP', 'Spring'].map((label) => (
+            <div key={label} className="mono" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', textAlign: 'center' }}>
+              {label}
+            </div>
+          ))}
+        </div>
+
+        {/* Year rows */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {yearRows.map(({ fall, iap, spring }) => (
+            <div key={fall} style={{ display: 'grid', gridTemplateColumns: '4fr 2fr 4fr', gap: 12 }}>
+              <SemCol sem={fall} />
+              <SemCol sem={iap} isIAP />
+              <SemCol sem={spring} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+window.FourYearPlanPage = FourYearPlanPage;

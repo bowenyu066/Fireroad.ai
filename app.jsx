@@ -1,4 +1,4 @@
-/* global React, ReactDOM, FRDATA, FRAuth, PersonalCourse, AuthGate, Onboarding, ProfilePage, TopBar, SchedulePanel, AgentPanel, Recommendations, CourseDetail, AppCtx */
+/* global React, ReactDOM, FRDATA, FRAuth, PersonalCourse, AuthGate, Onboarding, ProfilePage, TopBar, SchedulePanel, FourYearPlanPage, AgentPanel, Recommendations, CourseDetail, AppCtx */
 const { useState, useEffect } = React;
 
 const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLabel }) => {
@@ -389,6 +389,7 @@ const App = () => {
               />
             )}
             {route.name === 'profile' && <ProfilePage />}
+            {route.name === 'fouryear' && <FourYearPlanPage />}
           </>
         )}
       </AuthGate>
