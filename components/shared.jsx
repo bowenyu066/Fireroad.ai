@@ -141,22 +141,22 @@ const ConfirmTranscriptReparseModal = ({ onCancel, onConfirm }) => (
       boxShadow: '0 24px 70px rgba(15, 23, 42, 0.24)',
       padding: 24,
     }}>
-      <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 10 }}>Dangerous action</div>
+      <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 10 }}>Confirm sync</div>
       <h2 id="reparse-transcript-title" className="display" style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>
-        Re-parse transcript?
+        Re-parse saved transcript data?
       </h2>
       <p style={{ margin: '12px 0 0', color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.55 }}>
-        This will remove the current transcript-derived personal_course.md, completed-course placements, prior-credit entries, and transcript-imported requirement credits for this account. Manually added courses are preserved.
+        This will re-read your existing personal_course.md and sync the course list, prior credits, and semester placements from it. It will not delete the saved markdown and will not ask you to upload the transcript again.
       </p>
       <p style={{ margin: '10px 0 0', color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.55 }}>
-        You will return to onboarding and need to upload or import the transcript again.
+        Courses marked LIS or DR will be removed from requirements and semesters; transfer/ASE credits will count for requirements but stay outside semester plans.
       </p>
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 22 }}>
         <button className="btn btn-ghost" onClick={onCancel} style={{ padding: '9px 16px' }}>
           Cancel
         </button>
         <button className="btn btn-primary" onClick={onConfirm} style={{ padding: '9px 16px', background: 'var(--accent)' }}>
-          Yes, re-parse
+          Re-sync now
         </button>
       </div>
     </div>
