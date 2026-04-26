@@ -1,4 +1,4 @@
-/* global React, FRDATA, Icon, MatchBar, AreaDot */
+/* global React, FRDATA, useApp, Icon, MatchBar, AreaDot */
 const { useState, useEffect, useRef } = React;
 
 // ============== ICS export ==============

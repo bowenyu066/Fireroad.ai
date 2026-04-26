@@ -14,7 +14,12 @@ window.FRDATA = (function (source) {
     return source.catalog.find((c) => c.id.toLowerCase() === normalized);
   };
 
-  const getMatch = (id) => source.matchScores[id] || { total: 0, interest: 0, workload: 0, reqValue: 0 };
+  const getMatch = (id) => {
+    const normalized = String(id || '').trim().toUpperCase();
+    const cached = currentCache.get(normalized);
+    if (cached?.personalMatch) return cached.personalMatch;
+    return source.matchScores[normalized] || { total: 0, interest: 0, workload: 0, reqValue: 0 };
+  };
 
   const termDefinitions = [
     ['F', 'Fall'],
@@ -107,12 +112,15 @@ window.FRDATA = (function (source) {
       topics: fallback?.topics || [],
       quote: fallback?.quote || '',
       area: current.area || fallback?.area || areaForCourseId(current.id),
+      personalMatch: current.personalMatch || current.personal_match || null,
+      recommendationReasons: current.reasons || current.recommendationReasons || [],
+      rankScore: current.rankScore || current.rank_score || current.personalMatch?.total || current.personal_match?.total || 0,
       current,
     };
   };
 
-  const fetchJson = async (url) => {
-    const response = await fetch(url);
+  const fetchJson = async (url, options) => {
+    const response = await fetch(url, options);
     if (!response.ok) throw new Error(`Request failed: ${response.status}`);
     return response.json();
   };
@@ -204,6 +212,15 @@ window.FRDATA = (function (source) {
     return catalogCache;
   };
 
+  const fetchCurrentRecommendations = async ({ schedule = [], profile = {}, personalCourseMarkdown = '', maxResults = 40 } = {}) => {
+    const payload = await fetchJson('/api/current/recommendations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ schedule, profile, personalCourseMarkdown, maxResults }),
+    });
+    return cacheCourses((payload.results || []).map(toPlannerCourse).filter(Boolean));
+  };
+
   return {
     ...source,
     fourYearPlan,
@@ -214,6 +231,7 @@ window.FRDATA = (function (source) {
     planningTermLabel: semesterLabels[defaultActiveSem] || 'Next Semester',
     fetchCurrentCatalog,
     fetchCurrentCourse,
+    fetchCurrentRecommendations,
     fetchCurrentSearch,
     getCourse,
     getMatch,

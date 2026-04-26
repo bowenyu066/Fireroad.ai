@@ -1224,21 +1224,38 @@ const GuidedChoice = ({ title, value, onChange, options }) => (
 // ============== Recommendations panel (bottom-right) ==============
 const Recommendations = ({ schedule, onAddCourse, onOpenCourse }) => {
   const [sort, setSort] = useState('match'); // match | workload | units
-  const [recs, setRecs] = useState(() => FRDATA.catalog.filter((c) => !schedule.includes(c.id) && !c._stub));
+  const [recs, setRecs] = useState([]);
+  const [recsStatus, setRecsStatus] = useState('loading');
+  const [recsError, setRecsError] = useState('');
   const [personalizationOpen, setPersonalizationOpen] = useState(false);
   const { profile, setProfile, personalCourseMarkdown, setPersonalCourseMarkdown } = useApp();
   const personalization = profile?.preferences?.personalization;
 
   useEffect(() => {
     let cancelled = false;
-    FRDATA.fetchCurrentSearch('', 40).then((courses) => {
-      if (!cancelled) setRecs(courses.filter((c) => !schedule.includes(c.id)));
+    setRecsStatus('loading');
+    setRecsError('');
+    FRDATA.fetchCurrentRecommendations({
+      schedule,
+      profile,
+      personalCourseMarkdown,
+      maxResults: 40,
+    }).then((courses) => {
+      if (cancelled) return;
+      setRecs(courses);
+      setRecsStatus('ready');
+    }).catch((error) => {
+      if (cancelled) return;
+      console.warn('[recommendations] personalized endpoint failed', error);
+      setRecs([]);
+      setRecsError(error?.message || 'Recommendations failed.');
+      setRecsStatus('error');
     });
     return () => { cancelled = true; };
-  }, [schedule.join('|')]);
+  }, [schedule.join('|'), JSON.stringify(profile?.taken || []), JSON.stringify(profile?.remainingReqs || []), JSON.stringify(personalization || {}), personalCourseMarkdown]);
 
   const sorted = [...recs].sort((a, b) => {
-    if (sort === 'match') return FRDATA.getMatch(b.id).total - FRDATA.getMatch(a.id).total;
+    if (sort === 'match') return (b.personalMatch?.total || FRDATA.getMatch(b.id).total) - (a.personalMatch?.total || FRDATA.getMatch(a.id).total);
     if (sort === 'workload') return a.hydrant - b.hydrant;
     return b.units - a.units;
   });
@@ -1311,8 +1328,23 @@ const Recommendations = ({ schedule, onAddCourse, onOpenCourse }) => {
       )}
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
+        {recsStatus === 'loading' && (
+          <div style={{ padding: 18, fontSize: 13, color: 'var(--text-tertiary)' }}>
+            Building recommendations from your saved course record...
+          </div>
+        )}
+        {recsStatus === 'error' && (
+          <div style={{ padding: 18, fontSize: 13, color: 'var(--accent)' }}>
+            {recsError}
+          </div>
+        )}
+        {recsStatus === 'ready' && sorted.length === 0 && (
+          <div style={{ padding: 18, fontSize: 13, color: 'var(--text-tertiary)' }}>
+            No recommendations yet. Add course history in onboarding or search manually from the schedule panel.
+          </div>
+        )}
         {sorted.map((c) => {
-          const m = FRDATA.getMatch(c.id);
+          const m = c.personalMatch || FRDATA.getMatch(c.id);
           return (
             <div
               key={c.id}
@@ -1336,6 +1368,11 @@ const Recommendations = ({ schedule, onAddCourse, onOpenCourse }) => {
                 <div style={{ marginTop: 4 }}>
                   <MatchBar score={m.total} width={120} compact animated={false} />
                 </div>
+                {Array.isArray(c.recommendationReasons) && c.recommendationReasons.length > 0 && (
+                  <div style={{ marginTop: 4, fontSize: 11, color: 'var(--text-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {c.recommendationReasons.slice(0, 2).join(' · ')}
+                  </div>
+                )}
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); onAddCourse(c.id); }}

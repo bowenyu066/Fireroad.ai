@@ -1,4 +1,4 @@
-/* global React, ReactDOM, FRDATA, FRAuth, AuthGate, Onboarding, ProfilePage, TopBar, SchedulePanel, AgentPanel, Recommendations, CourseDetail, AppCtx */
+/* global React, ReactDOM, FRDATA, FRAuth, PersonalCourse, AuthGate, Onboarding, ProfilePage, TopBar, SchedulePanel, AgentPanel, Recommendations, CourseDetail, AppCtx */
 const { useState, useEffect } = React;
 
 const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLabel }) => {
@@ -104,20 +104,77 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
 
 const App = () => {
   const freshProfile = () => ({
-    ...FRDATA.profile,
-    taken: [...FRDATA.profile.taken],
-    preferences: { ...FRDATA.profile.preferences },
+    name: '',
+    kerberos: '',
+    major: '',
+    majorLabel: '',
+    year: '',
+    gradYear: '',
+    taken: [],
+    calibration: 1,
+    preferences: {},
+    remainingReqs: [],
   });
   const personalizeAgentMessages = (nextProfile) => {
     const firstName = String(nextProfile?.name || 'there').trim().split(/\s+/)[0] || 'there';
-    return FRDATA.agentMessages.map((message) => ({
-      ...message,
-      text: String(message.text || '').replace(/\bAlex\b/g, firstName),
-    }));
+    return [{
+      role: 'agent',
+      text: `Hi ${firstName}. I can use your saved course history and preferences to help plan this active semester. Ask me for recommendations, workload checks, or course tradeoffs.`,
+      suggestions: [],
+    }];
   };
-  const freshFourYearPlan = () => JSON.parse(JSON.stringify(FRDATA.fourYearPlan || {}));
+  const emptyFourYearPlan = () => Object.fromEntries((FRDATA.semesterOrder || []).map((id) => [id, []]));
+  const mergePlanWithMarkdown = (plan, markdown) => {
+    const next = { ...plan };
+    const completedPlan = PersonalCourse.planFromCompletedCourses(markdown || '');
+    Object.entries(completedPlan).forEach(([termId, courseIds]) => {
+      const existing = Array.isArray(next[termId]) ? next[termId] : [];
+      next[termId] = [...existing];
+      courseIds.forEach((courseId) => {
+        if (!next[termId].includes(courseId)) next[termId].push(courseId);
+      });
+    });
+    return next;
+  };
   const defaultActiveSem = FRDATA.defaultActiveSem || 'S25';
   const termOptions = FRDATA.termOptions || [{ id: defaultActiveSem, label: FRDATA.semesterLabels?.[defaultActiveSem] || defaultActiveSem }];
+  const demoFourYearPlan = JSON.stringify({
+    F23: ['6.100A', '18.02', '8.02', '21H.001'],
+    S24: ['6.006', '18.06', '6.009'],
+    F24: [],
+    S25: [],
+    F25: [],
+    S26: [],
+    F26: [],
+    S27: [],
+  });
+  const isDemoFourYearPlan = (plan) => {
+    if (!plan || typeof plan !== 'object') return false;
+    const demo = JSON.parse(demoFourYearPlan);
+    const comparable = {};
+    Object.entries(plan).forEach(([term, courses]) => {
+      if (!demo[term] && Array.isArray(courses) && courses.length) comparable[term] = courses;
+    });
+    Object.keys(demo).forEach((term) => {
+      comparable[term] = Array.isArray(plan[term]) ? plan[term] : [];
+    });
+    return JSON.stringify(comparable) === demoFourYearPlan;
+  };
+  const deriveProfileFromMarkdown = (profile, markdown) => {
+    const summary = PersonalCourse.summarize(markdown || '');
+    if (!summary.completedCourseIds.length) return profile;
+    return {
+      ...profile,
+      taken: summary.completedCourseIds,
+      preferences: {
+        ...(profile.preferences || {}),
+        courseRatings: {
+          ...(profile.preferences?.courseRatings || {}),
+          ...summary.coursePreferences,
+        },
+      },
+    };
+  };
   const resolveSavedActiveSem = (saved) => {
     const savedActiveSem = saved?.activeSem;
     if (!savedActiveSem) return defaultActiveSem;
@@ -129,24 +186,27 @@ const App = () => {
     }
     return savedActiveSem;
   };
-  const normalizeSavedFourYearPlan = (saved, activeSem) => {
-    const base = freshFourYearPlan();
+  const normalizeSavedFourYearPlan = (saved, activeSem, markdown = '') => {
+    const base = emptyFourYearPlan();
+    let plan = base;
     if (saved?.fourYearPlan && typeof saved.fourYearPlan === 'object') {
-      return { ...base, ...saved.fourYearPlan };
+      plan = isDemoFourYearPlan(saved.fourYearPlan) ? base : { ...base, ...saved.fourYearPlan };
+      return mergePlanWithMarkdown(plan, markdown);
     }
     if (Array.isArray(saved?.semesterPlan)) {
-      return { ...base, [activeSem]: [...saved.semesterPlan] };
+      plan = { ...base, [activeSem]: [...saved.semesterPlan] };
+      return mergePlanWithMarkdown(plan, markdown);
     }
-    return base;
+    return mergePlanWithMarkdown(base, markdown);
   };
 
   const [theme, setTheme] = useState(() => localStorage.getItem('fr-theme') || 'light');
   const [route, setRoute] = useState({ name: 'onboarding' });
   const [profile, setProfile] = useState(freshProfile);
   const [personalCourseMarkdown, setPersonalCourseMarkdown] = useState(() => localStorage.getItem('fr-personalcourse-draft') || '');
-  const [fourYearPlan, setFourYearPlan] = useState(freshFourYearPlan);
+  const [fourYearPlan, setFourYearPlan] = useState(emptyFourYearPlan);
   const [activeSem, setActiveSem] = useState(defaultActiveSem);
-  const [messages, setMessages] = useState(FRDATA.agentMessages);
+  const [messages, setMessages] = useState(() => personalizeAgentMessages(freshProfile()));
   const [authState, setAuthState] = useState(() => FRAuth.getState());
   const [dataReady, setDataReady] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
@@ -174,12 +234,15 @@ const App = () => {
         const completed = Boolean(saved?.onboardingCompleted);
         const baseProfile = freshProfile();
         const onboardingName = typeof saved?.onboarding?.name === 'string' ? saved.onboarding.name.trim() : '';
-        const nextProfile = saved?.profile ? {
+        let nextProfile = saved?.profile ? {
           ...baseProfile,
           ...saved.profile,
-          name: saved.profile.name === baseProfile.name && onboardingName ? onboardingName : saved.profile.name,
+          name: saved.profile.name === 'Alex Chen'
+            ? (onboardingName || authState.user.email.split('@')[0])
+            : (saved.profile.name || onboardingName || authState.user.email.split('@')[0]),
           taken: [...(saved.profile.taken || [])],
-          preferences: { ...baseProfile.preferences, ...(saved.profile.preferences || {}) },
+          preferences: { ...(saved.profile.preferences || {}) },
+          remainingReqs: Array.isArray(saved.profile.remainingReqs) ? saved.profile.remainingReqs : [],
         } : {
           ...baseProfile,
           name: authState.user.email.split('@')[0],
@@ -190,12 +253,13 @@ const App = () => {
           || saved?.onboarding?.personalCourseMarkdown
           || localStorage.getItem('fr-personalcourse-draft')
           || '';
+        nextProfile = deriveProfileFromMarkdown(nextProfile, nextPersonalCourseMarkdown);
         setProfile(nextProfile);
         setPersonalCourseMarkdown(nextPersonalCourseMarkdown);
         if (nextPersonalCourseMarkdown) localStorage.setItem('fr-personalcourse-draft', nextPersonalCourseMarkdown);
         setMessages(personalizeAgentMessages(nextProfile));
         setActiveSem(nextActiveSem);
-        setFourYearPlan(normalizeSavedFourYearPlan(saved, nextActiveSem));
+        setFourYearPlan(normalizeSavedFourYearPlan(saved, nextActiveSem, nextPersonalCourseMarkdown));
         setOnboardingCompleted(completed);
         setRoute({ name: completed ? 'planner' : 'onboarding' });
         setDataReady(true);
@@ -204,11 +268,12 @@ const App = () => {
         if (cancelled) return;
         console.error(err);
         const nextProfile = { ...freshProfile(), name: authState.user.email.split('@')[0] };
-        setProfile(nextProfile);
-        setPersonalCourseMarkdown(localStorage.getItem('fr-personalcourse-draft') || '');
+        const nextPersonalCourseMarkdown = localStorage.getItem('fr-personalcourse-draft') || '';
+        setProfile(deriveProfileFromMarkdown(nextProfile, nextPersonalCourseMarkdown));
+        setPersonalCourseMarkdown(nextPersonalCourseMarkdown);
         setMessages(personalizeAgentMessages(nextProfile));
         setActiveSem(defaultActiveSem);
-        setFourYearPlan(freshFourYearPlan());
+        setFourYearPlan(emptyFourYearPlan());
         setOnboardingCompleted(false);
         setRoute({ name: 'onboarding' });
         setDataReady(true);
@@ -258,17 +323,18 @@ const App = () => {
   };
 
   const completeOnboarding = async ({ profile: nextProfile, onboarding, personalCourseMarkdown }) => {
+    const hydratedProfile = deriveProfileFromMarkdown(nextProfile, personalCourseMarkdown);
     setOnboardingCompleted(true);
-    setProfile(nextProfile);
+    setProfile(hydratedProfile);
     setPersonalCourseMarkdown(personalCourseMarkdown || '');
     if (personalCourseMarkdown) localStorage.setItem('fr-personalcourse-draft', personalCourseMarkdown);
-    setMessages(personalizeAgentMessages(nextProfile));
+    setMessages(personalizeAgentMessages(hydratedProfile));
     setRoute({ name: 'planner' });
     setSaveState('saving');
     try {
       await FRAuth.saveUserData({
         onboardingCompleted: true,
-        profile: nextProfile,
+        profile: hydratedProfile,
         fourYearPlan,
         activeSem,
         onboarding,
@@ -290,7 +356,7 @@ const App = () => {
     localStorage.removeItem('fr-personalcourse-draft');
     setMessages(personalizeAgentMessages(nextProfile));
     setActiveSem(defaultActiveSem);
-    setFourYearPlan(freshFourYearPlan());
+    setFourYearPlan(emptyFourYearPlan());
     setOnboardingCompleted(false);
     setRoute({ name: 'onboarding' });
   };
