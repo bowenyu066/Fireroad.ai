@@ -1,0 +1,61 @@
+{
+  "title-no-degree": "Literature",
+  "list-id": "major21L.reql",
+  "title": "Bachelor of Science in Literature",
+  "medium-title": "21L Major",
+  "reqs": [
+    {
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 3",
+      "reqs": [
+        {
+          "req": "21L.701"
+        },
+        {
+          "req": "21L.702"
+        },
+        {
+          "req": "21L.703"
+        },
+        {
+          "req": "21L.704"
+        },
+        {
+          "req": "21L.705"
+        },
+        {
+          "req": "21L.706"
+        },
+        {
+          "req": "21L.707"
+        },
+        {
+          "req": "21L.709"
+        },
+        {
+          "req": "21L.715"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 7",
+      "req": "7 additional subjects",
+      "threshold": {
+        "cutoff": 7,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "title": "Restricted Electives",
+      "desc": "Select seven additional subjects to form a coherent program. A maximum of three subjects may be selected from among introductory subjects, as described on the Literature website."
+    }
+  ],
+  "short-title": "21L",
+  "desc": "The program in Literature leading to the Bachelor of Science in Literature is equivalent to the curricula in English (or literary studies) at major liberal arts institutions. The Literature curriculum is notable also for its integration of materials drawn from film and media, popular culture, and minority and ethnic cultures. \n\nMajors are required to take a minimum of 10 subjects, three of which must be seminars and no more than three of which may be introductory subjects. Students develop an appropriate course of study in consultation with a faculty advisor; majors choose from one of two areas in organizing four of their restricted electives (three for joint majors): historical periods or thematic complexes. Four of the 10 subjects from the required subjects and restricted electives must be chosen, in consultation with a faculty advisor, either from four of five historical periods (ancient and medieval; Renaissance and Restoration; 18th century and Enlightenment; 19th century and Romanticism; 20th century and contemporary culture) or from four of five thematic complexes (historical period; genre or mode; author study; film, media, and popular culture; gender and ethnic studies)."
+}

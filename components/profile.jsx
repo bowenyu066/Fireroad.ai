@@ -1,19 +1,59 @@
 /* global React, Icon, TopBar, useApp */
-const { useState } = React;
+const { useState, useEffect } = React;
+
+// Mirror the major options from onboarding so stored values match
+const PROFILE_MAJORS = [
+  ['Course 6-2', 'Course 6-2: Electrical Engineering and Computer Science'],
+  ['Course 6-3', 'Course 6-3: Computer Science and Engineering'],
+  ['Course 6-4', 'Course 6-4: Artificial Intelligence and Decision Making'],
+  ['Course 6-7', 'Course 6-7: Computer Science and Molecular Biology'],
+  ['Course 6-9', 'Course 6-9: Computation and Cognition'],
+  ['Course 18',  'Course 18: Mathematics'],
+  ['Course 8',   'Course 8: Physics'],
+  ['Course 15',  'Course 15: Management'],
+  ['Undecided',  'Undecided / exploring'],
+  ['Other',      'Other'],
+];
+
+const SKILL_LEVELS = [
+  ['pre-cracked',       'Olympiad / competition background — hard classes feel approachable'],
+  ['competition-lite',  'Some competition experience — want ramp-aware recommendations'],
+  ['high-school',       'High-school course level — start from a steady ramp'],
+];
+
+const STANDINGS = [
+  ['Pre-freshman', 'Pre-freshman'],
+  ['Freshman',     'Freshman'],
+  ['Sophomore',    'Sophomore'],
+  ['Junior',       'Junior'],
+  ['Senior',       'Senior'],
+  ['MEng',         'MEng'],
+];
+
+function makeDraft(profile) {
+  return {
+    ...profile,
+    name:        profile.name        || '',
+    major:       profile.major       || 'Course 6-3',
+    year:        profile.year        || 'Sophomore',
+    taken:       [...(profile.taken  || [])],
+    preferences: { ...(profile.preferences || {}) },
+  };
+}
 
 const ProfilePage = () => {
   const { profile, setProfile, setRoute } = useApp();
-
-  const [draft, setDraft] = useState({
-    ...profile,
-    preferences: { ...profile.preferences },
-    taken: [...profile.taken],
-  });
+  const [draft, setDraft]       = useState(() => makeDraft(profile));
   const [newCourse, setNewCourse] = useState('');
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved]        = useState(false);
 
-  const upd = (k, v) => setDraft((d) => ({ ...d, [k]: v }));
-  const updPref = (k, v) => setDraft((d) => ({ ...d, preferences: { ...d.preferences, [k]: v } }));
+  // Re-sync whenever the context profile changes (e.g. after onboarding completes)
+  useEffect(() => {
+    setDraft(makeDraft(profile));
+  }, [profile]);
+
+  const upd     = (k, v) => setDraft(d => ({ ...d, [k]: v }));
+  const updPref = (k, v) => setDraft(d => ({ ...d, preferences: { ...d.preferences, [k]: v } }));
 
   const save = () => {
     setProfile(draft);
@@ -21,7 +61,7 @@ const ProfilePage = () => {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const removeCourse = (id) => upd('taken', draft.taken.filter((c) => c !== id));
+  const removeCourse = (id) => upd('taken', draft.taken.filter(c => c !== id));
   const addCourse = () => {
     const id = newCourse.trim();
     if (!id || draft.taken.includes(id)) return;
@@ -29,8 +69,7 @@ const ProfilePage = () => {
     setNewCourse('');
   };
 
-  const initials = draft.name.split(' ').map((s) => s[0]).join('');
-  const majorKey = draft.major.replace('Course ', '');
+  const initials = (draft.name || '?').split(' ').map(s => s[0]).join('').slice(0, 2).toUpperCase();
 
   return (
     <div className="fade-in" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
@@ -60,65 +99,49 @@ const ProfilePage = () => {
         {/* Basic info */}
         <PSection title="Basic Info">
           <PField label="Name">
-            <PInput value={draft.name} onChange={(v) => upd('name', v)} placeholder="Your name" />
+            <PInput value={draft.name} onChange={v => upd('name', v)} placeholder="Your name" />
           </PField>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <PField label="Major / Program">
-              <PSelect value={majorKey} onChange={(v) => upd('major', `Course ${v}`)} options={[
-                ['6-2', 'Course 6-2 — EE & CS'],
-                ['6-3', 'Course 6-3 — CS & Engineering'],
-                ['6-7', 'Course 6-7 — CS & Mol. Bio'],
-                ['6-9', 'Course 6-9 — CS & Cognition'],
-                ['18', 'Course 18 — Mathematics'],
-                ['8', 'Course 8 — Physics'],
-                ['16', 'Course 16 — AeroAstro'],
-                ['Other', 'Other'],
-              ]} />
+              <PSelect
+                value={draft.major}
+                onChange={v => upd('major', v)}
+                options={PROFILE_MAJORS}
+              />
             </PField>
             <PField label="Year">
-              <PSelect value={draft.year} onChange={(v) => upd('year', v)} options={[
-                ['Freshman', 'Freshman'], ['Sophomore', 'Sophomore'],
-                ['Junior', 'Junior'], ['Senior', 'Senior'], ['MEng', 'MEng'],
-              ]} />
+              <PSelect
+                value={draft.year}
+                onChange={v => upd('year', v)}
+                options={STANDINGS}
+              />
             </PField>
           </div>
         </PSection>
 
         {/* Preferences */}
         <PSection title="Preferences">
-          <PField label="ML / AI goal">
+          <PField label="Academic background">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[
-                ['research', 'I want to do ML research'],
-                ['apply',    'I want to apply ML to another field'],
-                ['engineer', 'I want to work in ML engineering'],
-                ['curious',  'Just curious / exploring'],
-              ].map(([v, l]) => (
-                <PRadio key={v} value={v} current={draft.preferences.goal} onClick={(val) => updPref('goal', val)}>{l}</PRadio>
+              {SKILL_LEVELS.map(([v, l]) => (
+                <PRadio key={v} value={v} current={draft.preferences.skillLevel} onClick={val => updPref('skillLevel', val)}>
+                  {l}
+                </PRadio>
               ))}
             </div>
           </PField>
-          <PField label="Learning style">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[
-                ['theory', 'Theory and proofs (psets, derivations)'],
-                ['build',  'Building things (projects, implementations)'],
-                ['mix',    'Mix of both'],
-              ].map(([v, l]) => (
-                <PRadio key={v} value={v} current={draft.preferences.style} onClick={(val) => updPref('style', val)}>{l}</PRadio>
-              ))}
-            </div>
-          </PField>
-          <PField label="Math background">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[
-                ['strong', 'Very strong (math olympiad / real analysis)'],
-                ['solid',  'Solid (18.06 felt manageable)'],
-                ['needs',  'Needs work'],
-              ].map(([v, l]) => (
-                <PRadio key={v} value={v} current={draft.preferences.math} onClick={(val) => updPref('math', val)}>{l}</PRadio>
-              ))}
-            </div>
+          <PField label="Notes for the agent" hint="Free-text context used when generating recommendations">
+            <textarea
+              value={draft.preferences.notes || ''}
+              onChange={e => updPref('notes', e.target.value)}
+              rows={3}
+              placeholder="e.g. Strong math background, aiming for PhD in ML, prefer theory-heavy classes..."
+              style={{
+                width: '100%', padding: '11px 14px', borderRadius: 'var(--r-md)',
+                border: '1px solid var(--border)', background: 'var(--surface)',
+                fontSize: 13, resize: 'vertical', lineHeight: 1.5,
+              }}
+            />
           </PField>
         </PSection>
 
@@ -129,7 +152,7 @@ const ProfilePage = () => {
             border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
             background: 'var(--surface)', minHeight: 64,
           }}>
-            {draft.taken.map((id) => (
+            {draft.taken.map(id => (
               <span key={id} className="mono" style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 padding: '5px 8px 5px 10px', borderRadius: 999,
@@ -144,10 +167,10 @@ const ProfilePage = () => {
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <input
                 className="mono"
-                placeholder="6.006"
+                placeholder="6.1010"
                 value={newCourse}
-                onChange={(e) => setNewCourse(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addCourse()}
+                onChange={e => setNewCourse(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addCourse()}
                 style={{
                   fontSize: 12, width: 70, padding: '5px 8px',
                   border: '1px dashed var(--border-strong)', borderRadius: 999,
@@ -184,24 +207,25 @@ const PSection = ({ title, children }) => (
   </div>
 );
 
-const PField = ({ label, children }) => (
+const PField = ({ label, hint, children }) => (
   <div style={{ marginBottom: 18 }}>
     <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 8, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
       {label}
     </label>
     {children}
+    {hint && <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 6 }}>{hint}</div>}
   </div>
 );
 
 const PInput = ({ value, onChange, placeholder }) => (
-  <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} style={{
+  <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{
     width: '100%', padding: '11px 14px', borderRadius: 'var(--r-md)',
     border: '1px solid var(--border)', background: 'var(--surface)', fontSize: 14,
   }} />
 );
 
 const PSelect = ({ value, onChange, options }) => (
-  <select value={value} onChange={(e) => onChange(e.target.value)} style={{
+  <select value={value} onChange={e => onChange(e.target.value)} style={{
     width: '100%', padding: '11px 14px', borderRadius: 'var(--r-md)',
     border: '1px solid var(--border)', background: 'var(--surface)', fontSize: 14, appearance: 'none',
     backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A8F9A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",

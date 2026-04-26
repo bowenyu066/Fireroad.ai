@@ -8,6 +8,10 @@
     "dev": "npm run history:setup && node server.js",
     "history:init": "node scripts/history/init_db.mjs",
     "history:seed": "node scripts/history/seed_history_courses.mjs",
+    "history:import-manifest": "node scripts/history/import_offering_manifest.mjs",
+    "history:fetch-docs": "node scripts/history/fetch_documents.mjs",
+    "history:extract-policies": "node scripts/history/extract_policies.mjs",
+    "history:collect": "node scripts/history/collect_course_history.mjs",
     "history:setup": "npm run history:init && npm run history:seed",
     "start": "npm run history:setup && node server.js"
   },
@@ -17,6 +21,8 @@
   "dependencies": {
     "better-sqlite3": "^12.9.0",
     "dotenv": "^17.4.2",
-    "express": "^4.18.3"
+    "express": "^4.18.3",
+    "multer": "^2.1.1",
+    "pdf-parse": "^1.1.1"
   }
 }

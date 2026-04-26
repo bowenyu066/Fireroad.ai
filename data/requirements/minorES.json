@@ -1,0 +1,469 @@
+{
+  "title-no-degree": "Environment and Sustainability",
+  "list-id": "minorES.reql",
+  "title": "Minor in Environment and Sustainability",
+  "medium-title": "E&S Minor",
+  "reqs": [
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "12.387",
+          "title": "Environment and Sustainability Foundation"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "11.169"
+            },
+            {
+              "req": "21A.312"
+            },
+            {
+              "req": "21A.410"
+            },
+            {
+              "req": "21H.185"
+            },
+            {
+              "req": "21H.186"
+            },
+            {
+              "req": "21H.187"
+            }
+          ],
+          "title": "Context and Perspectives"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "1.006"
+            },
+            {
+              "req": "2.722"
+            },
+            {
+              "req": "11.025"
+            },
+            {
+              "req": "EC.715"
+            },
+            {
+              "req": "EC.719"
+            }
+          ],
+          "title": "Sustainable Solutions"
+        }
+      ],
+      "title": "Required"
+    },
+    {
+      "threshold": {
+        "cutoff": 24,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 24 units",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "1.008"
+            },
+            {
+              "req": "1.009"
+            },
+            {
+              "req": "1.091"
+            },
+            {
+              "req": "2.00C"
+            },
+            {
+              "req": "2.981"
+            },
+            {
+              "req": "3.002"
+            },
+            {
+              "req": "12.000"
+            },
+            {
+              "req": "12.12"
+            },
+            {
+              "req": "SP.310"
+            },
+            {
+              "req": "SP.360"
+            },
+            {
+              "req": "SP.361"
+            }
+          ],
+          "title": "Discovery"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "1.004"
+            },
+            {
+              "req": "1.013"
+            },
+            {
+              "req": "1.020"
+            },
+            {
+              "req": "1.102"
+            },
+            {
+              "req": "1.107"
+            },
+            {
+              "req": "2.00A"
+            },
+            {
+              "req": "2.651"
+            },
+            {
+              "req": "4.218"
+            },
+            {
+              "req": "4.411"
+            },
+            {
+              "req": "10.496"
+            },
+            {
+              "req": "11.007"
+            },
+            {
+              "req": "11.173"
+            },
+            {
+              "req": "12.307"
+            },
+            {
+              "req": "12.335"
+            },
+            {
+              "req": "15.772"
+            },
+            {
+              "req": "22.033"
+            }
+          ],
+          "title": "Applied Problem Solving"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "14.42"
+            },
+            {
+              "req": "14.43"
+            },
+            {
+              "req": "14.44"
+            },
+            {
+              "req": "15.8731"
+            },
+            {
+              "req": "21H.383"
+            },
+            {
+              "req": "IDS.437"
+            }
+          ],
+          "title": "Economic and Global Systems"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "3.18"
+            },
+            {
+              "req": "5.371"
+            },
+            {
+              "req": "8.21"
+            },
+            {
+              "req": "10.04"
+            },
+            {
+              "req": "10.05"
+            },
+            {
+              "req": "10.390"
+            },
+            {
+              "req": "22.081"
+            },
+            {
+              "req": "IDS.521"
+            }
+          ],
+          "title": "Energy x Sustainability"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "6.9320"
+            },
+            {
+              "req": "11.148"
+            },
+            {
+              "req": "21A.155"
+            },
+            {
+              "req": "22.04"
+            },
+            {
+              "req": "24.03"
+            },
+            {
+              "req": "24.07"
+            },
+            {
+              "req": "24.191"
+            },
+            {
+              "req": "STS.032"
+            },
+            {
+              "req": "WGS.160"
+            },
+            {
+              "req": "WGS.275"
+            }
+          ],
+          "title": "Ethics and Just Futures"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "1.089"
+            },
+            {
+              "req": "7.30"
+            },
+            {
+              "req": "12.007"
+            },
+            {
+              "req": "21A.303"
+            }
+          ],
+          "title": "Life and Ecology"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "1.035"
+            },
+            {
+              "req": "3.081"
+            },
+            {
+              "req": "3.094"
+            },
+            {
+              "req": "3.19"
+            },
+            {
+              "req": "3.982"
+            },
+            {
+              "req": "3.983"
+            },
+            {
+              "req": "4.657"
+            }
+          ],
+          "title": "Materials and Material Culture"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "21L.449"
+            },
+            {
+              "req": "21W.012"
+            },
+            {
+              "req": "21W.036"
+            },
+            {
+              "req": "21W.775"
+            },
+            {
+              "req": "CMS.374"
+            },
+            {
+              "req": "CMS.375"
+            },
+            {
+              "req": "STS.034"
+            }
+          ],
+          "title": "Media, Communications, and Literature"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "11.003"
+            },
+            {
+              "req": "11.011"
+            },
+            {
+              "req": "12.385"
+            },
+            {
+              "req": "17.181"
+            },
+            {
+              "req": "17.30"
+            },
+            {
+              "req": "17.309"
+            },
+            {
+              "req": "IDS.060"
+            },
+            {
+              "req": "IDS.061"
+            },
+            {
+              "req": "IDS.062"
+            }
+          ],
+          "title": "Negotiations, Politics, and Policy"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "1.061"
+            },
+            {
+              "req": "1.061A"
+            },
+            {
+              "req": "1.071"
+            },
+            {
+              "req": "1.080"
+            },
+            {
+              "req": "1.085"
+            },
+            {
+              "req": "12.001"
+            },
+            {
+              "req": "12.002"
+            },
+            {
+              "req": "12.003"
+            },
+            {
+              "req": "12.021"
+            },
+            {
+              "req": "12.086"
+            },
+            {
+              "req": "12.104"
+            },
+            {
+              "req": "12.301"
+            },
+            {
+              "req": "12.306"
+            },
+            {
+              "req": "12.349"
+            },
+            {
+              "req": "12.372"
+            },
+            {
+              "req": "12.377"
+            },
+            {
+              "req": "12.390"
+            },
+            {
+              "req": "18.352"
+            }
+          ],
+          "title": "Planet Earth and Climate Science"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "4.211"
+            },
+            {
+              "req": "4.401"
+            },
+            {
+              "req": "4.432"
+            },
+            {
+              "req": "11.113"
+            },
+            {
+              "req": "11.123"
+            },
+            {
+              "req": "11.149"
+            },
+            {
+              "req": "11.158"
+            },
+            {
+              "req": "11.165"
+            }
+          ],
+          "title": "The Built Environment"
+        }
+      ],
+      "title": "Electives"
+    }
+  ],
+  "short-title": "E&S",
+  "desc": "Open to all MIT undergraduates in any major, the Environment and Sustainability Minor (E&S Minor) offers students the opportunity to apply their STEM and major-course knowledge to some of the most critical and challenging problems facing humanity. The minor equips students with interdisciplinary knowledge and real-world experience needed to understand, diagnose, and develop solutions to complex problems faced by society as it strives for social and environmental sustainability. Students tailor their MIT education to their professional goals, preparing to apply the principles of sustainability in diverse workplace contexts, including business/industry, government, civil society, and academia. \n\n The E&S Minor combines a wide range of fields of inquiry to directly engage environmental and climate challenges facing ecosystems and populations around the globe. Fundamentally, these challenges affect both human systems and the earth systems on which we depend. Planetary challenges include climate change, risks to oceans and forests, degradation to both biodiversity and material resources, and fundamental transformations of biogeochemical cycles. Challenges facing society include widespread and intransigent environmental injustice, expanding urban and agricultural pollution, technological and economic lock-in of infrastructure and all manner of production and consumption systems, and a global dependence on carbon intensive energy. \n\n The minor prioritizes integrative, interdisciplinary learning that is critical for effectively understanding and addressing the complexities of environmental issues today and in the future, and is structured on four pillars: Earth Systems and Climate Science, Environmental Governance, Environmental Histories and Cultures, and Engineering for Sustainability. Upon completion of the minor, students will have achieved learning outcomes in seven categories: Systems Thinking; Sustainable Design Skills; Applied Sustainable Solutions; Know Your Planet; Social Context; Ethical Decision-making; and Impactful Communication. \n\nThe E&S Minor is comprised of five to six subjects, for a minimum of 57 units: \nOne foundational subject (12.387[J] People and the Planet: Environmental Governance and Science) \n Subjects in two core required areas of study: 1) Context and Perspective and 2) Sustainable Solutions \n 24 units of elective subjects, reflecting the student's particular interests."
+}

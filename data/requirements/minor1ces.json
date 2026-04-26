@@ -1,0 +1,38 @@
+{
+  "title-no-degree": "Civil and Environmental Engineering",
+  "list-id": "minor1ces.reql",
+  "title": "Minor in Civil and Environmental Systems",
+  "medium-title": "1 Minor (Civil and Environmental Systems)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "1.011"
+        },
+        {
+          "req": "1.020"
+        },
+        {
+          "req": "1.022"
+        },
+        {
+          "req": "1.041"
+        },
+        {
+          "req": "1.075"
+        },
+        {
+          "req": "1.101"
+        },
+        {
+          "req": "1.102"
+        }
+      ],
+      "title": "Required Subjects"
+    }
+  ],
+  "short-title": "1",
+  "desc": ""
+}

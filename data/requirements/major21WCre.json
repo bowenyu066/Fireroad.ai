@@ -1,0 +1,83 @@
+{
+  "title-no-degree": "Creative Writing",
+  "list-id": "major21WCre.reql",
+  "title": "Bachelor of Science in Writing (Creative Writing Option)",
+  "medium-title": "21W Major (Old)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "21W.THT"
+        },
+        {
+          "req": "21W.THU"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "21W.757"
+            },
+            {
+              "req": "21W.758"
+            },
+            {
+              "req": "21W.759"
+            },
+            {
+              "req": "21W.762"
+            },
+            {
+              "req": "21W.770"
+            },
+            {
+              "req": "21W.771"
+            },
+            {
+              "req": "21W.777"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold-desc": "select any 99 units",
+      "title": "Restricted Electives",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 6,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "6 creative writing subjects",
+          "plain-string": true,
+          "threshold-desc": "select any 6"
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "3 literature subjects",
+          "plain-string": true,
+          "threshold-desc": "select any 3"
+        }
+      ],
+      "connection-type": "all",
+      "threshold": {
+        "cutoff": 99,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "desc": "Select six subjects centered on creative writing, of which one is normally introductory; three subjects in literature, one of which may be in CMS."
+    }
+  ],
+  "short-title": "21W",
+  "desc": "The writing major offers students the opportunity to study the craft, forms, and traditions of contemporary writing, journalism, and digital media. Some students explore writing as a means of artistic expression. Some learn how to write for a variety of media or to communicate the results of their science and technical work to broad audiences and members of their professions. Others work collaboratively within the evolving framework of digital media to become skillful in interactive and nonlinear forms of communication. All subjects in the major emphasize the development of the foundational skills, creative initiative, and critical sensibility necessary to become a good writer. Subjects in the program's three areas of emphasis—creative writing (fiction, nonfiction prose, poetry), science writing, and digital media—are taught at both introductory and advanced levels. All subjects require extensive writing and revision. Student work is typically discussed in workshops and receives the written commentary of the instructor. The writing major is an option for students interested in journalism, longer forms like the science documentary, and communication issues related to the public understanding of science and technology. It is also designed to work as a complementary major for students majoring in science, engineering, or another field of study at MIT. Students also fulfill an internship requirement, which provides in-depth practical experience."
+}

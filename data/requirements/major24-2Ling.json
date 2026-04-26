@@ -1,0 +1,168 @@
+{
+  "title-no-degree": "Linguistics and Philosophy",
+  "list-id": "major24-2Ling.reql",
+  "title": "Bachelor of Science in Linguistics and Philosophy (Linguistics Track)",
+  "medium-title": "24-2 Major (Linguistics)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "Students who do not use 24.905 or 24.909 to satisfy the Laboratory Requirement may count a sixth subject from within the Departmental Program toward the HASS Requirement.",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "24.900"
+                },
+                {
+                  "req": "24.9000"
+                }
+              ],
+              "threshold-desc": "select either"
+            },
+            {
+              "req": "24.901"
+            },
+            {
+              "req": "24.902"
+            },
+            {
+              "req": "24.903"
+            },
+            {
+              "req": "24.918"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "24.909"
+            },
+            {
+              "req": "24.910"
+            },
+            {
+              "req": "24.914"
+            }
+          ],
+          "title": "Linguistic Analysis"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "6.4100"
+            },
+            {
+              "req": "6.3900"
+            },
+            {
+              "req": "6.8611"
+            },
+            {
+              "req": "9.19"
+            },
+            {
+              "req": "24.08"
+            },
+            {
+              "req": "24.09"
+            },
+            {
+              "req": "24.241"
+            },
+            {
+              "req": "24.251"
+            }
+          ],
+          "title": "Philosophy/Cognition/Computation"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "24.904"
+            },
+            {
+              "req": "24.905"
+            },
+            {
+              "req": "24.906"
+            },
+            {
+              "req": "24.915"
+            }
+          ],
+          "title": "Experimental Results"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 3",
+      "req": "3 elective subjects",
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "title": "Restricted Electives",
+      "desc": "A coherent program of three additional subjects from linguistics, philosophy, or a related area."
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "24.918"
+        },
+        {
+          "req": "24.909"
+        },
+        {
+          "req": "24.910"
+        },
+        {
+          "req": "24.914"
+        },
+        {
+          "req": "24.251"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "24-2",
+  "desc": "This major, also known as the Program in Language and Mind, aims to provide students with a working knowledge of a variety of issues that currently occupy the intersection of philosophy, linguistics, and cognitive science. Central among these topics are the nature of language, of those mental representations that we call \"knowledge\" and \"belief,\" and of the innate basis for the acquisition of certain types of knowledge (especially linguistic knowledge). Students have the option of pursuing either a philosophy track or a linguistics track. Both require a core set of subjects drawn from both fields and are designed to teach students the central facts and issues in the study of language and the representation of knowledge. Each track requires, in addition, a set of subjects drawn primarily from its discipline and is designed to prepare students for graduate study either in philosophy/cognitive science or in linguistics. A coherent program of three restricted electives (drawn from one or two of the following three areas: linguistics, philosophy, or a related area) rounds out the major."
+}

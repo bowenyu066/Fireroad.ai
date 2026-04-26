@@ -1,0 +1,225 @@
+{
+  "title-no-degree": "American Studies",
+  "list-id": "majorAS.reql",
+  "title": "Bachelor of Science in Humanities (American Studies)",
+  "medium-title": "21 Major (American Studies)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "With the consent of the faculty advisor in the chosen field, a student may substitute two subjects for the pre-thesis and thesis requirement.",
+      "reqs": [
+        {
+          "req": "21.THT"
+        },
+        {
+          "req": "21.THU"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "distinct-threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "threshold-desc": "select any 9 from at least 2 categories",
+      "title": "Restricted Electives",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21L.006"
+            },
+            {
+              "req": "21L.011"
+            },
+            {
+              "req": "21L.432"
+            },
+            {
+              "req": "21L.487"
+            },
+            {
+              "req": "21L.501"
+            },
+            {
+              "req": "21L.504"
+            },
+            {
+              "req": "21L.512"
+            },
+            {
+              "req": "21M.215"
+            },
+            {
+              "req": "21M.226"
+            },
+            {
+              "req": "21M.283"
+            },
+            {
+              "req": "21M.284"
+            },
+            {
+              "req": "21M.295"
+            },
+            {
+              "req": "21W.742"
+            },
+            {
+              "req": "24.912"
+            }
+          ],
+          "title": "Area I: Humanities and the Arts"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "17.20"
+            },
+            {
+              "req": "17.251"
+            },
+            {
+              "req": "17.261"
+            },
+            {
+              "req": "17.263"
+            },
+            {
+              "req": "17.265"
+            },
+            {
+              "req": "17.317"
+            },
+            {
+              "req": "17.40"
+            },
+            {
+              "req": "17.483"
+            },
+            {
+              "req": "STS.001"
+            },
+            {
+              "req": "STS.026"
+            },
+            {
+              "req": "STS.027"
+            },
+            {
+              "req": "STS.048"
+            },
+            {
+              "req": "STS.049"
+            },
+            {
+              "req": "STS.050"
+            },
+            {
+              "req": "WGS.150"
+            },
+            {
+              "req": "WGS.225"
+            }
+          ],
+          "title": "Area II: Social Sciences; Science, Technology, and Society"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "11.013"
+            },
+            {
+              "req": "11.014"
+            },
+            {
+              "req": "17.28"
+            },
+            {
+              "req": "21G.043"
+            },
+            {
+              "req": "21H.102"
+            },
+            {
+              "req": "21H.201"
+            },
+            {
+              "req": "21H.211"
+            },
+            {
+              "req": "21H.214"
+            },
+            {
+              "req": "21H.220"
+            },
+            {
+              "req": "21H.226"
+            },
+            {
+              "req": "21H.227"
+            },
+            {
+              "req": "21H.228"
+            },
+            {
+              "req": "21H.229"
+            },
+            {
+              "req": "21H.315"
+            },
+            {
+              "req": "21H.319"
+            },
+            {
+              "req": "21H.320"
+            },
+            {
+              "req": "21H.321"
+            },
+            {
+              "req": "21H.322"
+            },
+            {
+              "req": "STS.027"
+            }
+          ],
+          "title": "Area III: Historical Studies"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 9,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "A minimum of nine subjects (108 units) beyond the pre-thesis and thesis. Remaining subjects selected from at least two of the three disciplinary areas. The list of restrictive electives below is not exhaustive. Additional information can be obtained from the American Studies advisor, Professor Christopher Capozzola, E51-284, 617-452-4960, or from the SHASS academic administrator, Andrea Wirth, 4-240, 617-253-4441."
+    }
+  ],
+  "short-title": "21",
+  "desc": "American Studies at MIT offers students the opportunity to organize subjects from various fields (e.g., history, anthropology, literature, political science, music, art, architecture, and urban planning) into personally constructed interdisciplinary programs as a way of gaining an integrated understanding of American society and culture. Students can focus on any of several areas of interest, such as American literature; folklore and popular culture; black history and culture; women's studies; American history, politics, or law; the history of science and technology; and American art, architecture, or music. Thus, a program in American Studies is ideal for preparing students for further work not only in the various humanistic fields, but also in law, urban planning, management, architecture, engineering, medicine, teaching, and the media. The program has three primary objectives: 1) To understand the underlying system of beliefs that informs every aspect of American culture—its myths, institutions, politics and literature, its characteristic dreams and rituals. 2) To understand the uses and limits of different methods and intellectual disciplines as tools for exploring the complexities of a culture. 3) To understand the American present in relation to the American past."
+}

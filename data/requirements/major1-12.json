@@ -1,0 +1,787 @@
+{
+  "title-no-degree": "Climate System Science and Engineering",
+  "list-id": "major1-12.reql",
+  "title": "Bachelor of Science in Climate System Science and Engineering",
+  "medium-title": "1-12 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "1.010A"
+            },
+            {
+              "req": "1.010B"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "req": "6.3700"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "1.073"
+            },
+            {
+              "req": "1.074"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "6.100A"
+            },
+            {
+              "req": "6.100L"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "6.100B"
+            },
+            {
+              "req": "CSE.C20"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "18.03"
+        }
+      ],
+      "title": "Foundational Analytical and Computational Requirements"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "12.003",
+          "title": "Atmosphere, Ocean and Climate Dynamics"
+        },
+        {
+          "req": "1.020",
+          "title": "Computational Methods for Sustainability"
+        },
+        {
+          "req": "1.086",
+          "title": "Physics of Low Carbon Energy Systems"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "1.067"
+            },
+            {
+              "req": "12.385"
+            },
+            {
+              "req": "11.169"
+            },
+            {
+              "req": "14.42"
+            },
+            {
+              "req": "11.165"
+            },
+            {
+              "req": "14.44"
+            },
+            {
+              "req": "15.0201"
+            }
+          ],
+          "title": "Climate Policy"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "12.349"
+            },
+            {
+              "req": "1.076"
+            },
+            {
+              "req": "12.301"
+            }
+          ],
+          "title": "Global Carbon Cycle & Climate Science"
+        },
+        {
+          "req": "1.108",
+          "title": "Group Design"
+        }
+      ],
+      "title": "Core Climate Requirements"
+    },
+    {
+      "threshold": {
+        "cutoff": 1,
+        "criterion": "subjects",
+        "type": "GT"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "12.307"
+        },
+        {
+          "req": "12.335"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "1.101"
+            },
+            {
+              "req": "1.102"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "1.106"
+            },
+            {
+              "req": "1.107"
+            }
+          ],
+          "threshold-desc": "select all"
+        }
+      ],
+      "title": "CI-M Lab"
+    },
+    {
+      "threshold": {
+        "cutoff": 42,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 42 units",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "11.003"
+                },
+                {
+                  "req": "11.148"
+                },
+                {
+                  "req": "11.165"
+                },
+                {
+                  "req": "11.169"
+                },
+                {
+                  "req": "12.385"
+                },
+                {
+                  "req": "14.42"
+                },
+                {
+                  "req": "14.44"
+                },
+                {
+                  "req": "17.30"
+                },
+                {
+                  "req": "17.181"
+                },
+                {
+                  "req": "IDS.055"
+                },
+                {
+                  "req": "IDS.060"
+                },
+                {
+                  "req": "IDS.062"
+                },
+                {
+                  "req": "IDS.063"
+                }
+              ],
+              "title": "Policy"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "1.082"
+                },
+                {
+                  "req": "24.03"
+                },
+                {
+                  "req": "24.07"
+                },
+                {
+                  "req": "24.191"
+                }
+              ],
+              "title": "Ethics"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "3.982"
+                },
+                {
+                  "req": "3.983"
+                },
+                {
+                  "req": "4.211"
+                },
+                {
+                  "req": "11.011"
+                },
+                {
+                  "req": "12.386"
+                },
+                {
+                  "req": "21A.155"
+                },
+                {
+                  "req": "21A.303"
+                },
+                {
+                  "req": "21A.312"
+                },
+                {
+                  "req": "21A.407"
+                },
+                {
+                  "req": "21A.410"
+                },
+                {
+                  "req": "21H.186"
+                },
+                {
+                  "req": "21H.187"
+                },
+                {
+                  "req": "21H.383"
+                },
+                {
+                  "req": "21L.449"
+                },
+                {
+                  "req": "21W.012"
+                },
+                {
+                  "req": "21W.036"
+                },
+                {
+                  "req": "21W.775"
+                },
+                {
+                  "req": "22.04"
+                },
+                {
+                  "req": "CMS.374"
+                },
+                {
+                  "req": "CMS.375"
+                },
+                {
+                  "req": "EC.701"
+                },
+                {
+                  "req": "STS.021"
+                },
+                {
+                  "req": "STS.034"
+                }
+              ],
+              "title": "Climate in the Humanities"
+            }
+          ],
+          "title": "Humanities, Social Science, and Economics"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "1.018"
+                },
+                {
+                  "req": "1.080"
+                },
+                {
+                  "req": "1.089"
+                },
+                {
+                  "req": "12.001"
+                },
+                {
+                  "req": "12.002"
+                },
+                {
+                  "req": "12.007"
+                },
+                {
+                  "req": "18.352"
+                }
+              ],
+              "title": "Earth Science"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "1.071"
+                },
+                {
+                  "req": "1.085"
+                },
+                {
+                  "req": "12.306"
+                },
+                {
+                  "req": "12.377"
+                }
+              ],
+              "title": "Climate and Atmospheric Chemistry"
+            }
+          ],
+          "title": "Foundational Science"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "12.086"
+            },
+            {
+              "req": "4.432"
+            },
+            {
+              "req": "6.C01"
+            },
+            {
+              "req": "1.C01"
+            },
+            {
+              "req": "15.8731"
+            },
+            {
+              "req": "6.3400"
+            },
+            {
+              "req": "6.9010"
+            },
+            {
+              "req": "6.9080"
+            },
+            {
+              "req": "6.1200"
+            },
+            {
+              "req": "6.1910"
+            },
+            {
+              "req": "6.3700"
+            },
+            {
+              "req": "6.3800"
+            },
+            {
+              "req": "6.4100"
+            },
+            {
+              "req": "18.200"
+            },
+            {
+              "req": "18.200A"
+            },
+            {
+              "req": "18.211"
+            },
+            {
+              "req": "6.1210"
+            },
+            {
+              "req": "6.1010"
+            },
+            {
+              "req": "6.1220"
+            },
+            {
+              "req": "6.1400"
+            },
+            {
+              "req": "6.1800"
+            },
+            {
+              "req": "6.3730"
+            },
+            {
+              "req": "6.3900"
+            },
+            {
+              "req": "6.4120"
+            },
+            {
+              "req": "6.4400"
+            },
+            {
+              "req": "6.4530"
+            },
+            {
+              "req": "6.5151"
+            },
+            {
+              "req": "6.5831"
+            },
+            {
+              "req": "6.8301"
+            },
+            {
+              "req": "6.8371"
+            },
+            {
+              "req": "6.8611"
+            },
+            {
+              "req": "6.8701"
+            },
+            {
+              "req": "6.8711"
+            },
+            {
+              "req": "18.404"
+            },
+            {
+              "req": "6.1220"
+            },
+            {
+              "req": "6.1020"
+            },
+            {
+              "req": "6.1040"
+            },
+            {
+              "req": "6.1060"
+            },
+            {
+              "req": "6.1100"
+            },
+            {
+              "req": "6.1920"
+            },
+            {
+              "req": "6.4200"
+            },
+            {
+              "req": "6.4550"
+            },
+            {
+              "req": "6.5081"
+            }
+          ],
+          "title": "Modeling & Computation"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "2.60"
+                },
+                {
+                  "req": "2.652"
+                },
+                {
+                  "req": "3.002"
+                },
+                {
+                  "req": "3.18"
+                },
+                {
+                  "req": "5.371"
+                },
+                {
+                  "req": "5.372"
+                },
+                {
+                  "req": "8.21"
+                },
+                {
+                  "req": "10.04"
+                },
+                {
+                  "req": "10.05"
+                },
+                {
+                  "req": "12.021"
+                },
+                {
+                  "req": "14.43"
+                },
+                {
+                  "req": "22.081"
+                },
+                {
+                  "req": "EC.711"
+                },
+                {
+                  "req": "IDS.065"
+                }
+              ],
+              "title": "Greenhouse Gas Emissions and Energy"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "1.005"
+                },
+                {
+                  "req": "1.006"
+                },
+                {
+                  "req": "1.013"
+                },
+                {
+                  "req": "1.103"
+                },
+                {
+                  "req": "4.657"
+                },
+                {
+                  "req": "10.496"
+                },
+                {
+                  "req": "22.033"
+                },
+                {
+                  "req": "1.UAR"
+                },
+                {
+                  "req": "EC.713"
+                },
+                {
+                  "req": "EC.720"
+                }
+              ],
+              "title": "Design"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "connection-type": "any",
+                  "reqs": [
+                    {
+                      "req": "1.061"
+                    },
+                    {
+                      "req": "1.061A"
+                    }
+                  ],
+                  "threshold-desc": "select either"
+                },
+                {
+                  "req": "1.070A"
+                },
+                {
+                  "req": "1.070B"
+                },
+                {
+                  "req": "12.104"
+                },
+                {
+                  "req": "12.372"
+                },
+                {
+                  "req": "12.390"
+                },
+                {
+                  "req": "EC.715"
+                },
+                {
+                  "req": "EC.719"
+                }
+              ],
+              "title": "Water & Hydrology"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "1.035"
+                },
+                {
+                  "req": "3.081"
+                },
+                {
+                  "req": "3.094"
+                },
+                {
+                  "req": "3.19"
+                },
+                {
+                  "req": "4.218"
+                },
+                {
+                  "req": "4.401"
+                },
+                {
+                  "req": "11.123"
+                }
+              ],
+              "title": "Structures & Materials"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "11.149"
+                },
+                {
+                  "req": "11.158"
+                },
+                {
+                  "req": "EC.733"
+                }
+              ],
+              "title": "Transportation & Supply Chain"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "threshold-desc": "optional - select any",
+              "req": "1.004",
+              "title": "Business & Innovation"
+            }
+          ],
+          "title": "Climate Mitigation and Adaptation"
+        }
+      ],
+      "title": "Restricted Electives"
+    }
+  ],
+  "short-title": "1-12",
+  "desc": "The Bachelor of Science in Climate System Science and Engineering ensures a solid foundation of the necessary fundamental science, mathematics, physics, chemistry, and biology with advanced study in constructing quantitative models of complex Earth systems, analyzing large and diverse climate related data sets, and quantifying uncertainty in climate models used in setting policy and decision making. Students in the program are full members of both departments and of the two schools, Engineering and Science. Student and advisor work together to select elective subjects in a broad range of disciplines in the social sciences that help students develop understanding in the political and social issues tied to addressing climate change. The program offers the option to build on a core of climate classes and pursue tracks of study for in-depth exploration of particular areas, such as climate mitigation and adaptation; computation and statistics; Earth systems; and policy strategies and economics. Undergraduates are encouraged to participate in specific research activities of the departments and in many cases obtain degree credit for such work."
+}

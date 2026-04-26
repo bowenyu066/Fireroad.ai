@@ -1,0 +1,195 @@
+{
+  "title-no-degree": "Women's and Gender Studies",
+  "list-id": "majorWGS.reql",
+  "title": "Bachelor of Science in Humanities (Women's and Gender Studies)",
+  "medium-title": "21 Major (WGS)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "In consultation with the director, the pre-thesis and thesis may be replaced by two additional WGS courses.",
+      "reqs": [
+        {
+          "req": "21.THT"
+        },
+        {
+          "req": "21.THU"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "A minimum of seven subjects (84 units) beyond the introductory course, advanced feminist theory course, pre-thesis, and thesis. The list of restricted electives below is not exhaustive. Students interested in this interdisciplinary program should consult with the Women's and Gender Studies program manager, Emily Neill, Room 14E-316, 617-253-2642, and then arrange a meeting with the current director, Helen Lee.",
+      "reqs": [
+        {
+          "req": "WGS.101",
+          "title": "Tier 1"
+        },
+        {
+          "distinct-threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "threshold-desc": "select any 7 from at least 2 categories",
+          "title": "Tier 2",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "WGS.109"
+                },
+                {
+                  "req": "WGS.110"
+                },
+                {
+                  "req": "WGS.111"
+                },
+                {
+                  "req": "WGS.115"
+                },
+                {
+                  "req": "WGS.123"
+                },
+                {
+                  "req": "WGS.140"
+                },
+                {
+                  "req": "WGS.141"
+                },
+                {
+                  "req": "WGS.142"
+                },
+                {
+                  "req": "WGS.145"
+                },
+                {
+                  "req": "WGS.154"
+                },
+                {
+                  "req": "WGS.161"
+                },
+                {
+                  "req": "WGS.181"
+                },
+                {
+                  "req": "WGS.190"
+                },
+                {
+                  "req": "WGS.220"
+                },
+                {
+                  "req": "WGS.226"
+                },
+                {
+                  "req": "WGS.231"
+                },
+                {
+                  "req": "WGS.233"
+                },
+                {
+                  "req": "WGS.234"
+                },
+                {
+                  "req": "WGS.235"
+                },
+                {
+                  "req": "WGS.236"
+                },
+                {
+                  "req": "WGS.240"
+                },
+                {
+                  "req": "WGS.245"
+                }
+              ],
+              "title": "Humanities (HASS-H) and Arts (HASS-A) subjects"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "WGS.125"
+                },
+                {
+                  "req": "WGS.151"
+                },
+                {
+                  "req": "WGS.172"
+                },
+                {
+                  "req": "WGS.221"
+                },
+                {
+                  "req": "WGS.222"
+                },
+                {
+                  "req": "WGS.224"
+                },
+                {
+                  "req": "WGS.225"
+                },
+                {
+                  "req": "WGS.228"
+                },
+                {
+                  "req": "WGS.229"
+                },
+                {
+                  "req": "WGS.250"
+                },
+                {
+                  "req": "WGS.270"
+                },
+                {
+                  "req": "WGS.271"
+                },
+                {
+                  "req": "WGS.274"
+                },
+                {
+                  "req": "WGS.275"
+                },
+                {
+                  "req": "WGS.276"
+                },
+                {
+                  "req": "WGS.321"
+                }
+              ],
+              "title": "Social Science (HASS-S) subjects"
+            }
+          ],
+          "connection-type": "any",
+          "threshold": {
+            "cutoff": 7,
+            "criterion": "subjects",
+            "type": "GTE"
+          }
+        },
+        {
+          "req": "WGS.301",
+          "title": "Tier 3"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Restricted Electives"
+    }
+  ],
+  "short-title": "WGS",
+  "desc": "This program offers students an academic framework for the study of women, gender, and sexuality using the analytical tools and methodologies of a variety of disciplines in the humanities, arts, and social sciences."
+}

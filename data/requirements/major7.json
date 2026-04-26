@@ -1,0 +1,195 @@
+{
+  "title-no-degree": "Biology",
+  "list-id": "major7.reql",
+  "title": "Bachelor of Science in Biology",
+  "medium-title": "7 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "The department recommends the combination of 5.601 Thermodynamics I and 5.602 Thermodynamics II and Kinetics or 20.110[J] to fulfill this component of the program, but it will also accept 2.005 Thermal-Fluids Engineering I, 8.044 Statistical Physics I, or 10.213 Chemical and Biological Engineering Thermodynamics.",
+      "reqs": [
+        {
+          "req": "5.12"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "5.601"
+                },
+                {
+                  "req": "5.602"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "20.110"
+            },
+            {
+              "req": "2.005"
+            },
+            {
+              "req": "8.044"
+            },
+            {
+              "req": "10.213"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "req": "7.002"
+        },
+        {
+          "req": "7.003"
+        },
+        {
+          "req": "7.03"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "7.05"
+            },
+            {
+              "req": "5.07"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "7.06"
+        },
+        {
+          "req": "7.19",
+          "title": "Biology Capstone Subject"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "threshold-desc": "select any 3",
+      "title": "Restricted Electives",
+      "reqs": [
+        {
+          "req": "7.08"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "7.093"
+            },
+            {
+              "req": "7.094"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "req": "7.20"
+        },
+        {
+          "req": "7.21"
+        },
+        {
+          "req": "7.22"
+        },
+        {
+          "req": "7.23"
+        },
+        {
+          "req": "7.24"
+        },
+        {
+          "req": "7.26"
+        },
+        {
+          "req": "7.27"
+        },
+        {
+          "req": "7.28"
+        },
+        {
+          "req": "7.29"
+        },
+        {
+          "req": "7.30"
+        },
+        {
+          "req": "7.31"
+        },
+        {
+          "req": "7.32"
+        },
+        {
+          "req": "7.33"
+        },
+        {
+          "req": "7.35"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "7.37"
+            },
+            {
+              "req": "7.371"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "7.45"
+        },
+        {
+          "req": "7.46"
+        },
+        {
+          "req": "7.49"
+        },
+        {
+          "req": "9.17"
+        },
+        {
+          "req": "9.26"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Graduate-level subjects may not be used as restricted electives."
+    },
+    {
+      "threshold-desc": "select any 2",
+      "title": "Communication-Intensive Subjects",
+      "reqs": [
+        {
+          "req": "7.003"
+        },
+        {
+          "req": "7.19"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "9.17 can be used as a restricted elective or CI-M, but not both."
+    }
+  ],
+  "short-title": "7",
+  "desc": "The curriculum leading to the Bachelor of Science in Biology is designed to prepare students for a professional career in the area of the biological sciences. Graduates of this program are well prepared for positions in industrial or research institutes. However, experience has shown that many graduates choose to continue their education at a graduate school in order to obtain a PhD in an area such as biochemistry, microbiology, genetics, biophysics, cell biology, or physiology, followed by research or teaching in one of those areas. The undergraduate curriculum is also excellent preparation for students who wish to continue their education toward an MD, particularly if their career plans include laboratory investigations bearing on human disease."
+}

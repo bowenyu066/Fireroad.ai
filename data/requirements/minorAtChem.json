@@ -1,0 +1,86 @@
+{
+  "title-no-degree": "Interdisciplinary",
+  "list-id": "minorAtChem.reql",
+  "title": "Minor in Atmospheric Chemistry",
+  "medium-title": "Atmospheric Chemistry Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "1.085"
+                },
+                {
+                  "req": "12.306"
+                }
+              ],
+              "threshold-desc": "select either"
+            },
+            {
+              "req": "5.60"
+            },
+            {
+              "req": "12.003"
+            }
+          ],
+          "title": "Chemistry, Dynamics, and the Atmosphere"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "1.080"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "12.310"
+                },
+                {
+                  "req": "12.IND"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "12.335"
+            },
+            {
+              "req": "12.338"
+            }
+          ],
+          "title": "Observations/Applications"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "12.340"
+            },
+            {
+              "req": "12.346"
+            },
+            {
+              "req": "12.385"
+            }
+          ],
+          "title": "Linkages of Atmospheric Chemistry to Policy"
+        }
+      ],
+      "title": "Required Subjects"
+    }
+  ],
+  "short-title": "Atmospheric Chemistry",
+  "desc": "Atmospheric Chemistry is an interdisciplinary field that blends fundamental science with engineering and policy. It is a domain that is growing in scope, complexity, and demand as society grapples with burgeoning global, regional, and local challenges, including those in energy and public health. The minor is offered by the Departments of Earth, Atmospheric, and Planetary Sciences, Civil and Environmental Engineering, Chemistry, and Aeronautics and Astronautics, and the Institute for Data, Systems, and Society. The minor requires five subjects. The core of the minor consists of three required subjects spanning thermodynamics and kinetics, atmospheric and ocean dynamics, air pollution, and atmospheric physics and chemistry, complemented by (at least) one subject in observations/applications, and one subject in the links of atmospheric chemistry to policy.\n\nA minimum of four subjects taken for the atmospheric chemistry minor cannot also count toward a major or another minor."
+}

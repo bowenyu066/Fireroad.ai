@@ -1,9 +1,0 @@
-18#,#18 Minor#,#Mathematics#,#Minor in Mathematics
-
-
-part_1
-Six 12-unit subjects in mathematics, beyond the Institute's Mathematics Requirement, of essentially different content, including at least three advanced subjects (first decimal digit one or higher).
-
-part_a := ""3 advanced subjects""{>=3}
-part_b := ""3 additional subjects""{>=3}
-part_1, "General Requirements" := part_a, part_b

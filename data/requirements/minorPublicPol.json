@@ -1,0 +1,153 @@
+{
+  "title-no-degree": "Interdisciplinary",
+  "list-id": "minorPublicPol.reql",
+  "title": "Minor in Public Policy",
+  "medium-title": "Public Policy Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "11.002"
+            },
+            {
+              "req": "14.01"
+            }
+          ],
+          "title": "Introduction to Markets, Politics, and Public Policy"
+        }
+      ],
+      "title": "Tier I"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "req": "11.003"
+            },
+            {
+              "req": "14.03"
+            }
+          ],
+          "title": "Policy Analysis"
+        }
+      ],
+      "title": "Tier II"
+    },
+    {
+      "connection-type": "all",
+      "desc": "Select three subjects in one of the following tracks.",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 3,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "threshold-desc": "select any 3",
+              "req": "3 subjects",
+              "plain-string": true,
+              "title": "Social and Educational Policy"
+            },
+            {
+              "threshold": {
+                "cutoff": 3,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "threshold-desc": "select any 3",
+              "req": "3 subjects",
+              "plain-string": true,
+              "title": "Environmental Policy"
+            },
+            {
+              "threshold": {
+                "cutoff": 3,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "threshold-desc": "select any 3",
+              "req": "3 subjects",
+              "plain-string": true,
+              "title": "Infrastructure Policy"
+            },
+            {
+              "threshold": {
+                "cutoff": 3,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "threshold-desc": "select any 3",
+              "req": "3 subjects",
+              "plain-string": true,
+              "title": "Science and Technology Policy"
+            },
+            {
+              "threshold": {
+                "cutoff": 3,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "threshold-desc": "select any 3",
+              "req": "3 subjects",
+              "plain-string": true,
+              "title": "Labor and Industrial Policy"
+            },
+            {
+              "threshold": {
+                "cutoff": 3,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "threshold-desc": "select any 3",
+              "req": "3 subjects",
+              "plain-string": true,
+              "title": "International Development Policy"
+            },
+            {
+              "threshold": {
+                "cutoff": 3,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "threshold-desc": "select any 3",
+              "req": "3 subjects",
+              "plain-string": true,
+              "title": "Security and Defense Policy"
+            },
+            {
+              "threshold": {
+                "cutoff": 3,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "threshold-desc": "select any 3",
+              "req": "3 subjects",
+              "plain-string": true,
+              "title": "Urban and Regional Policy"
+            }
+          ],
+          "title": "Policy Concentration"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Tier III"
+    }
+  ],
+  "short-title": "Public Policy",
+  "desc": "Some of the most far-reaching decisions about science, technology, and enterprise are made in the public policy arena. The interdisciplinary minor in Public Policy enables students from across the Institute to develop their understanding of public problems and how governments attempt to address them, with emphasis on the process and outcomes of policymaking.\n\nStudents benefit from increased engagement with and understanding of emerging real-world issues that affect society's greatest challenges, including energy, globalization, health care, conflict resolution, science and technology policy, and public-private collaboration.\n\nStudents majoring in Planning (Course 11) are not permitted to minor in Public Policy. Political Science (Course 17) majors can minor in Public Policy, but subjects being used to fulfill their major cannot be used toward the minor."
+}

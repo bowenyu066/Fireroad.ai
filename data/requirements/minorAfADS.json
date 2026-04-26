@@ -1,0 +1,204 @@
+{
+  "title-no-degree": "African and African Diaspora Studies",
+  "list-id": "minorAfADS.reql",
+  "title": "Minor in African and African Diaspora Studies",
+  "medium-title": "21 Minor (African Studies)",
+  "reqs": [
+    {
+      "connection-type": "any",
+      "desc": "Students are expected to have two intermediate (Levels III and IV) subjects in either the official language of the region of study or in an indigenous African language. In cases where the student is specializing in Anglophone Africa or an English-speaking region of the diaspora, and does not undertake study of an indigenous language, or is a native speaker of the official language(s) of a country or region of emphasis, this component would be replaced by literature or other humanities subjects.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "2 intermediate language subjects",
+          "plain-string": true,
+          "threshold-desc": "select any 2"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "21G.303"
+            },
+            {
+              "req": "21G.304"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "21G.703"
+            },
+            {
+              "req": "21G.704"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "21G.803"
+            },
+            {
+              "req": "21G.804"
+            }
+          ],
+          "threshold-desc": "select all"
+        }
+      ],
+      "threshold-desc": "select any",
+      "title": "Area I: Language"
+    },
+    {
+      "distinct-threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "threshold-desc": "select any 4 from at least 2 categories",
+      "title": "Additional Areas",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21L.007"
+            },
+            {
+              "req": "21L.504"
+            },
+            {
+              "req": "21M.030"
+            },
+            {
+              "req": "21M.226"
+            },
+            {
+              "req": "21M.293"
+            },
+            {
+              "req": "21M.460"
+            },
+            {
+              "req": "21W.742"
+            },
+            {
+              "req": "24.912"
+            },
+            {
+              "req": "WGS.142"
+            }
+          ],
+          "title": "Area II: Humanities and the Arts"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "11.164"
+            },
+            {
+              "req": "11.166"
+            },
+            {
+              "req": "17.523"
+            },
+            {
+              "req": "17.571"
+            },
+            {
+              "req": "21A.306"
+            },
+            {
+              "req": "21A.308"
+            },
+            {
+              "req": "21A.442"
+            },
+            {
+              "req": "24.908"
+            },
+            {
+              "req": "WGS.150"
+            },
+            {
+              "req": "WGS.225"
+            },
+            {
+              "req": "WGS.228"
+            }
+          ],
+          "title": "Area III: Social Sciences"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21H.165"
+            },
+            {
+              "req": "21H.229"
+            },
+            {
+              "req": "21H.319"
+            },
+            {
+              "req": "21H.358"
+            },
+            {
+              "req": "21H.385"
+            },
+            {
+              "req": "24.912"
+            },
+            {
+              "req": "STS.048"
+            },
+            {
+              "req": "STS.088"
+            },
+            {
+              "req": "WGS.220"
+            }
+          ],
+          "title": "Area IV: Historical Studies"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 4,
+        "criterion": "subjects",
+        "type": "GTE"
+      }
+    }
+  ],
+  "short-title": "21",
+  "desc": "The Minor in African and African Diaspora Studies is designed for students interested in the cultures and experiences of the peoples of African descent on the continent and elsewhere. The goal of the minor program is to emphasize the importance of Africa and people of African descent in world cultural, economic, and social developments, and to provide a balance between language, humanistic, historical, and contemporary study. The minor includes study of economic and political systems as they reflect the African continent and areas of the African diaspora, and the histories, languages, and literatures of Africans and peoples of African descent elsewhere.\n\nAll of Africa falls within the geographical scope of the minor. A student may concentrate on a particular region or on any of the broad groupings of African cultures, such as Arabic-speaking, Anglophone, Francophone, or Lusophone Africa. Equally, a student choosing to focus on the African diaspora may concentrate on any group of African-descended populations in the Americas. Students focusing on either principal area (Africa or the African diaspora) must also take at least one subject which deals with the other area or with interactions between them."
+}

@@ -1,0 +1,195 @@
+{
+  "title-no-degree": "Chemical-Biological Engineering",
+  "list-id": "major10b.reql",
+  "title": "Bachelor of Science in Chemical-Biological Engineering",
+  "url": "http://catalog.mit.edu/degree-charts/chemical-biological-engineering-course-10-b/",
+  "medium-title": "10-B Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "5.12"
+        },
+        {
+          "req": "5.601"
+        },
+        {
+          "req": "7.03"
+        },
+        {
+          "req": "10.10"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "7.002"
+            },
+            {
+              "req": "7.003"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "req": "18.03"
+        }
+      ],
+      "title": "Foundational Subjects"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "7.05"
+            },
+            {
+              "req": "5.07"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "7.06"
+        },
+        {
+          "req": "10.213"
+        },
+        {
+          "req": "10.301"
+        },
+        {
+          "req": "10.302"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "10.27"
+            },
+            {
+              "req": "10.28"
+            },
+            {
+              "req": "10.29"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Intermediate Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "One ICE subject may be substituted with 10.00, 10.01, a second term of 10.490 (with permission of instructor), or one subject of at least nine units in Chemical Engineering. Graduate subjects may not be used as substitutions. In addition, the following undergraduate subjects may not be used as substitutions: 10.04, 10.702, 10.806, 10.910, 10.911, 10.UR, 10.URG, and 10.THU.",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "10.37"
+            },
+            {
+              "req": "10.490"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 2",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "10.492A"
+                },
+                {
+                  "req": "10.492B"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "10.493"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "10.494A"
+                },
+                {
+                  "req": "10.494B"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "threshold": {
+                    "cutoff": 1,
+                    "criterion": "subjects",
+                    "type": "GTE"
+                  },
+                  "req": "1 ChemE subject",
+                  "plain-string": true
+                },
+                {
+                  "req": "10.00"
+                },
+                {
+                  "req": "10.01"
+                }
+              ],
+              "threshold-desc": "select any"
+            }
+          ],
+          "title": "ICE-T"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Advanced Subjects"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "7.003"
+        },
+        {
+          "req": "10.27"
+        },
+        {
+          "req": "10.28"
+        },
+        {
+          "req": "10.29"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "10-B",
+  "desc": "This degree is intended for the student who is specifically interested in the application of chemical engineering in the areas of biochemical and biomedical technologies. The degree requirements include core chemical engineering subjects and additional subjects in biological sciences and applied biology. This degree is excellent preparation for students also considering the biomedical engineering minor or medical school."
+}

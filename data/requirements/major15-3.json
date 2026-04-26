@@ -1,0 +1,349 @@
+{
+  "title-no-degree": "Finance",
+  "list-id": "major15-3.reql",
+  "title": "Bachelor of Science in Finance",
+  "url": "https://mitsloan.mit.edu/undergrad/15-3-finance-major-requirements",
+  "medium-title": "15-3 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "req": "15.417"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "15.401"
+                },
+                {
+                  "req": "15.418"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "title": "Managerial Finance"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "req": "15.418"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "15.402"
+                },
+                {
+                  "req": "15.417"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "title": "Corporate Finance"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "15.418"
+                },
+                {
+                  "req": "15.417"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "connection-type": "any",
+                  "reqs": [
+                    {
+                      "req": "15.401"
+                    },
+                    {
+                      "req": "15.402"
+                    }
+                  ],
+                  "threshold-desc": "select either"
+                },
+                {
+                  "connection-type": "any",
+                  "reqs": [
+                    {
+                      "req": "15.276"
+                    },
+                    {
+                      "req": "15.279"
+                    }
+                  ],
+                  "threshold-desc": "select either"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "title": "Communication"
+        },
+        {
+          "req": "15.501",
+          "title": "Accounting"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "req": "14.01"
+            },
+            {
+              "req": "15.0111"
+            }
+          ],
+          "title": "Microeconomics"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "15.069"
+                },
+                {
+                  "req": "18.05"
+                },
+                {
+                  "req": "14.30"
+                }
+              ],
+              "threshold-desc": "select any"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "connection-type": "any",
+                  "reqs": [
+                    {
+                      "req": "18.600"
+                    },
+                    {
+                      "req": "6.3700"
+                    }
+                  ],
+                  "threshold-desc": "select either"
+                },
+                {
+                  "connection-type": "any",
+                  "reqs": [
+                    {
+                      "req": "15.075"
+                    },
+                    {
+                      "req": "18.650"
+                    }
+                  ],
+                  "threshold-desc": "select either"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "title": "Probability and Statistics"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold-desc": "select any 7",
+      "title": "Restricted Electives",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "15.053"
+            },
+            {
+              "req": "15.7611"
+            },
+            {
+              "req": "15.8141"
+            },
+            {
+              "req": "15.9001"
+            },
+            {
+              "req": "15.301"
+            },
+            {
+              "req": "15.310"
+            },
+            {
+              "req": "15.312"
+            }
+          ],
+          "title": "Non-Finance Electives"
+        },
+        {
+          "threshold": {
+            "cutoff": 5,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 5",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 2,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "select any 2",
+              "reqs": [
+                {
+                  "req": "15.4311"
+                },
+                {
+                  "req": "15.4331"
+                },
+                {
+                  "req": "15.4341"
+                },
+                {
+                  "req": "15.4371"
+                },
+                {
+                  "req": "15.4381"
+                },
+                {
+                  "req": "15.4451"
+                }
+              ],
+              "title": "Core Electives in Finance"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "15.447"
+                },
+                {
+                  "req": "15.436"
+                },
+                {
+                  "req": "15.446"
+                },
+                {
+                  "req": "15.450"
+                },
+                {
+                  "req": "15.456"
+                },
+                {
+                  "req": "15.457"
+                },
+                {
+                  "req": "15.458"
+                },
+                {
+                  "req": "15.465"
+                },
+                {
+                  "req": "15.466"
+                },
+                {
+                  "req": "15.467"
+                },
+                {
+                  "req": "15.481"
+                },
+                {
+                  "req": "15.482"
+                },
+                {
+                  "req": "15.483"
+                },
+                {
+                  "req": "15.5181"
+                },
+                {
+                  "req": "15.535"
+                }
+              ],
+              "title": "Topics in Finance"
+            }
+          ],
+          "title": "Finance Electives:"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 7,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Each student must take an additional seven full subjects from the approved list of Restricted Electives. At least two of the electives must be in the area of Core Electives in Finance and there must be at least five electives in total between the areas of Core Electives in Finance and Topics in Finance."
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "15.417"
+        },
+        {
+          "req": "15.418"
+        },
+        {
+          "req": "15.276"
+        },
+        {
+          "req": "15.279"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "15-3",
+  "desc": ""
+}

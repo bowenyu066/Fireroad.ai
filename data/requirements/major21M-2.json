@@ -1,0 +1,237 @@
+{
+  "title-no-degree": "Theater Arts",
+  "list-id": "major21M-2.reql",
+  "title": "Bachelor of Science in Theater Arts",
+  "url": "http://catalog.mit.edu/degree-charts/theater-arts-course-21m-2/",
+  "medium-title": "21M-2 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 3",
+          "reqs": [
+            {
+              "req": "21M.611"
+            },
+            {
+              "req": "21M.690"
+            },
+            {
+              "req": "21M.700"
+            },
+            {
+              "req": "21M.706"
+            },
+            {
+              "req": "21M.710"
+            },
+            {
+              "req": "21M.711"
+            },
+            {
+              "req": "21M.714"
+            },
+            {
+              "req": "21M.715"
+            },
+            {
+              "req": "21M.800"
+            },
+            {
+              "req": "21M.846"
+            },
+            {
+              "req": "21M.848"
+            }
+          ],
+          "title": "Theoretical Studies"
+        },
+        {
+          "threshold": {
+            "cutoff": 60,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 60 units",
+          "reqs": [
+            {
+              "req": "21M.600"
+            },
+            {
+              "req": "21M.601"
+            },
+            {
+              "req": "21M.603"
+            },
+            {
+              "req": "21M.604"
+            },
+            {
+              "req": "21M.605"
+            },
+            {
+              "req": "21M.606"
+            },
+            {
+              "req": "21M.607"
+            },
+            {
+              "req": "21M.608"
+            },
+            {
+              "req": "21M.623"
+            },
+            {
+              "req": "21M.624"
+            },
+            {
+              "req": "21M.645"
+            },
+            {
+              "req": "21M.702"
+            },
+            {
+              "req": "21M.704"
+            },
+            {
+              "req": "21M.705"
+            },
+            {
+              "req": "21M.712"
+            },
+            {
+              "req": "21M.732"
+            },
+            {
+              "req": "21M.733"
+            },
+            {
+              "req": "21M.734"
+            },
+            {
+              "req": "21M.735"
+            },
+            {
+              "req": "21M.737"
+            },
+            {
+              "req": "21M.785"
+            },
+            {
+              "req": "21M.790"
+            },
+            {
+              "req": "21M.830"
+            },
+            {
+              "req": "21M.840"
+            },
+            {
+              "req": "21M.842"
+            },
+            {
+              "req": "21M.861"
+            },
+            {
+              "req": "21M.862"
+            },
+            {
+              "req": "21M.863"
+            }
+          ],
+          "title": "Practical Studies"
+        },
+        {
+          "threshold": {
+            "cutoff": 12,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 12 units",
+          "reqs": [
+            {
+              "req": "21M.803"
+            },
+            {
+              "req": "21M.806"
+            },
+            {
+              "req": "21M.809"
+            },
+            {
+              "req": "21M.851"
+            }
+          ],
+          "title": "Performance and Design Practica"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "any",
+      "desc": "In consultation with the Major Advisor, select 12 units of restricted electives. Qualified students may, with departmental approval, substitute 12 units of thesis (21M.THU). Pursuit of the thesis is by application only. By the beginning of the second semester of the junior year, all interested students will write a thesis proposal in consultation with the Major Advisor. This proposal will be submitted to the Theater Arts Curriculum Committee, which will communicate its decision to the student in April.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 12,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "req": "12 units",
+          "plain-string": true,
+          "threshold-desc": "select any 12 units"
+        },
+        {
+          "req": "21M.THU"
+        }
+      ],
+      "threshold-desc": "select either",
+      "title": "Restricted Electives"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "21M.624"
+        },
+        {
+          "req": "21M.732"
+        },
+        {
+          "req": "21M.733"
+        },
+        {
+          "req": "21M.735"
+        },
+        {
+          "req": "21M.785"
+        },
+        {
+          "req": "21M.790"
+        },
+        {
+          "req": "21M.830"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "21M",
+  "desc": "The undergraduate program leading to the Bachelor of Science in Theater Arts degree comprises a broad foundation in theoretical and practical studies, and intensive performance and design practica. To satisfy the requirements, students complete a coherent set of restricted elective subjects (two of which satisfy the CI-M requirement) in addition to a capstone thesis (including a pre-thesis tutorial). With an emphasis on artistic practice, this course of study prepares students who plan either to enter the field or to pursue graduate studies in theater arts. Students should demonstrate proficiency in theater arts fundamentals, should have some performance experience before declaring the major, and should consult the major advisor in Theater Arts no later than the first term of their junior year."
+}

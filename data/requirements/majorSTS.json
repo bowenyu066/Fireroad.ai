@@ -1,0 +1,225 @@
+{
+  "title-no-degree": "Science, Technology, and Society",
+  "list-id": "majorSTS.reql",
+  "title": "Bachelor of Science in Science, Technology, and Society",
+  "medium-title": "STS Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "STS.004"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "STS.001"
+                },
+                {
+                  "req": "STS.002"
+                },
+                {
+                  "req": "STS.003"
+                },
+                {
+                  "req": "STS.006"
+                },
+                {
+                  "req": "STS.007"
+                },
+                {
+                  "req": "STS.008"
+                },
+                {
+                  "req": "STS.009"
+                },
+                {
+                  "req": "STS.012"
+                }
+              ],
+              "threshold-desc": "select any"
+            }
+          ],
+          "title": "Tier 1"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 1,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "STS.022"
+                },
+                {
+                  "req": "STS.023"
+                },
+                {
+                  "req": "STS.025"
+                },
+                {
+                  "req": "STS.026"
+                },
+                {
+                  "req": "STS.027"
+                },
+                {
+                  "req": "STS.028"
+                },
+                {
+                  "req": "STS.032"
+                },
+                {
+                  "req": "STS.034"
+                },
+                {
+                  "req": "STS.035"
+                },
+                {
+                  "req": "STS.042"
+                },
+                {
+                  "req": "STS.043"
+                },
+                {
+                  "req": "STS.044"
+                },
+                {
+                  "req": "STS.046"
+                },
+                {
+                  "req": "STS.047"
+                },
+                {
+                  "req": "STS.048"
+                },
+                {
+                  "req": "STS.049"
+                },
+                {
+                  "req": "STS.050"
+                },
+                {
+                  "req": "STS.056"
+                },
+                {
+                  "req": "STS.060"
+                },
+                {
+                  "req": "STS.062"
+                },
+                {
+                  "req": "STS.064"
+                },
+                {
+                  "req": "STS.065"
+                },
+                {
+                  "req": "STS.068"
+                },
+                {
+                  "req": "STS.070"
+                },
+                {
+                  "req": "STS.071"
+                },
+                {
+                  "req": "STS.074"
+                },
+                {
+                  "req": "STS.075"
+                },
+                {
+                  "req": "STS.080"
+                },
+                {
+                  "req": "STS.081"
+                },
+                {
+                  "req": "STS.082"
+                },
+                {
+                  "req": "STS.084"
+                },
+                {
+                  "req": "STS.085"
+                },
+                {
+                  "req": "STS.086"
+                },
+                {
+                  "req": "STS.087"
+                },
+                {
+                  "req": "STS.088"
+                }
+              ],
+              "threshold-desc": "select any"
+            },
+            {
+              "req": "STS.THT"
+            },
+            {
+              "req": "STS.THU"
+            }
+          ],
+          "title": "Tier 2"
+        }
+      ],
+      "threshold-desc": "select all"
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 102 units",
+      "req": "102 units of electives",
+      "threshold": {
+        "cutoff": 102,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "title": "Restricted Electives",
+      "desc": "Select a coherent group of five elective subjects in STS, plus four subjects related to the historical and social study of science and technology, in consultation with the STS undergraduate officer."
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "LTE"
+          },
+          "req": "CI-M from primary major",
+          "plain-string": true,
+          "threshold-desc": "select at most 2"
+        },
+        {
+          "req": "STS.004"
+        },
+        {
+          "req": "STS.THU"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "STS",
+  "desc": "MIT students are increasingly seeking to understand the social and historical contexts in which they will work and the social consequences of what they will do in their professional careers. STS subjects help them think realistically and creatively about the intellectual, moral, political, and social issues raised by the rapid growth of science and technology in the 20th century and beyond.\n\nSTS contributes to undergraduate education at MIT in several ways. It offers general subjects to introduce students to broad social and intellectual perspectives on science and engineering fields. It also offers more specialized subjects in the history of science and technology and in social and cultural studies of science and technology. Within each of these categories, students can choose both introductory and more advanced subjects.\n\nThe full major in Science, Technology, and Society (STS) may be pursued only as a second major in conjunction with another degree program in a field of engineering or science, or in other fields on a case-by-base basis."
+}

@@ -1,0 +1,161 @@
+{
+  "title-no-degree": "Management",
+  "list-id": "major15-1old.reql",
+  "title": "Bachelor of Science in Management (Old)",
+  "url": "https://mitsloan.mit.edu/undergrad/15-1-management-major-requirements",
+  "medium-title": "15-1 Major (Old)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "15.501"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.276"
+            },
+            {
+              "req": "15.279"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.301"
+            },
+            {
+              "req": "15.310"
+            },
+            {
+              "req": "15.312"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.0111"
+            },
+            {
+              "req": "14.01"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.0791"
+            },
+            {
+              "req": "6.3700"
+            },
+            {
+              "req": "14.30"
+            },
+            {
+              "req": "18.600"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.075"
+            },
+            {
+              "req": "14.32"
+            },
+            {
+              "req": "18.650"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "all",
+      "threshold-desc": "select any 2 subjects",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.417"
+            },
+            {
+              "req": "15.401"
+            }
+          ],
+          "threshold-desc": "optional - select any"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "15.7611",
+          "threshold-desc": "optional - select any"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "15.8141",
+          "threshold-desc": "optional - select any"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "15.9001",
+          "threshold-desc": "optional - select any"
+        }
+      ],
+      "title": "Restricted Electives"
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 5",
+      "req": "5 subjects",
+      "threshold": {
+        "cutoff": 5,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "title": "Concentration Subjects",
+      "desc": "Five subjects from a defined concentration or an individualized concentration with the approval of the Sloan Undergraduate Education Office. At least three full subjects must be from Course 15. A full subject is either 9 or 12 units. A half subject is 6 units."
+    }
+  ],
+  "short-title": "15-1",
+  "desc": ""
+}

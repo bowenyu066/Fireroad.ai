@@ -1,0 +1,114 @@
+{
+  "title-no-degree": "Comparative Media Studies",
+  "list-id": "majorCMS.reql",
+  "title": "Bachelor of Science in Comparative Media Studies",
+  "medium-title": "CMS Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "reqs": [
+        {
+          "req": "CMS.100",
+          "title": "Introductory"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "CMS.301"
+            },
+            {
+              "req": "CMS.303"
+            },
+            {
+              "req": "CMS.335"
+            },
+            {
+              "req": "CMS.362"
+            },
+            {
+              "req": "CMS.590"
+            },
+            {
+              "req": "CMS.609"
+            },
+            {
+              "req": "CMS.627"
+            },
+            {
+              "req": "CMS.628"
+            },
+            {
+              "req": "CMS.633"
+            },
+            {
+              "req": "CMS.636"
+            },
+            {
+              "req": "21W.752"
+            }
+          ],
+          "title": "Media Practice and Production"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "CMS.701"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "CMS.336"
+                },
+                {
+                  "req": "CMS.400"
+                },
+                {
+                  "req": "CMS.405"
+                },
+                {
+                  "req": "CMS.407"
+                },
+                {
+                  "req": "CMS.614"
+                },
+                {
+                  "req": "CMS.618"
+                },
+                {
+                  "req": "CMS.621"
+                }
+              ],
+              "threshold-desc": "select any"
+            }
+          ],
+          "title": "Communication-Intensive in the Major"
+        }
+      ],
+      "threshold-desc": "select all"
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 6",
+      "req": "6 elective subjects",
+      "threshold": {
+        "cutoff": 6,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "title": "Restricted Electives",
+      "desc": "Select six restricted electives. Qualified students may, with departmental approval, substitute a pre-thesis tutorial (CMS.ThT) and thesis (CMS.ThU) for one elective."
+    }
+  ],
+  "short-title": "CMS",
+  "desc": "The program leading to the Bachelor of Science in Comparative Media Studies degree is designed to integrate the study of contemporary media (film, television, digital systems) with a broad historical understanding of older forms of human expression. The program embraces theoretical and interpretive principles drawn from the central humanistic disciplines of literary study, history, anthropology, art history, and film studies, but aims as well for a comparative synthesis that is responsive to the distinctive emerging media culture of the 21st century. Students explore the complexity of the media environment by learning to think across media, to see beyond the boundaries imposed by older medium-specific approaches to the study of audio-visual and literary forms. The undergraduate program serves as preparation for advanced study in a range of scholarly and professional disciplines and also for careers in media or industry."
+}

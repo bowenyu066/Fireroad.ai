@@ -1,0 +1,344 @@
+{
+  "title-no-degree": "Brain and Cognitive Sciences",
+  "list-id": "major9.reql",
+  "title": "Bachelor of Science in Brain and Cognitive Sciences",
+  "medium-title": "9 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "One Laboratory subject and one Research subject must be taken, but the same subject cannot count for both requirements.",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "6.100A"
+            },
+            {
+              "req": "6.100B"
+            },
+            {
+              "req": "9.00"
+            },
+            {
+              "req": "9.01"
+            },
+            {
+              "req": "9.40"
+            },
+            {
+              "req": "9.07"
+            }
+          ],
+          "title": "Tier 1"
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 3",
+          "reqs": [
+            {
+              "req": "9.09"
+            },
+            {
+              "req": "9.13"
+            },
+            {
+              "req": "9.18"
+            },
+            {
+              "req": "9.19"
+            },
+            {
+              "req": "9.21"
+            },
+            {
+              "req": "9.26"
+            },
+            {
+              "req": "9.35"
+            },
+            {
+              "req": "9.49"
+            },
+            {
+              "req": "9.53"
+            },
+            {
+              "req": "9.66"
+            },
+            {
+              "req": "9.85"
+            }
+          ],
+          "title": "Tier 2"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "9.12"
+            },
+            {
+              "req": "9.17"
+            },
+            {
+              "req": "9.59"
+            },
+            {
+              "req": "9.60"
+            }
+          ],
+          "title": "Laboratory"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "9.12"
+            },
+            {
+              "req": "9.17"
+            },
+            {
+              "req": "9.41"
+            },
+            {
+              "req": "9.50"
+            },
+            {
+              "req": "9.59"
+            },
+            {
+              "req": "9.60"
+            },
+            {
+              "req": "9.URG"
+            }
+          ],
+          "title": "Research"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "threshold-desc": "select any 4",
+      "title": "Restricted Electives",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "9.24"
+            },
+            {
+              "req": "9.28"
+            },
+            {
+              "req": "9.32"
+            },
+            {
+              "req": "9.42"
+            },
+            {
+              "req": "9.46"
+            },
+            {
+              "req": "9.67"
+            }
+          ],
+          "title": "Tier 3"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "9.016"
+            },
+            {
+              "req": "9.073"
+            },
+            {
+              "req": "9.123"
+            },
+            {
+              "req": "9.175"
+            },
+            {
+              "req": "9.285"
+            },
+            {
+              "req": "9.301"
+            },
+            {
+              "req": "9.422"
+            }
+          ],
+          "title": "Approved Graduate Courses"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "2.003"
+            },
+            {
+              "req": "2.180"
+            },
+            {
+              "req": "2.184"
+            },
+            {
+              "req": "5.07"
+            },
+            {
+              "req": "5.12"
+            },
+            {
+              "req": "5.13"
+            },
+            {
+              "req": "6.1200"
+            },
+            {
+              "req": "6.1220"
+            },
+            {
+              "req": "6.1400"
+            },
+            {
+              "req": "6.3000"
+            },
+            {
+              "req": "6.3900"
+            },
+            {
+              "req": "6.4100"
+            },
+            {
+              "req": "6.8611"
+            },
+            {
+              "req": "7.03"
+            },
+            {
+              "req": "9.72"
+            },
+            {
+              "req": "18.03"
+            },
+            {
+              "req": "18.06"
+            },
+            {
+              "req": "18.404"
+            },
+            {
+              "req": "24.211"
+            },
+            {
+              "req": "24.900"
+            },
+            {
+              "req": "24.901"
+            },
+            {
+              "req": "24.902"
+            },
+            {
+              "req": "24.903"
+            },
+            {
+              "req": "24.904"
+            }
+          ],
+          "title": "Other Electives"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 4,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Choose from among the Tier 3 subjects, approved graduate courses, and other restricted electives."
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "9.85"
+        },
+        {
+          "req": "9.28"
+        },
+        {
+          "req": "9.46"
+        },
+        {
+          "req": "9.67"
+        },
+        {
+          "req": "9.12"
+        },
+        {
+          "req": "9.17"
+        },
+        {
+          "req": "9.59"
+        },
+        {
+          "req": "9.60"
+        },
+        {
+          "req": "9.41"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "9",
+  "desc": "The Bachelor of Science in Brain and Cognitive Sciences prepares students to pursue advanced degrees or careers in neuroscience, medicine, cognitive science, psychology, linguistics, philosophy, or aspects of artificial intelligence (particularly those aspects concerned with vision) as well as for further work in the area of efficient human-machine interaction."
+}

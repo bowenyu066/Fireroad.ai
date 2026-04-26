@@ -65,6 +65,11 @@ function currentCourseSummary(course) {
   };
 }
 
+async function resolveCurrentCourseSummary(courseId) {
+  const course = await fetchCurrentCourse(courseId);
+  return course ? currentCourseSummary(course) : null;
+}
+
 function hasTime(course) {
   return course && Array.isArray(course.days) && course.days.length && course.time && course.time.end > course.time.start;
 }
@@ -157,6 +162,116 @@ function isTheoryCourse(course) {
   return /theory|probabilistic|statistical|automata|computability|complexity|kernel|bayesian|proof/.test(text);
 }
 
+function courseText(course) {
+  return `${course.id} ${course.name} ${course.desc} ${course.prerequisitesRaw || ''}`.toLowerCase();
+}
+
+function topicMatchesCourse(topic, course) {
+  const text = courseText(course);
+  const normalized = String(topic || '').replace(/[_\s-]/g, '').toLowerCase();
+  const patterns = {
+    coding: /program|coding|software|implementation|python|java|code/,
+    proofs: /proof|theory|theorem|mathematical|formal/,
+    algorithms: /algorithm|complexity|optimization|graph|dynamic programming/,
+    probability: /probability|probabilistic|statistics|statistical|inference|stochastic|bayesian/,
+    linearalgebra: /linear algebra|matrix|matrices|vector|eigen|optimization/,
+    machinelearning: /machine learning|deep learning|neural|artificial intelligence|classification|regression|representation/,
+    systems: /operating system|distributed system|computer network|database|compiler|computer architecture|software system/,
+  };
+  return patterns[normalized] ? patterns[normalized].test(text) : text.includes(normalized);
+}
+
+function hasNumericValue(value) {
+  return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
+}
+
+function commitmentCount(commitments = {}) {
+  return ['urop', 'recruiting', 'ta', 'clubs'].filter((key) => commitments[key] === true).length
+    + (String(commitments.other || '').trim() ? 1 : 0);
+}
+
+function applyPersonalizationSignals(course, rankScore, reasons, profile, schedule) {
+  const personalization = profile.preferences && profile.preferences.personalization;
+  if (!personalization || typeof personalization !== 'object') return rankScore;
+
+  let score = rankScore;
+  const topicRatings = personalization.topicRatings || {};
+  Object.entries(topicRatings).forEach(([topic, ratings]) => {
+    if (!ratings || !topicMatchesCourse(topic, course)) return;
+    const interest = Number(ratings.interest);
+    const skill = Number(ratings.skill);
+    if (Number.isFinite(interest)) {
+      if (interest >= 8) {
+        score += 6;
+        reasons.push(`high interest in ${topic}`);
+      } else if (interest <= 2) {
+        score -= 8;
+        reasons.push(`low interest in ${topic}`);
+      }
+    }
+    if (Number.isFinite(skill)) {
+      if (skill >= 7) {
+        score += 2;
+        reasons.push(`strong self-rated ${topic} preparation`);
+      } else if (skill <= 3) {
+        score -= 3;
+        reasons.push(`may need ramp-up in ${topic}`);
+      }
+    }
+  });
+
+  const workload = personalization.workload || {};
+  const commitments = personalization.commitments || {};
+  const weeklyBudget = Number(workload.weeklyCourseHoursBudget);
+  if (Number.isFinite(weeklyBudget) && course.totalHours) {
+    const adjustedBudget = Math.max(8, weeklyBudget - commitmentCount(commitments) * 4);
+    const targetPerCourse = adjustedBudget / Math.max(schedule.length + 1, 1);
+    if (course.totalHours > targetPerCourse + 4) {
+      score -= 6;
+      reasons.push('workload may exceed stated weekly budget');
+    } else if (course.totalHours <= targetPerCourse + 1) {
+      score += 3;
+      reasons.push('fits stated weekly workload budget');
+    }
+  }
+
+  const challenge = String(workload.challengePreference || '').toLowerCase();
+  if (challenge.includes('high') && course.totalHours >= 12) {
+    score += 2;
+    reasons.push('matches high challenge preference');
+  }
+  if ((challenge.includes('low') || challenge.includes('lighter')) && course.totalHours >= 12) {
+    score -= 4;
+    reasons.push('may be too challenging for stated preference');
+  }
+
+  const formatPreferences = personalization.formatPreferences || {};
+  const text = courseText(course);
+  const formatSignals = [
+    ['psets', /problem set|pset|homework|assignment/],
+    ['codingLabs', /lab|programming|implementation|coding|project/],
+    ['exams', /exam|quiz|midterm|final exam/],
+    ['labs', /lab|laboratory/],
+    ['finalProjects', /project|capstone|design/],
+    ['paperReading', /paper|reading|literature|seminar/],
+    ['teamProjects', /team|group|collaborative/],
+    ['presentations', /presentation|present/],
+  ];
+  formatSignals.forEach(([key, pattern]) => {
+    if (!pattern.test(text) || !hasNumericValue(formatPreferences[key])) return;
+    const value = Number(formatPreferences[key]);
+    if (value >= 8) {
+      score += 2;
+      reasons.push(`matches ${key} preference`);
+    } else if (value <= 2) {
+      score -= 3;
+      reasons.push(`may not match ${key} preference`);
+    }
+  });
+
+  return score;
+}
+
 async function recommendCourses(args = {}, context = {}) {
   const schedule = scheduleForTool(args, context);
   const profile = profileForTool(args, context);
@@ -168,11 +283,19 @@ async function recommendCourses(args = {}, context = {}) {
   const scheduledSet = new Set(schedule);
   const takenSet = new Set([...asArray(profile.taken).map(normalizeCourseId), ...schedule]);
 
-  const pool = await searchCurrentCourses({
+  let pool = await searchCurrentCourses({
     query: '',
     maxResults: Math.max(maxResults * 8, 40),
     maxWorkload,
+    requirements: targetRequirements,
   });
+  if (!pool.results.length && targetRequirements.length) {
+    pool = await searchCurrentCourses({
+      query: '',
+      maxResults: Math.max(maxResults * 8, 40),
+      maxWorkload,
+    });
+  }
 
   const recommendations = pool.results
     .filter((course) => !scheduledSet.has(course.id))
@@ -214,6 +337,8 @@ async function recommendCourses(args = {}, context = {}) {
         rankScore -= Math.min(missingPrereqs.length, 3) * 4;
         reasons.push(`check prereqs: ${unique(missingPrereqs).join(', ')}`);
       }
+
+      rankScore = applyPersonalizationSignals(course, rankScore, reasons, profile, schedule);
 
       return {
         ...currentCourseSummary(course),
@@ -442,6 +567,9 @@ const toolSchemas = [
 ];
 
 const toolHandlers = {
+  search_courses: searchCurrentCoursesTool,
+  get_course: getCurrentCourseTool,
+  summarize_schedule: summarizeSemesterPlan,
   search_current_courses: searchCurrentCoursesTool,
   get_current_course: getCurrentCourseTool,
   summarize_semester_plan: summarizeSemesterPlan,
@@ -461,6 +589,7 @@ module.exports = {
   normalizeProfile,
   normalizeSchedule,
   recommendCourses,
+  resolveCurrentCourseSummary,
   sanitizeSuggestions,
   searchCurrentCoursesTool,
   summarizeSemesterPlan,

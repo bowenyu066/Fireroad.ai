@@ -1,0 +1,66 @@
+{
+  "title-no-degree": "Linguistics",
+  "list-id": "minor24-2.reql",
+  "title": "Minor in Linguistics",
+  "medium-title": "24 Minor (Linguistics)",
+  "reqs": [
+    {
+      "req": "24.900",
+      "title": "Tier I"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "24.901"
+        },
+        {
+          "req": "24.902"
+        },
+        {
+          "req": "24.903"
+        }
+      ],
+      "title": "Tier II"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "24.904"
+        },
+        {
+          "req": "24.905"
+        },
+        {
+          "req": "24.906"
+        },
+        {
+          "req": "24.907"
+        },
+        {
+          "req": "24.909"
+        },
+        {
+          "req": "24.910"
+        },
+        {
+          "req": "24.914"
+        },
+        {
+          "req": "24.915"
+        }
+      ],
+      "title": "Tier III"
+    }
+  ],
+  "short-title": "24-2",
+  "desc": "The Minor in Linguistics consists of six subjects arranged in three levels of study, intended to provide students with breadth in the field of theoretical linguistics as a whole."
+}

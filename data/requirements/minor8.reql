@@ -1,8 +1,0 @@
-8#,#8 Minor#,#Physics#,#Minor in Physics
-
-
-req
-
-
-req_1 := ""5 Course 8 subjects beyond GIRs""{>=5}
-req, "Required Subjects" := 18.03, req_1

@@ -1,0 +1,294 @@
+{
+  "title-no-degree": "Philosophy",
+  "list-id": "major24-1.reql",
+  "title": "Bachelor of Science in Philosophy",
+  "medium-title": "24-1 Major",
+  "reqs": [
+    {
+      "threshold-desc": "select at most 4",
+      "title": "Introductory Subject",
+      "reqs": [
+        {
+          "req": "24.00"
+        },
+        {
+          "req": "24.01"
+        },
+        {
+          "req": "24.02"
+        },
+        {
+          "req": "24.03"
+        },
+        {
+          "req": "24.04"
+        },
+        {
+          "req": "24.05"
+        },
+        {
+          "req": "24.06"
+        },
+        {
+          "req": "24.08"
+        },
+        {
+          "req": "24.09"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 4,
+        "criterion": "subjects",
+        "type": "LTE"
+      },
+      "desc": "The introductory subject cannot also be used as a departmental distribution subject.  Students may substitute an appropriate philosophy concourse subject."
+    },
+    {
+      "threshold-desc": "select either",
+      "title": "History of Philosophy",
+      "reqs": [
+        {
+          "req": "24.01"
+        },
+        {
+          "req": "24.201"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 1,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Students may substitute another subject with a history of philosophy orientation, with the approval of the major advisor in consultation with the instructor."
+    },
+    {
+      "threshold": {
+        "cutoff": 1,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "24.05"
+        },
+        {
+          "req": "24.08J"
+        },
+        {
+          "req": "24.09"
+        },
+        {
+          "req": "24.111"
+        },
+        {
+          "req": "24.121"
+        },
+        {
+          "req": "24.211"
+        },
+        {
+          "req": "24.212"
+        },
+        {
+          "req": "24.215"
+        },
+        {
+          "req": "24.223"
+        },
+        {
+          "req": "24.251"
+        },
+        {
+          "req": "24.252"
+        },
+        {
+          "req": "24.253"
+        },
+        {
+          "req": "24.280"
+        }
+      ],
+      "title": "Knowledge and Reality"
+    },
+    {
+      "threshold": {
+        "cutoff": 1,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "24.013"
+        },
+        {
+          "req": "24.02"
+        },
+        {
+          "req": "24.03"
+        },
+        {
+          "req": "24.04J"
+        },
+        {
+          "req": "24.06J"
+        },
+        {
+          "req": "24.130"
+        },
+        {
+          "req": "24.131"
+        },
+        {
+          "req": "24.137J"
+        },
+        {
+          "req": "24.150"
+        },
+        {
+          "req": "24.213"
+        },
+        {
+          "req": "24.220"
+        },
+        {
+          "req": "24.222"
+        },
+        {
+          "req": "24.230"
+        },
+        {
+          "req": "24.233"
+        },
+        {
+          "req": "24.234"
+        },
+        {
+          "req": "24.235J"
+        },
+        {
+          "req": "24.236"
+        },
+        {
+          "req": "24.240J"
+        }
+      ],
+      "title": "Value"
+    },
+    {
+      "threshold-desc": "select any",
+      "title": "Logic",
+      "reqs": [
+        {
+          "req": "24.118"
+        },
+        {
+          "req": "24.141"
+        },
+        {
+          "req": "24.242"
+        },
+        {
+          "req": "24.243"
+        },
+        {
+          "req": "24.244"
+        },
+        {
+          "req": "24.245"
+        },
+        {
+          "req": "logic_subject_from_other_department"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 1,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Students may select a logic subject from another department (e.g., Mathematics) with the approval of their major advisor."
+    },
+    {
+      "req": "24.260",
+      "title": "Additional Required Subject"
+    },
+    {
+      "connection-type": "all",
+      "desc": "Select a coherent program of five additional subjects, two of which must be in philosophy, with approval of the major advisor.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "2 electives in Philosophy",
+          "plain-string": true,
+          "threshold-desc": "select any 2"
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "3 other elective subjects",
+          "plain-string": true,
+          "threshold-desc": "select any 3"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Restricted Electives"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "24.121"
+        },
+        {
+          "req": "24.130"
+        },
+        {
+          "req": "24.137J"
+        },
+        {
+          "req": "24.150"
+        },
+        {
+          "req": "24.201"
+        },
+        {
+          "req": "24.220"
+        },
+        {
+          "req": "24.235"
+        },
+        {
+          "req": "24.251"
+        },
+        {
+          "req": "24.252"
+        },
+        {
+          "req": "24.260"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "24-1",
+  "desc": "This major is designed to provide familiarity with the history and current status of the main problems in epistemology, metaphysics, and ethics; mastery of some of the technical skills requisite for advanced work in philosophy; facility at independent philosophical study; and work at an advanced level in an allied field. A relatively large amount of unrestricted elective time is available so that students can devise programs suited to individual needs and interests.\n\nNo more than four of the total number of philosophy subjects for the major may be introductory philosophy subjects. At least three of the total number of philosophy courses must be at the 200 level or above."
+}

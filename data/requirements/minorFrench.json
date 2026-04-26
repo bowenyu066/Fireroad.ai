@@ -1,0 +1,118 @@
+{
+  "title-no-degree": "Global Studies and Languages",
+  "list-id": "minorFrench.reql",
+  "title": "Minor in French",
+  "medium-title": "21G Minor (French)",
+  "reqs": [
+    {
+      "threshold-desc": "optional - select any",
+      "title": "Tier I",
+      "reqs": [
+        {
+          "req": "21G.303"
+        },
+        {
+          "req": "21G.304"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 0,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Two subjects or fewer depending on demonstrated level of entering competence."
+    },
+    {
+      "threshold-desc": "select any 2",
+      "title": "Tier II",
+      "reqs": [
+        {
+          "req": "21G.308"
+        },
+        {
+          "req": "21G.310"
+        },
+        {
+          "req": "21G.311"
+        },
+        {
+          "req": "21G.312"
+        },
+        {
+          "req": "21G.315"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Select two or three of the following intermediate subjects in French language, literature, and culture."
+    },
+    {
+      "threshold-desc": "select any 2",
+      "title": "Tier III",
+      "reqs": [
+        {
+          "req": "21G.049"
+        },
+        {
+          "req": "21G.052"
+        },
+        {
+          "req": "21G.053"
+        },
+        {
+          "req": "21G.054"
+        },
+        {
+          "req": "21G.068"
+        },
+        {
+          "req": "21G.320"
+        },
+        {
+          "req": "21G.321"
+        },
+        {
+          "req": "21G.322"
+        },
+        {
+          "req": "21G.325"
+        },
+        {
+          "req": "21G.326"
+        },
+        {
+          "req": "21G.026"
+        },
+        {
+          "req": "21G.341"
+        },
+        {
+          "req": "21G.344"
+        },
+        {
+          "req": "21G.346"
+        },
+        {
+          "req": "21G.347"
+        },
+        {
+          "req": "21G.348"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Select two or three of the following advanced subjects in French literature and culture."
+    }
+  ],
+  "short-title": "21G",
+  "desc": ""
+}

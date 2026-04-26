@@ -11,6 +11,19 @@ const CATALOG_TTL_MS = Number(process.env.CURRENT_CATALOG_TTL_MS) || 5 * 60 * 10
 let catalogCache = null;
 let catalogInflight = null;
 
+function indexCourses(courses) {
+  const coursesById = {};
+  courses.forEach((course) => {
+    coursesById[course.id] = course;
+    if (course.oldId) coursesById[normalizeCourseId(course.oldId)] = course;
+    course.relatedSubjects.forEach((subjectId) => {
+      const normalized = normalizeCourseId(subjectId);
+      if (normalized && !coursesById[normalized]) coursesById[normalized] = course;
+    });
+  });
+  return coursesById;
+}
+
 function getMatchScore(courseId) {
   const match = mockData.matchScores[normalizeCourseId(courseId)] || mockData.matchScores[courseId] || {};
   return match.total || 0;
@@ -26,7 +39,7 @@ function fallbackCatalog() {
     sourcePath: null,
     loadedAt: Date.now(),
     courses,
-    coursesById: Object.fromEntries(courses.map((course) => [course.id, course])),
+    coursesById: indexCourses(courses),
   };
 }
 
@@ -50,7 +63,7 @@ async function loadLocalCatalogSnapshot() {
     sourcePath: CURRENT_CATALOG_PATH,
     loadedAt: Date.now(),
     courses,
-    coursesById: Object.fromEntries(courses.map((course) => [course.id, course])),
+    coursesById: indexCourses(courses),
   };
 }
 
@@ -84,12 +97,15 @@ async function fetchCurrentCourse(courseId) {
   if (!id) return null;
 
   const catalog = await getCurrentCatalog();
-  return catalog.coursesById[id] || normalizeCurrentCourse(null, { mockCourse: findMockCourse(id) });
+  const course = catalog.coursesById[id];
+  if (course) return course;
+  return catalog.source === 'mock' ? normalizeCurrentCourse(null, { mockCourse: findMockCourse(id) }) : null;
 }
 
 function scoreCourse(course, query, tokens) {
-  let score = getMatchScore(course.id);
-  if (!query) return score || 1;
+  const matchScore = getMatchScore(course.id);
+  let score = 0;
+  if (!query) return matchScore || 1;
 
   const haystack = [
     course.id,
@@ -111,12 +127,22 @@ function scoreCourse(course, query, tokens) {
   tokens.forEach((token) => {
     if (haystack.includes(token)) score += 6;
   });
-  return score;
+  return score > 0 ? score + Math.min(matchScore, 10) : 0;
+}
+
+function expandSearchTokens(tokens) {
+  const expanded = [...tokens];
+  tokens.forEach((token) => {
+    if (token === 'ml') expanded.push('machine', 'learning');
+    if (token === 'ai') expanded.push('artificial', 'intelligence');
+    if (token === 'hass') expanded.push('hass-a', 'hass-h', 'hass-s');
+  });
+  return [...new Set(expanded)];
 }
 
 async function searchCurrentCourses(options = {}) {
   const query = String(options.query || '').trim().toLowerCase();
-  const tokens = query.split(/\s+/).filter(Boolean);
+  const tokens = expandSearchTokens(query.split(/\s+/).filter(Boolean));
   const maxResults = Math.max(1, Math.min(Number(options.maxResults || options.max_results) || 10, 50));
   const maxWorkload = Number(options.maxWorkload || options.max_workload) || null;
   const areas = Array.isArray(options.areas) ? options.areas.map((area) => String(area).toLowerCase()) : [];
@@ -127,7 +153,7 @@ async function searchCurrentCourses(options = {}) {
   const catalog = await getCurrentCatalog();
   const results = catalog.courses
     .filter((course) => !areas.length || areas.includes(String(course.area).toLowerCase()))
-    .filter((course) => !requirements.length || requirements.every((req) => course.requirements.map((r) => r.toLowerCase()).includes(req)))
+    .filter((course) => !requirements.length || requirements.some((req) => course.requirements.map((r) => r.toLowerCase()).includes(req)))
     .filter((course) => !maxWorkload || !course.totalHours || course.totalHours <= maxWorkload)
     .map((course) => ({ course, searchScore: scoreCourse(course, query, tokens) }))
     .filter((result) => result.searchScore > 0 || !query)

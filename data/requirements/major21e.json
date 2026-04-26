@@ -1,0 +1,731 @@
+{
+  "title-no-degree": "Humanities and Engineering",
+  "list-id": "major21e.reql",
+  "title": "Bachelor of Science in Humanities and Engineering",
+  "medium-title": "21E Major",
+  "reqs": [
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 6",
+      "req": "6 elective subjects",
+      "threshold": {
+        "cutoff": 6,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "title": "Engineering",
+      "desc": "For the engineering component, select six elective subjects restricted to one of the engineering curricula and approved by a faculty member in the field."
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "threshold": {
+                    "cutoff": 2,
+                    "criterion": "subjects",
+                    "type": "GTE"
+                  },
+                  "req": "2 history subjects",
+                  "plain-string": true,
+                  "threshold-desc": "select any 2"
+                },
+                {
+                  "threshold": {
+                    "cutoff": 2,
+                    "criterion": "subjects",
+                    "type": "GTE"
+                  },
+                  "req": "2 literature subjects",
+                  "plain-string": true,
+                  "threshold-desc": "select any 2"
+                },
+                {
+                  "threshold": {
+                    "cutoff": 3,
+                    "criterion": "subjects",
+                    "type": "GTE"
+                  },
+                  "req": "3 additional subjects",
+                  "plain-string": true,
+                  "threshold-desc": "select any 3"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "connection-type": "all",
+                  "reqs": [
+                    {
+                      "req": "21.THT"
+                    },
+                    {
+                      "req": "21.THU"
+                    }
+                  ],
+                  "threshold-desc": "select all"
+                },
+                {
+                  "threshold": {
+                    "cutoff": 2,
+                    "criterion": "subjects",
+                    "type": "GTE"
+                  },
+                  "req": "2 substituted subjects",
+                  "plain-string": true,
+                  "threshold-desc": "select any 2"
+                }
+              ],
+              "threshold-desc": "select either"
+            }
+          ],
+          "title": "American Studies"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "21.THT"
+                },
+                {
+                  "req": "21.THU"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "threshold": {
+                "cutoff": 7,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "7 subjects following the minor",
+              "plain-string": true,
+              "threshold-desc": "select any 7"
+            }
+          ],
+          "title": "Ancient and Medieval Studies"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 8,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "8 elective subjects",
+              "plain-string": true,
+              "threshold-desc": "select any 8"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "21A.00"
+                },
+                {
+                  "req": "21A.01"
+                }
+              ],
+              "threshold-desc": "select either"
+            }
+          ],
+          "title": "Anthropology"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "21.THT"
+                },
+                {
+                  "req": "21.THU"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "threshold": {
+                "cutoff": 7,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "7 subjects following the minor",
+              "plain-string": true,
+              "threshold-desc": "select any 7"
+            }
+          ],
+          "title": "Asian and Asian Diaspora Studies"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 5,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "5 CMS electives",
+              "plain-string": true,
+              "threshold-desc": "select any 5"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "CMS.335"
+                },
+                {
+                  "req": "CMS.362"
+                },
+                {
+                  "req": "CMS.590"
+                },
+                {
+                  "req": "CMS.609"
+                },
+                {
+                  "req": "CMS.622"
+                },
+                {
+                  "req": "CMS.633"
+                },
+                {
+                  "req": "CMS.634"
+                },
+                {
+                  "req": "21W.752"
+                }
+              ],
+              "threshold-desc": "select any"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "CMS.100"
+                },
+                {
+                  "req": "CMS.701"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "title": "Comparative Media Studies"
+        },
+        {
+          "threshold": {
+            "cutoff": 9,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "threshold-desc": "select any 9",
+          "req": "9 elective subjects",
+          "plain-string": true,
+          "title": "Global Studies and Languages"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 7,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "7 elective subjects",
+              "plain-string": true,
+              "threshold-desc": "select any 7"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "21H.THT"
+                },
+                {
+                  "req": "21H.THU"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "title": "History"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 6,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "6 elective subjects",
+              "plain-string": true,
+              "threshold-desc": "select any 6"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "21.THT"
+                },
+                {
+                  "req": "21.THU"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "17.55"
+            }
+          ],
+          "title": "Latin American and Latino/a Studies"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 2,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "2 seminars",
+              "plain-string": true,
+              "threshold-desc": "select any 2"
+            },
+            {
+              "threshold": {
+                "cutoff": 6,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "6 electives (3 periods/themes)",
+              "plain-string": true,
+              "threshold-desc": "select any 6"
+            }
+          ],
+          "title": "Literature"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 4,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "4 subjects in coherent program",
+              "plain-string": true,
+              "threshold-desc": "select any 4"
+            },
+            {
+              "threshold": {
+                "cutoff": 12,
+                "criterion": "units",
+                "type": "GTE"
+              },
+              "req": "2 terms of performance",
+              "plain-string": true,
+              "threshold-desc": "select any 12 units"
+            },
+            {
+              "req": "21M.301"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "21M.220"
+                },
+                {
+                  "req": "21M.235"
+                },
+                {
+                  "req": "21M.260"
+                }
+              ],
+              "threshold-desc": "select any"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "21M.291"
+                },
+                {
+                  "req": "21M.292"
+                },
+                {
+                  "req": "21M.293"
+                },
+                {
+                  "req": "21M.294"
+                }
+              ],
+              "threshold-desc": "select any"
+            }
+          ],
+          "title": "Music"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "21.THT"
+                },
+                {
+                  "req": "21.THU"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "threshold": {
+                    "cutoff": 2,
+                    "criterion": "subjects",
+                    "type": "GTE"
+                  },
+                  "req": "2 language requirement subjects",
+                  "plain-string": true,
+                  "threshold-desc": "select any 2"
+                },
+                {
+                  "threshold": {
+                    "cutoff": 5,
+                    "criterion": "subjects",
+                    "type": "GTE"
+                  },
+                  "req": "5 additional electives",
+                  "plain-string": true,
+                  "threshold-desc": "select any 5"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "title": "Russian and Eurasian Studies"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "STS.THT"
+                },
+                {
+                  "req": "STS.THU"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "threshold": {
+                "cutoff": 7,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "7 elective subjects",
+              "plain-string": true,
+              "threshold-desc": "select any 7"
+            },
+            {
+              "req": "STS.004"
+            }
+          ],
+          "title": "Science Technology and Society"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "21M.THT"
+                },
+                {
+                  "req": "21M.THU"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "threshold": {
+                "cutoff": 6,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "6 elective subjects",
+              "plain-string": true,
+              "threshold-desc": "select any 6"
+            },
+            {
+              "threshold": {
+                "cutoff": 12,
+                "criterion": "units",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "21M.803"
+                },
+                {
+                  "req": "21M.806"
+                },
+                {
+                  "req": "21M.809"
+                },
+                {
+                  "req": "21M.851"
+                }
+              ],
+              "threshold-desc": "select any 12 units"
+            },
+            {
+              "req": "21M.710"
+            }
+          ],
+          "title": "Theater Arts"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "threshold": {
+                    "cutoff": 5,
+                    "criterion": "subjects",
+                    "type": "GTE"
+                  },
+                  "req": "5 elective subjects",
+                  "plain-string": true,
+                  "threshold-desc": "select any 5"
+                },
+                {
+                  "req": "WGS.101"
+                },
+                {
+                  "req": "WGS.301"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "connection-type": "all",
+                  "reqs": [
+                    {
+                      "req": "21.THT"
+                    },
+                    {
+                      "req": "21.THU"
+                    }
+                  ],
+                  "threshold-desc": "select all"
+                },
+                {
+                  "threshold": {
+                    "cutoff": 2,
+                    "criterion": "subjects",
+                    "type": "GTE"
+                  },
+                  "req": "2 substituted subjects",
+                  "plain-string": true,
+                  "threshold-desc": "select any 2"
+                }
+              ],
+              "threshold-desc": "select either"
+            }
+          ],
+          "title": "Women's and Gender Studies"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 7,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "7 creative or expository writing electives",
+              "plain-string": true,
+              "threshold-desc": "select any 7"
+            }
+          ],
+          "title": "Writing: Creative"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "21W.THT"
+                },
+                {
+                  "req": "21W.THU"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "threshold": {
+                "cutoff": 3,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "3 related subjects from another dept",
+              "plain-string": true,
+              "threshold-desc": "select any 3"
+            },
+            {
+              "threshold": {
+                "cutoff": 1,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "CI-M subject in writing",
+              "plain-string": true
+            },
+            {
+              "req": "21W.764"
+            },
+            {
+              "req": "21W.765"
+            },
+            {
+              "req": "21W.785"
+            }
+          ],
+          "title": "Writing: Digital Media"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "21W.777"
+                },
+                {
+                  "req": "21W.778"
+                },
+                {
+                  "req": "21W.792"
+                },
+                {
+                  "req": "21W.THT"
+                },
+                {
+                  "req": "21W.THU"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "threshold": {
+                    "cutoff": 1,
+                    "criterion": "subjects",
+                    "type": "GTE"
+                  },
+                  "req": "1 basic exposition subject",
+                  "plain-string": true
+                },
+                {
+                  "threshold": {
+                    "cutoff": 1,
+                    "criterion": "subjects",
+                    "type": "GTE"
+                  },
+                  "req": "1 digital media subject",
+                  "plain-string": true
+                },
+                {
+                  "threshold": {
+                    "cutoff": 1,
+                    "criterion": "subjects",
+                    "type": "GTE"
+                  },
+                  "req": "1 science technology and society subject",
+                  "plain-string": true
+                },
+                {
+                  "threshold": {
+                    "cutoff": 1,
+                    "criterion": "subjects",
+                    "type": "GTE"
+                  },
+                  "req": "1 elective writing subject",
+                  "plain-string": true
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "title": "Writing: Science Writing"
+        }
+      ],
+      "title": "Restricted Electives"
+    }
+  ],
+  "short-title": "21E",
+  "desc": "As a matter of general Course 21 policy, subjects used to meet the General Institute Science Requirement, the REST Requirement, and the Laboratory Requirement may not be included in the six-subject Engineering component of 21E degrees. \n\nStudents must designate two CI-M subjects by petitioning the Subcommittee on the Communication Requirement. Normally, students are expected to complete one CI-M from each area of study, usually chosen from the subjects designated as CI-M for each major."
+}

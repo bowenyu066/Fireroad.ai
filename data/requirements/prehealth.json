@@ -1,0 +1,237 @@
+{
+  "title-no-degree": "Recommended Courses",
+  "list-id": "prehealth.reql",
+  "title": "MIT Prehealth Recommended Courses",
+  "url": "https://capd.mit.edu/prepare-academically-for-med-school/",
+  "medium-title": "Prehealth",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "Note: Some schools require 2 semesters of organic chemistry.",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "GIR:BIOL"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "7.002"
+                },
+                {
+                  "req": "20.109"
+                },
+                {
+                  "req": "9.12"
+                },
+                {
+                  "req": "20.129"
+                }
+              ],
+              "threshold-desc": "select any"
+            }
+          ],
+          "title": "General Biology with Lab"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "GIR:CHEM"
+                },
+                {
+                  "req": "5.12"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "5.310"
+                },
+                {
+                  "connection-type": "any",
+                  "reqs": [
+                    {
+                      "connection-type": "all",
+                      "reqs": [
+                        {
+                          "req": "5.351"
+                        },
+                        {
+                          "req": "5.352"
+                        },
+                        {
+                          "req": "5.353"
+                        }
+                      ],
+                      "threshold-desc": "select all"
+                    },
+                    {
+                      "req": "5.363"
+                    }
+                  ],
+                  "threshold-desc": "select either"
+                }
+              ],
+              "threshold-desc": "select either"
+            }
+          ],
+          "title": "General and Organic Chemistry with Lab"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "req": "7.05"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "5.07"
+                },
+                {
+                  "req": "20.507"
+                }
+              ],
+              "threshold-desc": "select either"
+            }
+          ],
+          "title": "Biochemistry"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "GIR:PHY1"
+            },
+            {
+              "req": "GIR:PHY2"
+            }
+          ],
+          "title": "Physics"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "GIR:CAL1"
+            },
+            {
+              "req": "GIR:CAL2"
+            }
+          ],
+          "title": "Math"
+        },
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 2",
+          "reqs": [
+            {
+              "req": "CI-H"
+            },
+            {
+              "req": "CI-HW"
+            }
+          ],
+          "title": "English/Writing and Humanities"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Courses"
+    },
+    {
+      "threshold-desc": "optional - select any",
+      "title": "Recommended Courses",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "7.03"
+            },
+            {
+              "req": "7.06"
+            },
+            {
+              "req": "7.20"
+            }
+          ],
+          "title": "Biology"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "5.08"
+            },
+            {
+              "req": "5.13"
+            }
+          ],
+          "title": "Chemistry"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "threshold-desc": "optional - select any",
+          "req": "18.05",
+          "title": "Math/Statistics"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "threshold-desc": "optional - select any",
+          "req": "9.00",
+          "title": "Psychology"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 0,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Taking some of the additional subjects below may provide additional breadth and depth in preparation for medical school. The list is not intended to provide an exhaustive list of courses that all premedical students should take, but rather, is provided to guide students in the selection of a few electives that may be of interest. Other health profession programs, such as dentistry and veterinary medicine, may require additional prerequisite courses. See the school/program web sites for more information."
+    }
+  ],
+  "short-title": "7",
+  "desc": "The MIT Committee on Prehealth Advising has provided the following information to guide MIT students on how to fulfill the academic requirements for admission to most U.S. medical schools. Specific requirements may vary for a particular school, and thus we suggest also referring to the Medical School Admission Requirements (MSAR) and information directly from particular schools to which you plan to apply."
+}

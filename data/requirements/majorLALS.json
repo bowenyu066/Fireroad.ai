@@ -1,0 +1,196 @@
+{
+  "title-no-degree": "Latin American and Latino Studies",
+  "list-id": "majorLALS.reql",
+  "title": "Bachelor of Science in Humanities (Latin American and Latino Studies)",
+  "medium-title": "21 Major (LALS)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "With the consent of the faculty advisor in the chosen field, a student may substitute two subjects for the pre-thesis and thesis requirement.",
+      "reqs": [
+        {
+          "req": "21.THT"
+        },
+        {
+          "req": "21.THU"
+        },
+        {
+          "req": "17.55"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "A minimum of eight subjects (96 units) beyond the introductory course, pre-thesis, and thesis. Remaining subjects include two language subjects (must be in the same language) in Area I (or equivalent proficiency), and seven subjects selected from at least two of the three disciplinary areas (Areas II-IV). Two language subjects beginning at Levels III and IV, either in Spanish or Portuguese, satisfy the Area I language requirement. MIT offers Levels III and IV of Spanish every semester and offers Level III of Portuguese every fall semester and Level IV every spring semester. Students who demonstrate competence beyond Level IV may either take two advanced language subjects (highly recommended) or two more subjects from Areas II, III, and IV. Students who are not required to take Area I subjects and opt not to take advanced language subjects must take all subjects from Areas II, III, and IV, with at least one subject from each area.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 2",
+          "reqs": [
+            {
+              "req": "21G.703"
+            },
+            {
+              "req": "21G.704"
+            },
+            {
+              "req": "21G.711"
+            },
+            {
+              "req": "21G.712"
+            },
+            {
+              "req": "21G.713"
+            },
+            {
+              "req": "21G.714"
+            },
+            {
+              "req": "21G.715"
+            },
+            {
+              "req": "21G.803"
+            },
+            {
+              "req": "21G.804"
+            }
+          ],
+          "title": "Area I: Language"
+        },
+        {
+          "threshold": {
+            "cutoff": 7,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "21G.070"
+                },
+                {
+                  "req": "21G.072"
+                },
+                {
+                  "req": "21G.074"
+                },
+                {
+                  "req": "21L.019"
+                },
+                {
+                  "req": "21G.731"
+                },
+                {
+                  "req": "21G.735"
+                },
+                {
+                  "req": "21G.736"
+                },
+                {
+                  "req": "21L.636"
+                },
+                {
+                  "req": "21L.637"
+                },
+                {
+                  "req": "21L.638"
+                },
+                {
+                  "req": "21L.639"
+                },
+                {
+                  "req": "21L.640"
+                },
+                {
+                  "req": "21G.820"
+                }
+              ],
+              "title": "Area II: Humanities and the Arts"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "17.55"
+                },
+                {
+                  "req": "3.982"
+                },
+                {
+                  "req": "3.983"
+                },
+                {
+                  "req": "21A.506"
+                }
+              ],
+              "title": "Area III: Social Studies"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "threshold": {
+                    "cutoff": 7,
+                    "criterion": "subjects",
+                    "type": "LTE"
+                  },
+                  "req": "appropriate Harvard/Wellesley subjects",
+                  "plain-string": true,
+                  "threshold-desc": "select at most 7"
+                },
+                {
+                  "req": "21H.171"
+                },
+                {
+                  "req": "21H.172"
+                },
+                {
+                  "req": "21H.273"
+                }
+              ],
+              "title": "Area IV: Historical Studies"
+            }
+          ],
+          "distinct-threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "threshold-desc": "select any 7 from at least 2 categories"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Restricted Electives"
+    }
+  ],
+  "short-title": "21",
+  "desc": "This program is designed for students interested in the language, history, politics, and culture of Latin America and of Hispanics living in the US. Students are encouraged to develop a program that is both international and comparative in perspective and that takes into account the heterogeneous cultural experiences of people living in the vast territory encompassed by the term Latin America, as well as of those people living in the United States who identify themselves as Latino/a."
+}

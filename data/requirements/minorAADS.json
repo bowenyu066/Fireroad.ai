@@ -1,0 +1,227 @@
+{
+  "title-no-degree": "Asian and Asian Diaspora Studies",
+  "list-id": "minorAADS.reql",
+  "title": "Minor in Asian and Asian Diaspora Studies",
+  "medium-title": "21 Minor (Asian Studies)",
+  "reqs": [
+    {
+      "threshold-desc": "select any 21 units",
+      "title": "Area I: Language",
+      "reqs": [
+        {
+          "req": "21G.103"
+        },
+        {
+          "req": "21G.104"
+        },
+        {
+          "req": "21G.105"
+        },
+        {
+          "req": "21G.106"
+        },
+        {
+          "req": "21G.109"
+        },
+        {
+          "req": "21G.110"
+        },
+        {
+          "req": "21G.113"
+        },
+        {
+          "req": "21G.503"
+        },
+        {
+          "req": "21G.504"
+        },
+        {
+          "req": "21G.505"
+        },
+        {
+          "req": "21G.506"
+        },
+        {
+          "req": "21G.903"
+        },
+        {
+          "req": "21G.904lang_1"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 21,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "desc": "The language requirement can be satisfied by taking two intermediate (Levels III and IV, or Very Fast Track equivalent) subjects in an Asian language. Students with proficiency at this level are encouraged to take two more advanced language subjects, such as 21G.105 Chinese V (Regular): Discovering Chinese Cultures and Societies and 21G.106 Chinese VI (Regular): Discovering Chinese Cultures and Societies or 21G.505 Japanese V and 21G.506 Japanese VI. Alternatively, they may take two more subjects from Areas II, III, and IV. In cases where the student is specializing in an Asian country where English is one of the official languages, in an English-speaking region of the diaspora, or is a native speaker of an Asian language, the Area I component would be replaced by other subjects in consultation with the minor advisor."
+    },
+    {
+      "distinct-threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "threshold-desc": "select any 4 from at least 2 categories",
+      "title": "Additional Areas",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21G.011"
+            },
+            {
+              "req": "21G.027"
+            },
+            {
+              "req": "21G.030"
+            },
+            {
+              "req": "21G.036"
+            },
+            {
+              "req": "21G.038"
+            },
+            {
+              "req": "21G.039"
+            },
+            {
+              "req": "21G.040"
+            },
+            {
+              "req": "21G.044"
+            },
+            {
+              "req": "21G.046"
+            },
+            {
+              "req": "21G.063"
+            },
+            {
+              "req": "21G.064"
+            },
+            {
+              "req": "21G.065"
+            },
+            {
+              "req": "21G.199"
+            },
+            {
+              "req": "21M.291"
+            },
+            {
+              "req": "21M.700"
+            },
+            {
+              "req": "21M.706"
+            },
+            {
+              "req": "21W.788"
+            },
+            {
+              "req": "WGS.226"
+            }
+          ],
+          "title": "Area II: Humanities and the Arts"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "17.407"
+            },
+            {
+              "req": "17.433"
+            },
+            {
+              "req": "17.486"
+            },
+            {
+              "req": "17.53"
+            },
+            {
+              "req": "17.537"
+            },
+            {
+              "req": "21A.140"
+            },
+            {
+              "req": "21A.141"
+            }
+          ],
+          "title": "Area III: Social Sciences"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21G.043"
+            },
+            {
+              "req": "21G.045"
+            },
+            {
+              "req": "21G.075"
+            },
+            {
+              "req": "21H.151"
+            },
+            {
+              "req": "21H.152"
+            },
+            {
+              "req": "21H.154"
+            },
+            {
+              "req": "21H.155"
+            },
+            {
+              "req": "21H.157"
+            },
+            {
+              "req": "21H.351"
+            },
+            {
+              "req": "21H.354"
+            },
+            {
+              "req": "21H.357"
+            },
+            {
+              "req": "21H.358"
+            }
+          ],
+          "title": "Area IV: Historical Studies"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 4,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "For students who are not required to take Area I subjects (see footnote 1 above), all six subjects for the minor must be taken from Areas II, III, and IV, with at least one subject from each area."
+    }
+  ],
+  "short-title": "21",
+  "desc": "The Minor in Asian and Asian Diaspora Studies is designed for students interested in the language, history, politics, and culture of Asia and/or the Asian diasporas. In consultation with the minor advisor, students may focus their coursework on a subregion of Asia, on one of the Asian diasporas, or design their program to offer a comparative study across different regions and/or cultural groups. The goal of the minor program is to provide balanced coverage of language, humanistic and social science offerings on the region, and to expose students to comparative perspectives."
+}

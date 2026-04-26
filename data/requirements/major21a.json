@@ -1,0 +1,263 @@
+{
+  "title-no-degree": "Anthropology",
+  "list-id": "major21a.reql",
+  "title": "Bachelor of Science in Anthropology",
+  "medium-title": "21A Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "21A.00"
+        },
+        {
+          "req": "21A.01"
+        },
+        {
+          "req": "21A.155"
+        },
+        {
+          "req": "21A.802"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold-desc": "select any 8",
+      "title": "Restricted Electives",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "21A.THT"
+            },
+            {
+              "req": "21A.THU"
+            }
+          ],
+          "title": "Thesis"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21A.103"
+            },
+            {
+              "req": "21A.104"
+            },
+            {
+              "req": "21A.111"
+            },
+            {
+              "req": "21A.130"
+            },
+            {
+              "req": "21A.140"
+            },
+            {
+              "req": "21A.141"
+            },
+            {
+              "req": "21A.150"
+            },
+            {
+              "req": "21A.155"
+            },
+            {
+              "req": "21A.156"
+            },
+            {
+              "req": "21A.157"
+            }
+          ],
+          "title": "Culture and Identity"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21A.300"
+            },
+            {
+              "req": "21A.301"
+            },
+            {
+              "req": "21A.302"
+            },
+            {
+              "req": "21A.303"
+            },
+            {
+              "req": "21A.305"
+            },
+            {
+              "req": "21A.306"
+            },
+            {
+              "req": "21A.308"
+            },
+            {
+              "req": "21A.310"
+            },
+            {
+              "req": "21A.319"
+            },
+            {
+              "req": "21A.331"
+            }
+          ],
+          "title": "Global Health"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21A.400"
+            },
+            {
+              "req": "21A.409"
+            },
+            {
+              "req": "21A.410"
+            },
+            {
+              "req": "21A.411"
+            },
+            {
+              "req": "21A.429"
+            },
+            {
+              "req": "21A.442"
+            },
+            {
+              "req": "21A.455"
+            },
+            {
+              "req": "21A.459"
+            },
+            {
+              "req": "21A.461"
+            }
+          ],
+          "title": "Environment Development and Conflict"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21A.500"
+            },
+            {
+              "req": "21A.501"
+            },
+            {
+              "req": "21A.502"
+            },
+            {
+              "req": "21A.503"
+            },
+            {
+              "req": "21A.504"
+            },
+            {
+              "req": "21A.505"
+            },
+            {
+              "req": "21A.507"
+            },
+            {
+              "req": "21A.520"
+            },
+            {
+              "req": "21A.550"
+            },
+            {
+              "req": "21A.551"
+            }
+          ],
+          "title": "Science Technology and Media"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21A.801"
+            },
+            {
+              "req": "21A.802"
+            },
+            {
+              "req": "21A.809"
+            },
+            {
+              "req": "21A.819"
+            },
+            {
+              "req": "21A.829"
+            },
+            {
+              "req": "21A.859"
+            }
+          ],
+          "title": "Cross-Cultural Dialog and Investigations"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 8,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "A coherent program of eight anthropology subjects, which may include a pre-thesis tutorial (21A.THT) and a thesis (21A.THU). The decision to write a thesis is made in consultation between the student and advisor."
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "21A.155"
+        },
+        {
+          "req": "21A.802"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "21A",
+  "desc": "The undergraduate program leading to the degree of Bachelor of Science in Anthropology (Course 21A) provides a thorough grounding in cultural anthropology. Majors learn about the concept of culture and the processes by which humans make meaningful transactions, the nature of ethnographic fieldwork, and the connections between anthropology and the other social sciences. Majors study the theories explaining human behavior as well as the range of methods anthropologists use to analyze empirical data. Students can focus on particular geographical areas, such as Latin America, Europe, North America, Africa, or Asia, and on issues like neocolonialism, ethnic conflict, human rights, environmental movements, globalization, or expressive, medical, or scientific cultures.\n\nThe anthropology student comes to understand that the hallmark of the discipline is the comparative study of human societies. Emphasis is on understanding diversity and the importance of the concept of culture in explaining that variety, as well as on learning about the universals of behavior that may underlie diversity."
+}

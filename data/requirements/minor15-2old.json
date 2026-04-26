@@ -1,0 +1,197 @@
+{
+  "title-no-degree": "Business Analytics",
+  "list-id": "minor15-2old.reql",
+  "title": "Minor in Business Analytics (Old)",
+  "url": "https://mitsloan.mit.edu/undergrad/15-2-business-analytics-minor-requirements",
+  "medium-title": "15 Minor (Business Analytics) (Old)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "15.053"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "6.3700"
+            },
+            {
+              "req": "14.30"
+            },
+            {
+              "req": "15.0791"
+            },
+            {
+              "req": "18.600"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "14.32"
+            },
+            {
+              "req": "15.075"
+            },
+            {
+              "req": "18.650"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold-desc": "select any 3 subjects",
+      "title": "Restricted Electives",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.0251"
+            },
+            {
+              "req": "15.0341"
+            },
+            {
+              "req": "15.0621"
+            },
+            {
+              "req": "15.068"
+            },
+            {
+              "req": "15.0711"
+            },
+            {
+              "req": "15.0741"
+            },
+            {
+              "req": "15.093"
+            },
+            {
+              "req": "15.276"
+            },
+            {
+              "req": "15.312"
+            },
+            {
+              "req": "15.450"
+            },
+            {
+              "req": "15.456"
+            },
+            {
+              "req": "15.565"
+            },
+            {
+              "req": "15.570"
+            },
+            {
+              "req": "15.6731"
+            },
+            {
+              "req": "15.7611"
+            },
+            {
+              "req": "15.772"
+            },
+            {
+              "req": "15.777"
+            },
+            {
+              "req": "15.780"
+            },
+            {
+              "req": "15.8141"
+            },
+            {
+              "req": "15.841"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "15.871"
+                },
+                {
+                  "req": "15.872"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "15.8741"
+            }
+          ],
+          "threshold-desc": "select any 2"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "1.022"
+            },
+            {
+              "req": "1.041"
+            },
+            {
+              "req": "6.034"
+            },
+            {
+              "req": "6.036"
+            },
+            {
+              "req": "6.050"
+            },
+            {
+              "req": "9.401"
+            },
+            {
+              "req": "9.66"
+            },
+            {
+              "req": "14.12"
+            },
+            {
+              "req": "14.15"
+            },
+            {
+              "req": "18.06"
+            },
+            {
+              "req": "18.615"
+            }
+          ],
+          "threshold-desc": "optional - select any"
+        }
+      ],
+      "connection-type": "all",
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Three full subjects from the approved list of subjects. At least two full subjects must be from Course 15. A full subject is either 9 or 12 units. A half subject is 6 units."
+    }
+  ],
+  "short-title": "15",
+  "desc": "The Minor in Business Analytics introduces data analysis techniques and their application to practical business problems. Its focus reflects the core content of the SB degree program in business analytics."
+}

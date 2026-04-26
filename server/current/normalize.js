@@ -40,6 +40,44 @@ function formatTime(raw) {
   return `${fmt(sh, sm)}-${fmt(eh, em)}`;
 }
 
+// Parse Fireroad schedule string into calendar-ready days + decimal-hour time range.
+// Format: "Lecture,room/DAY/group/H.MM-H.MM;Lab,..."  (H.MM where MM = minutes, not decimal)
+// MIT convention: hours 1–7 are PM (add 12); hours 8–12 are AM/noon.
+function parseDaysTime(raw) {
+  const days = new Set();
+  let minStart = Infinity, maxEnd = -Infinity;
+
+  const toH24 = (h, m) => {
+    const hour = parseInt(h, 10);
+    const min  = m ? parseInt(m, 10) : 0;
+    return (hour > 0 && hour < 8 ? hour + 12 : hour) + min / 60;
+  };
+
+  // Prefer Lecture blocks; fall back to first block
+  const blocks       = String(raw || '').split(';').filter(Boolean);
+  const lectureBlocks = blocks.filter(b => /^lecture/i.test(b));
+  const targets      = lectureBlocks.length > 0 ? lectureBlocks : blocks.slice(0, 1);
+
+  targets.forEach(block => {
+    block.split(',').slice(1).forEach(meeting => {
+      const segs = meeting.trim().split('/');
+      if (segs.length < 4) return;
+      for (const ch of segs[1].trim()) {
+        if ('MTWRF'.includes(ch)) days.add(ch);
+      }
+      const tm = segs[3].trim().match(/^(\d+)(?:\.(\d+))?-(\d+)(?:\.(\d+))?$/);
+      if (tm) {
+        const s = toH24(tm[1], tm[2]), e = toH24(tm[3], tm[4]);
+        if (s < minStart) minStart = s;
+        if (e > maxEnd)   maxEnd   = e;
+      }
+    });
+  });
+
+  if (!days.size || minStart === Infinity) return { days: [], time: { start: 0, end: 0 } };
+  return { days: [...days], time: { start: minStart, end: maxEnd } };
+}
+
 function formatSchedule(raw) {
   const value = String(raw || '').trim();
   if (!value) return '';
@@ -119,6 +157,12 @@ function normalizeCurrentCourse(raw, options = {}) {
     level: (raw && raw.level) || null,
     area: (mockCourse && mockCourse.area) || areaForCourseId(id),
     source: raw ? 'fireroad' : 'mock',
+    // Calendar fields — parsed from schedule string for real courses, copied from mock otherwise
+    ...(() => {
+      if (raw && rawSchedule) return parseDaysTime(rawSchedule);
+      if (mockCourse) return { days: mockCourse.days || [], time: mockCourse.time || { start: 0, end: 0 } };
+      return { days: [], time: { start: 0, end: 0 } };
+    })(),
   };
 }
 
@@ -128,4 +172,5 @@ module.exports = {
   formatSchedule,
   normalizeCourseId,
   normalizeCurrentCourse,
+  parseDaysTime,
 };

@@ -4,16 +4,6 @@ const { useState, useEffect, useMemo, useRef } = React;
 const MIT_GRADES_URL = 'https://registrar.mit.edu/classes-grades-evaluations/grades';
 const MIT_WEBSIS_URL = 'https://student.mit.edu/';
 
-const SAMPLE_COURSES = [
-  { id: '6.100A', name: 'Intro to CS Programming in Python', grade: 'A', term: 'F23', status: 'completed', source: 'transcript', preference: 'neutral' },
-  { id: '18.02', name: 'Multivariable Calculus', grade: 'A-', term: 'F23', status: 'completed', source: 'transcript', preference: 'neutral' },
-  { id: '8.02', name: 'Physics II', grade: 'B+', term: 'F23', status: 'completed', source: 'transcript', preference: 'neutral' },
-  { id: '6.006', name: 'Introduction to Algorithms', grade: 'A-', term: 'S24', status: 'completed', source: 'transcript', preference: 'neutral' },
-  { id: '18.06', name: 'Linear Algebra', grade: 'A', term: 'S24', status: 'completed', source: 'transcript', preference: 'neutral' },
-  { id: '6.009', name: 'Fundamentals of Programming', grade: 'A', term: 'S24', status: 'completed', source: 'transcript', preference: 'neutral' },
-  { id: '21H.001', name: 'How to Stage a Revolution', grade: 'P', term: 'S24', status: 'completed', source: 'transcript', preference: 'neutral' },
-];
-
 const MAJORS = [
   ['6-2', 'Course 6-2: Electrical Engineering and Computer Science'],
   ['6-3', 'Course 6-3: Computer Science and Engineering'],
@@ -68,6 +58,16 @@ const emptyData = {
   resumeFileName: '',
   resumeParsed: false,
   resumeParsing: false,
+  transcriptText: '',
+  resumeText: '',
+  personalCourseMarkdown: '',
+  parseWarnings: [],
+  transcriptError: '',
+  resumeError: '',
+  courseworkError: '',
+  completionError: '',
+  courseworkImporting: false,
+  finishing: false,
   courseworkImported: false,
   courseworkText: '',
   courseworkSource: 'paste',
@@ -88,6 +88,61 @@ const dedupeCourses = (courses) => {
     if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
+  });
+};
+
+const courseKey = (course) => [
+  course.term || '',
+  course.id || '',
+  course.name || '',
+  course.source || '',
+].join('|');
+
+const preserveCoursePreferences = (incoming, existing) => {
+  const preferences = new Map((existing || []).map((course) => [courseKey(course), course.preference]));
+  return (incoming || []).map((course) => ({
+    ...course,
+    preference: preferences.get(courseKey(course)) || course.preference || 'neutral',
+  }));
+};
+
+const isPdfFile = (file) => Boolean(file && (
+  file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '')
+));
+
+const onboardingFetchJson = async (url, options = {}) => {
+  const response = await fetch(url, options);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload.ok === false) {
+    throw new Error(payload.error || response.statusText || 'Onboarding request failed.');
+  }
+  return payload;
+};
+
+const profileForPrompt = (data) => ({
+  name: data.name,
+  major: data.major,
+  majorLabel: MAJORS.find(([id]) => id === data.major)?.[1] || data.major,
+  futureProgram: data.futureProgram,
+  academicStanding: data.standing,
+  gpa: data.standing === 'prefrosh' ? 'N/A' : data.gpa,
+});
+
+const postOnboardingJson = (endpoint, body) => onboardingFetchJson(`/api/onboarding/${endpoint}`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(body),
+});
+
+const postOnboardingFile = (endpoint, file, fields) => {
+  const form = new FormData();
+  form.append('file', file);
+  Object.entries(fields || {}).forEach(([key, value]) => {
+    form.append(key, typeof value === 'string' ? value : JSON.stringify(value));
+  });
+  return onboardingFetchJson(`/api/onboarding/${endpoint}`, {
+    method: 'POST',
+    body: form,
   });
 };
 
@@ -143,7 +198,7 @@ const Onboarding = () => {
   const [active, setActive] = useState('profile');
 
   const isPrefrosh = data.standing === 'prefrosh';
-  const hasRichSignal = data.transcriptUploaded || data.resumeUploaded || data.courseworkImported;
+  const hasRichSignal = data.transcriptParsed || data.resumeParsed || data.courseworkImported;
   const needsSkillStep = !hasRichSignal;
 
   const steps = useMemo(() => {
@@ -161,7 +216,7 @@ const Onboarding = () => {
   }, [steps, active]);
 
   useEffect(() => {
-    localStorage.setItem('fr-personalcourse-draft', toPersonalCourseMarkdown(data));
+    localStorage.setItem('fr-personalcourse-draft', data.personalCourseMarkdown || toPersonalCourseMarkdown(data));
   }, [data]);
 
   const upd = (key, value) => setData((prev) => ({ ...prev, [key]: value }));
@@ -169,9 +224,9 @@ const Onboarding = () => {
     ...prev,
     courses: dedupeCourses([...prev.courses, ...incoming]),
   }));
-  const setCoursePreference = (id, preference) => setData((prev) => ({
+  const setCoursePreference = (key, preference) => setData((prev) => ({
     ...prev,
-    courses: prev.courses.map((course) => course.id === id ? { ...course, preference } : course),
+    courses: prev.courses.map((course) => courseKey(course) === key ? { ...course, preference } : course),
   }));
 
   const currentIndex = Math.max(0, steps.findIndex((s) => s.key === active));
@@ -189,70 +244,188 @@ const Onboarding = () => {
     else setActive(steps[currentIndex + 1].key);
   };
 
-  const simulateTranscriptParse = (fileName = 'grade-report.pdf') => {
-    setData((prev) => ({ ...prev, transcriptUploaded: true, transcriptFileName: fileName, transcriptParsing: true }));
-    setTimeout(() => {
-      setData((prev) => ({
-        ...prev,
+  const applyMarkdownPayload = (payload, extra = {}) => {
+    setData((prev) => ({
+      ...prev,
+      ...extra,
+      personalCourseMarkdown: payload.personalCourseMarkdown || prev.personalCourseMarkdown,
+      courses: preserveCoursePreferences(payload.courses || [], prev.courses),
+      parseWarnings: payload.warnings || [],
+    }));
+  };
+
+  const handleTranscriptUpload = async (file) => {
+    if (!isPdfFile(file)) {
+      setData((prev) => ({ ...prev, transcriptError: 'Only PDF uploads are supported for transcripts right now.' }));
+      return;
+    }
+    setData((prev) => ({
+      ...prev,
+      transcriptUploaded: true,
+      transcriptFileName: file.name,
+      transcriptParsing: true,
+      transcriptParsed: false,
+      transcriptError: '',
+    }));
+    try {
+      const payload = await postOnboardingFile('transcript', file, {
+        profile: profileForPrompt(data),
+        courseworkText: data.courseworkText,
+      });
+      applyMarkdownPayload(payload, {
         transcriptParsed: true,
         transcriptParsing: false,
-        courses: dedupeCourses([...prev.courses, ...SAMPLE_COURSES]),
-      }));
-    }, 900);
-  };
-
-  const simulateResumeParse = (fileName = 'resume.pdf') => {
-    setData((prev) => ({ ...prev, resumeUploaded: true, resumeFileName: fileName, resumeParsing: true }));
-    setTimeout(() => {
+        transcriptText: payload.transcriptText || '',
+        transcriptFileName: payload.fileName || file.name,
+        courseworkImported: Boolean(data.courseworkText.trim()) || data.courseworkImported,
+      });
+    } catch (error) {
       setData((prev) => ({
         ...prev,
+        transcriptParsing: false,
+        transcriptError: error.message,
+      }));
+    }
+  };
+
+  const ensureBaseMarkdown = async (sourceData = data) => {
+    if (sourceData.personalCourseMarkdown) return sourceData.personalCourseMarkdown;
+    const payload = await postOnboardingJson('profile', {
+      profile: profileForPrompt(sourceData),
+      transcriptText: sourceData.transcriptText,
+      courseworkText: sourceData.courseworkText,
+    });
+    applyMarkdownPayload(payload);
+    return payload.personalCourseMarkdown;
+  };
+
+  const handleResumeUpload = async (file) => {
+    if (!isPdfFile(file)) {
+      setData((prev) => ({ ...prev, resumeError: 'Only PDF uploads are supported for resumes right now.' }));
+      return;
+    }
+    setData((prev) => ({
+      ...prev,
+      resumeUploaded: true,
+      resumeFileName: file.name,
+      resumeParsing: true,
+      resumeParsed: false,
+      resumeError: '',
+    }));
+    try {
+      const baseMarkdown = await ensureBaseMarkdown(data);
+      const payload = await postOnboardingFile('resume', file, {
+        profile: profileForPrompt(data),
+        personalCourseMarkdown: baseMarkdown,
+        userBackgroundText: data.preferencesNote,
+        transcriptText: data.transcriptText,
+        courseworkText: data.courseworkText,
+        skillLevels: data.skillLevel ? { overall_technical_ramp_level: data.skillLevel } : {},
+      });
+      applyMarkdownPayload(payload, {
         resumeParsed: true,
         resumeParsing: false,
-        skillLevel: prev.transcriptUploaded || prev.courseworkImported ? prev.skillLevel : 'competition-lite',
-        preferencesNote: prev.preferencesNote || 'Resume parser placeholder: infer interests, projects, awards, and technical depth here.',
-      }));
-    }, 850);
-  };
-
-  const importCoursework = () => {
-    const parsed = parseCourseworkText(data.courseworkText, data.courseworkSource);
-    if (!parsed.length) return;
-    mergeCourses(parsed);
-    setData((prev) => ({ ...prev, courseworkImported: true }));
-  };
-
-  const finish = () => {
-    const taken = data.courses.map((course) => course.id);
-    const majorLabel = MAJORS.find(([id]) => id === data.major)?.[1] || data.major;
-    const nextProfile = {
-      ...profile,
-      name: data.name || profile.name,
-      major: data.major === 'undecided' ? 'Undecided' : data.major.startsWith('Course') ? data.major : `Course ${data.major}`,
-      majorLabel,
-      year: STANDINGS.find(([id]) => id === data.standing)?.[1] || data.standing,
-      taken,
-      preferences: {
-        ...profile.preferences,
-        skillLevel: data.skillLevel,
-        notes: data.preferencesNote,
-      },
-    };
-
-    setProfile(nextProfile);
-    if (completeOnboarding) {
-      completeOnboarding({
-        profile: nextProfile,
-        onboarding: data,
-        personalCourseMarkdown: toPersonalCourseMarkdown(data),
+        resumeText: payload.resumeText || '',
+        resumeFileName: payload.fileName || file.name,
+        preferencesNote: data.preferencesNote || payload.summary || '',
       });
-    } else {
-      setRoute({ name: 'planner' });
+    } catch (error) {
+      setData((prev) => ({
+        ...prev,
+        resumeParsing: false,
+        resumeError: error.message,
+      }));
+    }
+  };
+
+  const importCoursework = async () => {
+    if (!data.courseworkText.trim()) return;
+    setData((prev) => ({ ...prev, courseworkImporting: true, courseworkError: '' }));
+    try {
+      const payload = await postOnboardingJson('coursework', {
+        profile: profileForPrompt(data),
+        transcriptText: data.transcriptText,
+        courseworkText: data.courseworkText,
+      });
+      applyMarkdownPayload(payload, {
+        courseworkImported: true,
+        courseworkImporting: false,
+      });
+    } catch (error) {
+      setData((prev) => ({
+        ...prev,
+        courseworkImporting: false,
+        courseworkError: error.message,
+      }));
+    }
+  };
+
+  const finish = async () => {
+    setData((prev) => ({ ...prev, finishing: true, completionError: '' }));
+    try {
+      let personalCourseMarkdown = data.personalCourseMarkdown;
+      let courses = data.courses;
+      if (!personalCourseMarkdown) {
+        const basePayload = await postOnboardingJson('profile', {
+          profile: profileForPrompt(data),
+          transcriptText: data.transcriptText,
+          courseworkText: data.courseworkText,
+        });
+        personalCourseMarkdown = basePayload.personalCourseMarkdown;
+        courses = preserveCoursePreferences(basePayload.courses || [], courses);
+      }
+      if (courses.length > 0) {
+        const preferencePayload = await postOnboardingJson('preferences', {
+          personalCourseMarkdown,
+          courses,
+        });
+        personalCourseMarkdown = preferencePayload.personalCourseMarkdown;
+        courses = preserveCoursePreferences(preferencePayload.courses || courses, courses);
+      }
+
+      const taken = courses.map((course) => course.id);
+      const majorLabel = MAJORS.find(([id]) => id === data.major)?.[1] || data.major;
+      const nextProfile = {
+        ...profile,
+        name: data.name || profile.name,
+        major: data.major === 'undecided' ? 'Undecided' : data.major.startsWith('Course') ? data.major : `Course ${data.major}`,
+        majorLabel,
+        year: STANDINGS.find(([id]) => id === data.standing)?.[1] || data.standing,
+        taken,
+        preferences: {
+          ...profile.preferences,
+          skillLevel: data.skillLevel,
+          notes: data.preferencesNote,
+        },
+      };
+
+      const onboardingForStorage = {
+        ...data,
+        courses,
+        personalCourseMarkdown,
+        finishing: false,
+        transcriptText: data.transcriptText ? '[extracted text omitted from stored onboarding payload]' : '',
+        resumeText: data.resumeText ? '[extracted text omitted from stored onboarding payload]' : '',
+      };
+
+      setProfile(nextProfile);
+      if (completeOnboarding) {
+        completeOnboarding({
+          profile: nextProfile,
+          onboarding: onboardingForStorage,
+          personalCourseMarkdown,
+        });
+      } else {
+        setRoute({ name: 'planner' });
+      }
+    } catch (error) {
+      setData((prev) => ({ ...prev, finishing: false, completionError: error.message }));
     }
   };
 
   const stepProps = {
     data, upd, goNext, goBack, skipToNext, currentIndex, steps,
-    simulateTranscriptParse, simulateResumeParse, importCoursework, mergeCourses, setCoursePreference,
+    handleTranscriptUpload, handleResumeUpload, importCoursework, mergeCourses, setCoursePreference,
     isPrefrosh,
   };
 
@@ -462,7 +635,10 @@ const StepNav = ({ onNext, onBack, onSkip, nextLabel = 'Continue', disabled = fa
 const UploadZone = ({ icon = 'upload', title, sub, busy, busyTitle, busySub, onUpload, accept = '.pdf' }) => {
   const [drag, setDrag] = useState(false);
   const inputRef = useRef(null);
-  const pickFile = (file) => onUpload(file?.name);
+  const pickFile = (file) => {
+    if (file) onUpload(file);
+    if (inputRef.current) inputRef.current.value = '';
+  };
   return (
     <div
       onDragOver={(event) => { event.preventDefault(); setDrag(true); }}
@@ -517,18 +693,18 @@ const UploadZone = ({ icon = 'upload', title, sub, busy, busyTitle, busySub, onU
   );
 };
 
-const StatusPill = ({ icon = 'check', children }) => (
+const StatusPill = ({ icon = 'check', tone = 'success', children }) => (
   <div style={{
     display: 'flex',
     alignItems: 'center',
     gap: 10,
     padding: '10px 14px',
     borderRadius: 'var(--r-md)',
-    background: 'var(--accent-soft)',
-    border: '1px solid var(--accent)',
+    background: tone === 'error' ? 'rgba(239, 68, 68, 0.08)' : tone === 'warning' ? 'rgba(245, 158, 11, 0.1)' : 'var(--accent-soft)',
+    border: '1px solid ' + (tone === 'error' ? '#EF4444' : tone === 'warning' ? 'var(--warning)' : 'var(--accent)'),
     marginTop: 14,
   }}>
-    <Icon name={icon} size={14} style={{ color: 'var(--accent)' }} />
+    <Icon name={icon} size={14} style={{ color: tone === 'error' ? '#EF4444' : tone === 'warning' ? 'var(--warning)' : 'var(--accent)' }} />
     <span style={{ fontSize: 13 }}>{children}</span>
   </div>
 );
@@ -537,7 +713,7 @@ const CourseList = ({ courses, setCoursePreference, compact = false }) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
     {courses.map((course) => (
       <div
-        key={course.id}
+        key={courseKey(course)}
         style={{
           display: 'grid',
           gridTemplateColumns: compact ? '86px 1fr 120px' : '92px 1fr 70px 126px',
@@ -554,7 +730,7 @@ const CourseList = ({ courses, setCoursePreference, compact = false }) => (
           {course.name || 'Course title pending parse'}
         </span>
         {!compact && <span className="mono" style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{course.grade || '-'}</span>}
-        <PreferenceButtons value={course.preference} onChange={(value) => setCoursePreference(course.id, value)} />
+        <PreferenceButtons value={course.preference} onChange={(value) => setCoursePreference(courseKey(course), value)} />
       </div>
     ))}
   </div>
@@ -628,7 +804,7 @@ const StepProfile = ({ data, upd, goNext }) => (
   </div>
 );
 
-const StepTranscript = ({ data, goNext, goBack, skipToNext, simulateTranscriptParse }) => (
+const StepTranscript = ({ data, goNext, goBack, skipToNext, handleTranscriptUpload }) => (
   <div className="slide-up">
     <StepHeader
       eyebrow="Optional"
@@ -648,15 +824,17 @@ const StepTranscript = ({ data, goNext, goBack, skipToNext, simulateTranscriptPa
       sub="or click to browse"
       busy={data.transcriptParsing}
       busyTitle="Reading transcript..."
-      busySub="Placeholder parser extracts course ids, terms, and grades"
-      onUpload={(fileName) => simulateTranscriptParse(fileName || 'grade-report.pdf')}
+      busySub="Extracting PDF text and building personal_course.md"
+      onUpload={handleTranscriptUpload}
     />
+    {data.transcriptError && <StatusPill icon="x" tone="error">{data.transcriptError}</StatusPill>}
+    {data.parseWarnings.map((warning) => <StatusPill key={warning} icon="sparkle" tone="warning">{warning}</StatusPill>)}
     {data.transcriptParsed && <StatusPill>Found {data.courses.length} completed courses. Grades are shown again in the final course-feel step.</StatusPill>}
-    <StepNav onNext={goNext} onBack={goBack} onSkip={skipToNext} optional nextLabel={data.transcriptUploaded ? 'Continue' : 'Continue without transcript'} />
+    <StepNav onNext={goNext} onBack={goBack} onSkip={skipToNext} optional disabled={data.transcriptParsing} nextLabel={data.transcriptUploaded ? 'Continue' : 'Continue without transcript'} />
   </div>
 );
 
-const StepResume = ({ data, goNext, goBack, skipToNext, simulateResumeParse }) => (
+const StepResume = ({ data, goNext, goBack, skipToNext, handleResumeUpload }) => (
   <div className="slide-up">
     <StepHeader
       eyebrow="Optional"
@@ -667,14 +845,16 @@ const StepResume = ({ data, goNext, goBack, skipToNext, simulateResumeParse }) =
       icon="paperclip"
       title="Drop resume PDF"
       sub="or click to browse"
-      accept=".pdf,.doc,.docx"
+      accept=".pdf"
       busy={data.resumeParsing}
       busyTitle="Reading resume..."
-      busySub="Parser hook reserved for the upcoming prompt"
-      onUpload={(fileName) => simulateResumeParse(fileName || 'resume.pdf')}
+      busySub="Extracting PDF text and inferring background"
+      onUpload={handleResumeUpload}
     />
-    {data.resumeParsed && <StatusPill>Resume stored as {data.resumeFileName}. Backend parse hook is reserved.</StatusPill>}
-    <StepNav onNext={goNext} onBack={goBack} onSkip={skipToNext} optional nextLabel={data.resumeUploaded ? 'Continue' : 'Continue without resume'} />
+    {data.resumeError && <StatusPill icon="x" tone="error">{data.resumeError}</StatusPill>}
+    {data.parseWarnings.map((warning) => <StatusPill key={warning} icon="sparkle" tone="warning">{warning}</StatusPill>)}
+    {data.resumeParsed && <StatusPill>Resume parsed as {data.resumeFileName}. Skill/background section was added to personal_course.md.</StatusPill>}
+    <StepNav onNext={goNext} onBack={goBack} onSkip={skipToNext} optional disabled={data.resumeParsing} nextLabel={data.resumeUploaded ? 'Continue' : 'Continue without resume'} />
   </div>
 );
 
@@ -699,9 +879,16 @@ const StepCoursework = ({ data, upd, goNext, goBack, skipToNext, importCoursewor
         onChange={(event) => upd('courseworkText', event.target.value)}
       />
     </Field>
-    <button className="btn" onClick={importCoursework} disabled={!data.courseworkText.trim()} style={{ opacity: data.courseworkText.trim() ? 1 : 0.55 }}>
-      <Icon name="download" size={14} /> Import coursework
+    <button
+      className="btn"
+      onClick={importCoursework}
+      disabled={!data.courseworkText.trim() || data.courseworkImporting}
+      style={{ opacity: data.courseworkText.trim() && !data.courseworkImporting ? 1 : 0.55 }}
+    >
+      <Icon name="download" size={14} /> {data.courseworkImporting ? 'Importing...' : 'Import coursework'}
     </button>
+    {data.courseworkError && <StatusPill icon="x" tone="error">{data.courseworkError}</StatusPill>}
+    {data.courseworkImported && <StatusPill>Coursework imported into personal_course.md.</StatusPill>}
     {data.courses.length > 0 && (
       <div style={{ marginTop: 18 }}>
         <Field label="Current parsed courses">
@@ -709,7 +896,7 @@ const StepCoursework = ({ data, upd, goNext, goBack, skipToNext, importCoursewor
         </Field>
       </div>
     )}
-    <StepNav onNext={goNext} onBack={goBack} onSkip={skipToNext} optional nextLabel={data.courseworkImported ? 'Continue' : 'Continue without import'} />
+    <StepNav onNext={goNext} onBack={goBack} onSkip={skipToNext} optional disabled={data.courseworkImporting} nextLabel={data.courseworkImported ? 'Continue' : 'Continue without import'} />
   </div>
 );
 
@@ -737,7 +924,8 @@ const StepSkill = ({ data, upd, goNext, goBack }) => (
         style={{ minHeight: 84 }}
       />
     </Field>
-    <StepNav onNext={goNext} onBack={goBack} nextLabel="Build my plan" />
+    {data.completionError && <StatusPill icon="x" tone="error">{data.completionError}</StatusPill>}
+    <StepNav onNext={goNext} onBack={goBack} disabled={data.finishing} nextLabel={data.finishing ? 'Building...' : 'Build my plan'} />
   </div>
 );
 
@@ -751,7 +939,8 @@ const StepRatings = ({ data, goNext, goBack, setCoursePreference }) => (
     <Field label="Completed courses">
       <CourseList courses={data.courses} setCoursePreference={setCoursePreference} />
     </Field>
-    <StepNav onNext={goNext} onBack={goBack} nextLabel="Build my plan" />
+    {data.completionError && <StatusPill icon="x" tone="error">{data.completionError}</StatusPill>}
+    <StepNav onNext={goNext} onBack={goBack} disabled={data.finishing} nextLabel={data.finishing ? 'Building...' : 'Build my plan'} />
   </div>
 );
 

@@ -1,0 +1,363 @@
+{
+  "title-no-degree": "Urban Planning with CS",
+  "list-id": "major11-6.reql",
+  "title": "Bachelor of Science in Urban Science and Planning with Computer Science",
+  "medium-title": "11-6 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "6.3800",
+              "title": "Option 1 (12 units)"
+            },
+            {
+              "connection-type": "all",
+              "threshold-desc": "select all",
+              "reqs": [
+                {
+                  "connection-type": "any",
+                  "reqs": [
+                    {
+                      "req": "18.06"
+                    },
+                    {
+                      "req": "18.C06"
+                    }
+                  ],
+                  "threshold-desc": "select either"
+                },
+                {
+                  "req": "6.3900"
+                }
+              ],
+              "title": "Option 2 (24 units)"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "6.100A"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "6.100B"
+            },
+            {
+              "req": "16.C20"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "6.1010"
+        },
+        {
+          "req": "6.1200"
+        },
+        {
+          "req": "6.1210"
+        }
+      ],
+      "title": "Computer Science Requirements"
+    },
+    {
+      "connection-type": "all",
+      "desc": "6.4590[J] and 11.165 can count towards either the Urban Planning Requirements or the Urban Science Electives, but not both.",
+      "reqs": [
+        {
+          "req": "11.001"
+        },
+        {
+          "req": "11.188"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "6.4590"
+            },
+            {
+              "req": "11.002"
+            },
+            {
+              "req": "11.011"
+            },
+            {
+              "req": "11.165"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Urban Planning Requirements"
+    },
+    {
+      "connection-type": "any",
+      "desc": "11.007, 11.138, and 11.154 can count towards the Urban Technology Workshop or the Urban Science Electives, but not both. If you take both 11.154 and 11.C35, you may only count one of the classes towards all your major requirements.",
+      "reqs": [
+        {
+          "req": "11.007"
+        },
+        {
+          "req": "11.138"
+        },
+        {
+          "req": "11.154"
+        },
+        {
+          "req": "11.C35"
+        }
+      ],
+      "threshold-desc": "select any",
+      "title": "Urban Technology Workshop"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select either",
+      "reqs": [
+        {
+          "req": "6.UAR",
+          "title": "Option 1"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "11.THT"
+            },
+            {
+              "req": "11.THU"
+            }
+          ],
+          "title": "Option 2"
+        }
+      ],
+      "title": "Senior Thesis/Project"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 27,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 27 units",
+          "reqs": [
+            {
+              "req": "6.1020"
+            },
+            {
+              "req": "6.1040"
+            },
+            {
+              "req": "6.1060"
+            },
+            {
+              "req": "6.1100"
+            },
+            {
+              "req": "6.1120"
+            },
+            {
+              "req": "6.1220"
+            },
+            {
+              "req": "6.1600"
+            },
+            {
+              "req": "6.1800"
+            },
+            {
+              "req": "6.1820"
+            },
+            {
+              "req": "6.1850"
+            },
+            {
+              "req": "6.1910"
+            },
+            {
+              "req": "6.1920"
+            },
+            {
+              "req": "6.3260"
+            },
+            {
+              "req": "6.3720"
+            },
+            {
+              "req": "6.3730"
+            },
+            {
+              "req": "6.4130"
+            },
+            {
+              "req": "6.4210"
+            },
+            {
+              "req": "6.4400"
+            },
+            {
+              "req": "6.4510"
+            },
+            {
+              "req": "6.4530"
+            },
+            {
+              "req": "6.5081"
+            },
+            {
+              "req": "6.5151"
+            },
+            {
+              "req": "6.5831"
+            },
+            {
+              "req": "6.5931"
+            },
+            {
+              "req": "6.7201"
+            },
+            {
+              "req": "6.8301"
+            },
+            {
+              "req": "6.8371"
+            },
+            {
+              "req": "6.8611"
+            },
+            {
+              "req": "6.C01"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "1.C01"
+                },
+                {
+                  "req": "2.C01"
+                },
+                {
+                  "req": "3.C01"
+                },
+                {
+                  "req": "22.C01"
+                }
+              ],
+              "threshold-desc": "select any"
+            }
+          ],
+          "title": "Computer Science Electives"
+        },
+        {
+          "threshold": {
+            "cutoff": 30,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 30 units",
+          "reqs": [
+            {
+              "req": "2.00A"
+            },
+            {
+              "req": "4.032"
+            },
+            {
+              "req": "4.432"
+            },
+            {
+              "req": "6.4590"
+            },
+            {
+              "req": "11.007"
+            },
+            {
+              "req": "11.024"
+            },
+            {
+              "req": "11.029"
+            },
+            {
+              "req": "11.074"
+            },
+            {
+              "req": "11.100"
+            },
+            {
+              "req": "11.113"
+            },
+            {
+              "req": "11.123"
+            },
+            {
+              "req": "11.137"
+            },
+            {
+              "req": "11.138"
+            },
+            {
+              "req": "11.148"
+            },
+            {
+              "req": "11.149"
+            },
+            {
+              "req": "11.C35"
+            },
+            {
+              "req": "11.154"
+            },
+            {
+              "req": "11.155"
+            },
+            {
+              "req": "11.156"
+            },
+            {
+              "req": "11.158"
+            },
+            {
+              "req": "11.165"
+            },
+            {
+              "req": "11.169"
+            },
+            {
+              "req": "12.010"
+            },
+            {
+              "req": "15.276"
+            },
+            {
+              "req": "IDS.012"
+            },
+            {
+              "req": "IDS.060"
+            }
+          ],
+          "title": "Urban Science Electives"
+        }
+      ],
+      "title": "Electives"
+    }
+  ],
+  "short-title": "11-6",
+  "desc": "The Bachelor of Science in Urban Science and Planning with Computer Science (Course 11-6) emphasizes the development of fundamental skills in urban planning and policy, including ethics and justice; statistics, data science, geospatial analysis, and visualization; and computer science, robotics, and machine learning. The Course 11-6 program provides numerous opportunities for field-based problem-solving experience through labs, UROP assignments and client-based courses in which students synthesize and empirically integrate what they are learning about theory and practice at the intersection of computer and urban science. Students also have the opportunity to specialize though the selection of a customized concentration of upper-level electives in data visualization, applied spatial analysis, design, and public policy. Students in the program are full members of both departments and of two schools, Architecture and Planning and Engineering."
+}

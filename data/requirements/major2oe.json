@@ -1,0 +1,125 @@
+{
+  "title-no-degree": "Mechanical and Ocean Engineering",
+  "list-id": "major2oe.reql",
+  "title": "Bachelor of Science in Mechanical and Ocean Engineering",
+  "medium-title": "2-OE Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "2.00A"
+        },
+        {
+          "req": "2.001"
+        },
+        {
+          "req": "2.002"
+        },
+        {
+          "req": "2.003"
+        },
+        {
+          "req": "2.004"
+        },
+        {
+          "req": "2.005"
+        },
+        {
+          "req": "2.016"
+        },
+        {
+          "req": "2.017"
+        },
+        {
+          "req": "2.065"
+        },
+        {
+          "req": "2.086"
+        },
+        {
+          "req": "2.612"
+        },
+        {
+          "req": "2.671"
+        },
+        {
+          "req": "2.677"
+        },
+        {
+          "req": "2.678"
+        },
+        {
+          "req": "18.03"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold": {
+        "cutoff": 1,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "2.006"
+        },
+        {
+          "req": "2.008"
+        },
+        {
+          "req": "2.013"
+        },
+        {
+          "req": "2.014"
+        },
+        {
+          "req": "2.019"
+        },
+        {
+          "req": "2.12"
+        },
+        {
+          "req": "2.14"
+        },
+        {
+          "req": "2.700"
+        },
+        {
+          "req": "2.96"
+        },
+        {
+          "req": "2.96"
+        },
+        {
+          "req": "2.THU"
+        }
+      ],
+      "title": "Restricted Electives"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "2.017"
+        },
+        {
+          "req": "2.671"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "2",
+  "desc": "This program is intended for students who are interested in combining a firm foundation in mechanical engineering with a specialization in ocean engineering. The program includes engineering aspects of the ocean sciences, ocean exploration, and utilization of the oceans for transportation, defense, and extracting resources. Theory, experiment, and computation of ocean systems and flows are covered in a number of subjects, complementing a rigorous mechanical engineering program; a hands-on capstone design class allows students to master the design of advanced marine systems, including autonomous underwater vehicles and smart sensors."
+}

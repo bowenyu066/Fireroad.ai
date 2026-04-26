@@ -1,0 +1,67 @@
+{
+  "title-no-degree": "Digital Media",
+  "list-id": "major21w.reql",
+  "title": "Bachelor of Science in Writing",
+  "medium-title": "21W Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "21W.THT"
+        },
+        {
+          "req": "21W.THU"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "21W.757"
+            },
+            {
+              "req": "21W.758"
+            },
+            {
+              "req": "21W.759"
+            },
+            {
+              "req": "21W.762"
+            },
+            {
+              "req": "21W.765"
+            },
+            {
+              "req": "21W.770"
+            },
+            {
+              "req": "21W.771"
+            },
+            {
+              "req": "21W.777"
+            },
+            {
+              "req": "21W.786"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold": {
+        "cutoff": 9,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "req": "Elective subjects",
+      "desc": "Select nine subjects, of which one is normally introductory, that form a cohesive unit.",
+      "threshold-desc": "select any 9 subjects",
+      "title": "Restricted Electives"
+    }
+  ],
+  "short-title": "21W",
+  "desc": "The writing major offers students the opportunity to study the craft, forms, and traditions of contemporary writing, journalism, and digital media. Some students explore writing as a means of artistic expression. Some learn how to write for a variety of media or to communicate the results of their science and technical work to broad audiences and members of their professions. Others work collaboratively within the evolving framework of digital media to become skillful in interactive and nonlinear forms of communication. All subjects in the major emphasize the development of the foundational skills, creative initiative, and critical sensibility necessary to become a good writer. Subjects in the program's three areas of emphasis—creative writing, science writing, and nonfiction writing—are taught at both introductory and advanced levels. All subjects require extensive writing and revision. Student work is typically discussed in workshops and receives the written commentary of the instructor."
+}

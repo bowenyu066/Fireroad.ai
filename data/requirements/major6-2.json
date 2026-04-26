@@ -1,0 +1,1049 @@
+{
+  "title-no-degree": "Electrical Engineering and Computer Science",
+  "list-id": "major6-2.reql",
+  "title": "Bachelor of Science in Electrical Engineering and Computer Science",
+  "medium-title": "6-2 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "6.9080"
+            },
+            {
+              "req": "6.3400"
+            },
+            {
+              "req": "6.4900"
+            },
+            {
+              "req": "6.9010"
+            }
+          ],
+          "title": "Introductory Subject"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "6.100A"
+            },
+            {
+              "req": "6.100B"
+            },
+            {
+              "req": "6.S00"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "6.145"
+                },
+                {
+                  "req": "6.9080"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "6.145"
+                },
+                {
+                  "req": "6.9010"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "title": "Programming Skills"
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 3",
+          "reqs": [
+            {
+              "req": "6.2000"
+            },
+            {
+              "req": "6.3000"
+            },
+            {
+              "req": "6.1910"
+            },
+            {
+              "req": "6.1210"
+            },
+            {
+              "req": "6.3800"
+            },
+            {
+              "req": "6.1010"
+            }
+          ],
+          "title": "Foundation"
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 3",
+          "reqs": [
+            {
+              "req": "6.3010"
+            },
+            {
+              "req": "6.2500"
+            },
+            {
+              "req": "6.2300"
+            },
+            {
+              "req": "6.2210"
+            },
+            {
+              "req": "6.4810"
+            },
+            {
+              "req": "6.1020"
+            },
+            {
+              "req": "6.1800"
+            },
+            {
+              "req": "6.4100"
+            },
+            {
+              "req": "6.3900"
+            },
+            {
+              "req": "6.1400"
+            },
+            {
+              "req": "6.1220"
+            },
+            {
+              "req": "6.6210"
+            }
+          ],
+          "title": "Header"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "18.03"
+            },
+            {
+              "req": "18.032"
+            },
+            {
+              "req": "2.087"
+            },
+            {
+              "req": "CC.1803"
+            },
+            {
+              "req": "ES.1803"
+            }
+          ],
+          "title": "Math"
+        },
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 2",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "6.4210"
+                },
+                {
+                  "req": "6.4830"
+                },
+                {
+                  "req": "6.8801"
+                },
+                {
+                  "req": "6.4850"
+                },
+                {
+                  "req": "6.1100"
+                },
+                {
+                  "req": "6.8701"
+                },
+                {
+                  "req": "6.2200"
+                },
+                {
+                  "req": "6.2040"
+                },
+                {
+                  "req": "6.2050"
+                },
+                {
+                  "req": "6.2060"
+                },
+                {
+                  "req": "6.2061"
+                },
+                {
+                  "req": "6.2220"
+                },
+                {
+                  "req": "6.2221"
+                },
+                {
+                  "req": "6.1040"
+                },
+                {
+                  "req": "6.1060"
+                },
+                {
+                  "req": "6.1920"
+                },
+                {
+                  "req": "6.3260"
+                },
+                {
+                  "req": "6.7201"
+                },
+                {
+                  "req": "6.2090"
+                },
+                {
+                  "req": "6.3100"
+                },
+                {
+                  "req": "6.3720"
+                },
+                {
+                  "req": "6.402"
+                },
+                {
+                  "req": "6.3730"
+                },
+                {
+                  "req": "6.8721"
+                },
+                {
+                  "req": "6.6331"
+                },
+                {
+                  "req": "6.2530"
+                },
+                {
+                  "req": "6.2690"
+                },
+                {
+                  "req": "6.8391"
+                },
+                {
+                  "req": "6.8711"
+                },
+                {
+                  "req": "6.4140"
+                },
+                {
+                  "req": "6.4120"
+                },
+                {
+                  "req": "6.8611"
+                },
+                {
+                  "req": "6.1820"
+                },
+                {
+                  "req": "6.4510"
+                },
+                {
+                  "req": "6.813"
+                },
+                {
+                  "req": "6.5831"
+                },
+                {
+                  "req": "6.8371"
+                },
+                {
+                  "req": "6.5081"
+                },
+                {
+                  "req": "6.4130"
+                },
+                {
+                  "req": "6.1120"
+                },
+                {
+                  "req": "6.8301"
+                },
+                {
+                  "req": "6.4400"
+                },
+                {
+                  "req": "6.5151"
+                },
+                {
+                  "req": "18.404"
+                },
+                {
+                  "req": "IDS.012"
+                }
+              ],
+              "title": "Undergraduate"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "6.7201"
+                },
+                {
+                  "req": "6.7100"
+                },
+                {
+                  "req": "6.7210"
+                },
+                {
+                  "req": "6.7220"
+                },
+                {
+                  "req": "6.7200"
+                },
+                {
+                  "req": "6.7710"
+                },
+                {
+                  "req": "6.7420"
+                },
+                {
+                  "req": "6.32"
+                },
+                {
+                  "req": "6.2092"
+                },
+                {
+                  "req": "6.6220"
+                },
+                {
+                  "req": "6.7300"
+                },
+                {
+                  "req": "6.7310"
+                },
+                {
+                  "req": "6.7320"
+                },
+                {
+                  "req": "6.7000"
+                },
+                {
+                  "req": "6.7010"
+                },
+                {
+                  "req": "6.8620"
+                },
+                {
+                  "req": "6.6010"
+                },
+                {
+                  "req": "6.5910"
+                },
+                {
+                  "req": "6.7700"
+                },
+                {
+                  "req": "6.7800"
+                },
+                {
+                  "req": "6.7810"
+                },
+                {
+                  "req": "6.3732"
+                },
+                {
+                  "req": "6.6420"
+                },
+                {
+                  "req": "6.3722"
+                },
+                {
+                  "req": "6.4812"
+                },
+                {
+                  "req": "6.4822"
+                },
+                {
+                  "req": "6.8800"
+                },
+                {
+                  "req": "6.4832"
+                },
+                {
+                  "req": "6.8720"
+                },
+                {
+                  "req": "6.6330"
+                },
+                {
+                  "req": "6.6310"
+                },
+                {
+                  "req": "6.6320"
+                },
+                {
+                  "req": "6.6340"
+                },
+                {
+                  "req": "6.64"
+                },
+                {
+                  "req": "6.2532"
+                },
+                {
+                  "req": "6.72"
+                },
+                {
+                  "req": "6.6400"
+                },
+                {
+                  "req": "6.73"
+                },
+                {
+                  "req": "6.6610"
+                },
+                {
+                  "req": "6.6000"
+                },
+                {
+                  "req": "6.2692"
+                },
+                {
+                  "req": "6.82"
+                },
+                {
+                  "req": "6.5120"
+                },
+                {
+                  "req": "6.5900"
+                },
+                {
+                  "req": "6.5840"
+                },
+                {
+                  "req": "6.5850"
+                },
+                {
+                  "req": "6.5810"
+                },
+                {
+                  "req": "6.5820"
+                },
+                {
+                  "req": "6.83"
+                },
+                {
+                  "req": "6.8210"
+                },
+                {
+                  "req": "6.4142"
+                },
+                {
+                  "req": "6.8510"
+                },
+                {
+                  "req": "6.8410"
+                },
+                {
+                  "req": "6.8420"
+                },
+                {
+                  "req": "6.84"
+                },
+                {
+                  "req": "6.5410"
+                },
+                {
+                  "req": "6.5310"
+                },
+                {
+                  "req": "6.5320"
+                },
+                {
+                  "req": "6.5250"
+                },
+                {
+                  "req": "6.5340"
+                },
+                {
+                  "req": "6.5210"
+                },
+                {
+                  "req": "6.5610"
+                },
+                {
+                  "req": "6.5660"
+                },
+                {
+                  "req": "6.8530"
+                },
+                {
+                  "req": "6.86"
+                },
+                {
+                  "req": "6.8150"
+                },
+                {
+                  "req": "6.8630"
+                },
+                {
+                  "req": "6.8610"
+                },
+                {
+                  "req": "6.8370"
+                },
+                {
+                  "req": "6.8390"
+                },
+                {
+                  "req": "6.7900"
+                },
+                {
+                  "req": "6.8300"
+                },
+                {
+                  "req": "6.7930"
+                },
+                {
+                  "req": "6.8710"
+                },
+                {
+                  "req": "6.5620"
+                },
+                {
+                  "req": "6.4132"
+                },
+                {
+                  "req": "6.8160"
+                },
+                {
+                  "req": "6.8170"
+                },
+                {
+                  "req": "6.8180"
+                },
+                {
+                  "req": "6.8190"
+                },
+                {
+                  "req": "6.5690"
+                },
+                {
+                  "req": "6.8580"
+                }
+              ],
+              "title": "Graduate"
+            }
+          ],
+          "title": "Advanced Undergraduate Subjects"
+        },
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "threshold-desc": "select any 2",
+          "req": "2 add'l EECS subjects",
+          "plain-string": true,
+          "title": "Additional EECS"
+        }
+      ],
+      "title": "Basic Requirements"
+    },
+    {
+      "connection-type": "all",
+      "desc": "The following additional constraints must be met to fulfill the requirements.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "6.8801"
+            },
+            {
+              "req": "6.1100"
+            },
+            {
+              "req": "6.8701"
+            },
+            {
+              "req": "6.4570"
+            },
+            {
+              "req": "6.2040"
+            },
+            {
+              "req": "6.2050"
+            },
+            {
+              "req": "6.2060"
+            },
+            {
+              "req": "6.2061"
+            },
+            {
+              "req": "6.4880"
+            },
+            {
+              "req": "6.2220"
+            },
+            {
+              "req": "6.2221"
+            },
+            {
+              "req": "6.4200"
+            },
+            {
+              "req": "6.2600"
+            },
+            {
+              "req": "6.2370"
+            },
+            {
+              "req": "6.9030"
+            },
+            {
+              "req": "6.1040"
+            },
+            {
+              "req": "6.1060"
+            },
+            {
+              "req": "6.1920"
+            },
+            {
+              "req": "6.4890"
+            },
+            {
+              "req": "6.S198"
+            },
+            {
+              "req": "6.2090"
+            },
+            {
+              "req": "6.3100"
+            },
+            {
+              "req": "6.3102"
+            },
+            {
+              "req": "6.2092"
+            },
+            {
+              "req": "6.4120"
+            },
+            {
+              "req": "6.8611"
+            },
+            {
+              "req": "6.4420"
+            },
+            {
+              "req": "6.1820"
+            },
+            {
+              "req": "6.809"
+            },
+            {
+              "req": "6.5081"
+            },
+            {
+              "req": "6.8301"
+            },
+            {
+              "req": "6.4400"
+            }
+          ],
+          "title": "Advanced Dept. Lab Subjects"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "6.1100"
+            },
+            {
+              "req": "6.8701"
+            },
+            {
+              "req": "6.2050"
+            },
+            {
+              "req": "6.2061"
+            },
+            {
+              "req": "6.4880"
+            },
+            {
+              "req": "6.2221"
+            },
+            {
+              "req": "6.4200"
+            },
+            {
+              "req": "6.4210"
+            },
+            {
+              "req": "6.2370"
+            },
+            {
+              "req": "6.9030"
+            },
+            {
+              "req": "6.1040"
+            },
+            {
+              "req": "6.1060"
+            },
+            {
+              "req": "6.4890"
+            },
+            {
+              "req": "6.7320"
+            },
+            {
+              "req": "6.402"
+            },
+            {
+              "req": "6.3730"
+            },
+            {
+              "req": "6.3732"
+            },
+            {
+              "req": "6.4120"
+            },
+            {
+              "req": "6.4590"
+            },
+            {
+              "req": "6.8611"
+            },
+            {
+              "req": "6.4420"
+            },
+            {
+              "req": "6.1820"
+            },
+            {
+              "req": "6.809"
+            },
+            {
+              "req": "6.4510"
+            },
+            {
+              "req": "6.4530"
+            },
+            {
+              "req": "6.813"
+            },
+            {
+              "req": "6.1120"
+            },
+            {
+              "req": "6.8301"
+            },
+            {
+              "req": "6.8530"
+            },
+            {
+              "req": "6.8610"
+            },
+            {
+              "req": "6.7900"
+            },
+            {
+              "req": "6.8300"
+            },
+            {
+              "req": "6.7930"
+            },
+            {
+              "req": "6.8700"
+            },
+            {
+              "req": "6.8180"
+            },
+            {
+              "req": "6.8190"
+            },
+            {
+              "req": "6.5690"
+            },
+            {
+              "req": "6.9321"
+            },
+            {
+              "req": "6.5151"
+            },
+            {
+              "req": "6.5150"
+            },
+            {
+              "req": "6.UAR"
+            },
+            {
+              "req": "IDS.012"
+            }
+          ],
+          "title": "Independent Inquiry Subjects"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "6.3800"
+            },
+            {
+              "req": "6.3700"
+            },
+            {
+              "req": "6.041A"
+            },
+            {
+              "req": "6.1200"
+            },
+            {
+              "req": "18.05"
+            },
+            {
+              "req": "18.600"
+            }
+          ],
+          "title": "Probability Subjects"
+        },
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 2",
+          "reqs": [
+            {
+              "req": "6.2000"
+            },
+            {
+              "req": "6.3000"
+            },
+            {
+              "req": "6.3010"
+            },
+            {
+              "req": "6.2500"
+            },
+            {
+              "req": "6.2300"
+            },
+            {
+              "req": "6.2210"
+            },
+            {
+              "req": "6.4810"
+            },
+            {
+              "req": "6.6210"
+            }
+          ],
+          "title": "EE Designated"
+        },
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 2",
+          "reqs": [
+            {
+              "req": "6.1210"
+            },
+            {
+              "req": "6.1010"
+            },
+            {
+              "req": "6.1020"
+            },
+            {
+              "req": "6.1800"
+            },
+            {
+              "req": "6.4100"
+            },
+            {
+              "req": "6.1400"
+            },
+            {
+              "req": "6.1220"
+            }
+          ],
+          "title": "CS Designated"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "6.1910"
+            },
+            {
+              "req": "6.3800"
+            },
+            {
+              "req": "6.3900"
+            }
+          ],
+          "title": "EECS Designated"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Constraints"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "6.1800"
+        },
+        {
+          "req": "6.2040"
+        },
+        {
+          "req": "6.2050"
+        },
+        {
+          "req": "6.2060"
+        },
+        {
+          "req": "6.2061"
+        },
+        {
+          "req": "6.2220"
+        },
+        {
+          "req": "6.4200"
+        },
+        {
+          "req": "6.4210"
+        },
+        {
+          "req": "6.2600"
+        },
+        {
+          "req": "6.2370"
+        },
+        {
+          "req": "6.9030"
+        },
+        {
+          "req": "6.4890"
+        },
+        {
+          "req": "6.2061"
+        },
+        {
+          "req": "6.4880"
+        },
+        {
+          "req": "6.2221"
+        },
+        {
+          "req": "6.4590"
+        },
+        {
+          "req": "6.UAT"
+        },
+        {
+          "req": "6.UAR"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "6-2",
+  "desc": "The 6-2 program leads to the Bachelor of Science in Electrical Engineering and Computer Science and is for those whose interests cross this traditional boundary. It is accredited by both the Engineering and Computing Accreditation Commissions of ABET."
+}
