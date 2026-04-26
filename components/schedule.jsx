@@ -263,7 +263,45 @@ function hourLabel(h) {
   return h < 12 ? `${h} AM` : `${h - 12} PM`;
 }
 
-const CalendarView = ({ courses }) => {
+function compactTimeLabel(value) {
+  const hour24 = Math.floor(value);
+  const minutes = Math.round((value - hour24) * 60);
+  const suffix = hour24 >= 12 ? 'p' : 'a';
+  const hour = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+  return `${hour}${minutes ? `:${String(minutes).padStart(2, '0')}` : ''}${suffix}`;
+}
+
+function sectionTypeLabel(type) {
+  if (type === 'lec') return 'Lecture';
+  if (type === 'rec') return 'Recitation';
+  if (type === 'lab') return 'Lab';
+  return String(type || 'Section').toUpperCase();
+}
+
+function offeringBadgeLabel(season) {
+  if (season === 'fall') return 'NO FALL';
+  if (season === 'spring') return 'NO SPRING';
+  if (season === 'iap') return 'NO IAP';
+  if (season === 'summer') return 'NO SUMMER';
+  return 'NOT OFFERED';
+}
+
+function offeringStatusLabel(season) {
+  if (season === 'fall') return 'Not offered in Fall';
+  if (season === 'spring') return 'Not offered in Spring';
+  if (season === 'iap') return 'Not offered in IAP';
+  if (season === 'summer') return 'Not offered in Summer';
+  return 'Not offered this term';
+}
+
+function courseHasCalendarMeetings(course) {
+  if (course.scheduleRaw) {
+    return Object.values(parseAllSectionsGrouped(course.scheduleRaw)).some((options) => options.length > 0);
+  }
+  return Boolean(course.days && course.days.length && course.time && course.time.end > course.time.start);
+}
+
+const CalendarView = ({ courses, onOpenCourse, onRemoveCourse, activeSeason }) => {
   const days      = ['M', 'T', 'W', 'R', 'F'];
   const dayLabels = { M: 'MON', T: 'TUE', W: 'WED', R: 'THU', F: 'FRI' };
   const hours     = Array.from({ length: CAL_END - CAL_START }, (_, i) => CAL_START + i);
@@ -274,6 +312,7 @@ const CalendarView = ({ courses }) => {
 
   // sectionMap: { courseId: { lec: idx, rec: idx, lab: idx } }
   const [sectionMap, setSectionMap] = useState({});
+  const [selectedCourseId, setSelectedCourseId] = useState(null);
 
   // Auto-select non-conflicting section when courses change
   useEffect(() => {
@@ -300,10 +339,17 @@ const CalendarView = ({ courses }) => {
     setSectionMap(map);
   }, [courses.map((c) => c.id).join('|')]);
 
+  useEffect(() => {
+    if (selectedCourseId && !courses.some((course) => course.id === selectedCourseId)) {
+      setSelectedCourseId(null);
+    }
+  }, [courses.map((c) => c.id).join('|'), selectedCourseId]);
+
   const cycleSection = (courseId, type, delta) => {
     setSectionMap((prev) => {
       const grouped = parseAllSectionsGrouped(courses.find((c) => c.id === courseId)?.scheduleRaw || '');
       const options = grouped[type] || [];
+      if (!options.length) return prev;
       const cur = (prev[courseId]?.[type] || 0);
       const next = (cur + delta + options.length) % options.length;
       return { ...prev, [courseId]: { ...(prev[courseId] || {}), [type]: next } };
@@ -327,6 +373,22 @@ const CalendarView = ({ courses }) => {
     }
     return [];
   });
+
+  const selectedCourse = courses.find((course) => course.id === selectedCourseId) || null;
+  const selectedCourseNoSchedule = selectedCourse ? !courseHasCalendarMeetings(selectedCourse) : false;
+  const selectedCourseNotOffered = selectedCourse && activeSeason && selectedCourse.offered && selectedCourse.offered[activeSeason] === false;
+
+  const sectionControls = selectedCourse ? (() => {
+    const course = selectedCourse;
+    const grouped = course.scheduleRaw ? parseAllSectionsGrouped(course.scheduleRaw) : {};
+    return Object.entries(grouped)
+      .filter(([, options]) => options.length > 1)
+      .map(([type, options]) => {
+        const sectionIdx = sectionMap[course.id]?.[type] ?? 0;
+        const selected = options[sectionIdx] || options[0];
+        return { course, type, options, sectionIdx, selected };
+      });
+  })() : [];
 
   const TIME_COL = 52;
 
@@ -390,7 +452,6 @@ const CalendarView = ({ courses }) => {
                   if (top < 0 || top >= totalH) return null;
                   const GAP = 2, pct = 100 / b.numCols;
                   const blockH = Math.max(14, Math.min(height, totalH - Math.max(0, top) - 2));
-                  const hasMultiple = b.totalSections > 1;
                   return (
                     <div key={b.courseId + b.type + bi} style={{
                       position: 'absolute',
@@ -409,19 +470,6 @@ const CalendarView = ({ courses }) => {
                         {b.courseId}{b.type ? <span style={{ fontWeight: 400, opacity: 0.85 }}> {b.type}</span> : null}
                       </div>
                       {b.room && <div style={{ opacity: 0.8, fontSize: 10 }}>{b.room}</div>}
-                      {hasMultiple && blockH >= 36 && (
-                        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 3, paddingTop: 3 }}>
-                          <button
-                            onMouseDown={(e) => { e.stopPropagation(); cycleSection(b.courseId, b.type, -1); }}
-                            style={{ background: 'rgba(255,255,255,0.25)', border: 'none', borderRadius: 3, color: '#fff', fontSize: 9, padding: '1px 4px', cursor: 'pointer', lineHeight: 1 }}
-                          >◀</button>
-                          <span style={{ fontSize: 9, opacity: 0.85 }}>{b.sectionIdx + 1}/{b.totalSections}</span>
-                          <button
-                            onMouseDown={(e) => { e.stopPropagation(); cycleSection(b.courseId, b.type, 1); }}
-                            style={{ background: 'rgba(255,255,255,0.25)', border: 'none', borderRadius: 3, color: '#fff', fontSize: 9, padding: '1px 4px', cursor: 'pointer', lineHeight: 1 }}
-                          >▶</button>
-                        </div>
-                      )}
                     </div>
                   );
                 })}
@@ -429,6 +477,200 @@ const CalendarView = ({ courses }) => {
             );
           })}
         </div>
+
+      <div style={{
+        borderTop: '1px solid var(--border)',
+        background: 'var(--bg)',
+        padding: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+      }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {courses.map((course) => {
+            const selected = selectedCourseId === course.id;
+            const noSchedule = !courseHasCalendarMeetings(course);
+            const notOffered = activeSeason && course.offered && course.offered[activeSeason] === false;
+            const statusBadges = [
+              noSchedule ? 'NO TIME' : null,
+              notOffered ? offeringBadgeLabel(activeSeason) : null,
+            ].filter(Boolean);
+            return (
+              <button
+                key={course.id}
+                onClick={() => setSelectedCourseId((current) => (current === course.id ? null : course.id))}
+                title={course.name}
+                style={{
+                  minWidth: 0,
+                  maxWidth: 170,
+                  padding: '7px 10px',
+                  borderRadius: 7,
+                  background: colorOf[course.id],
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  boxShadow: selected ? `0 0 0 2px var(--surface), 0 0 0 4px ${colorOf[course.id]}` : '0 1px 2px rgba(0,0,0,0.12)',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{course.id}</span>
+                {statusBadges.map((badge) => (
+                  <span
+                    key={badge}
+                    className="mono"
+                    style={{
+                      padding: '1px 4px',
+                      borderRadius: 5,
+                      background: 'rgba(255,255,255,0.24)',
+                      fontSize: 8.5,
+                      fontWeight: 700,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {badge}
+                  </span>
+                ))}
+              </button>
+            );
+          })}
+        </div>
+
+        {selectedCourse && (
+          <div style={{
+            border: '1px solid var(--border)',
+            borderRadius: 10,
+            background: 'var(--surface)',
+            padding: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 999, background: colorOf[selectedCourse.id], flexShrink: 0 }} />
+                  <span className="mono" style={{ fontWeight: 800, fontSize: 12 }}>{selectedCourse.id}</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {selectedCourse.name}
+                  </span>
+                </div>
+                {(selectedCourseNoSchedule || selectedCourseNotOffered) && (
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 5 }}>
+                    {selectedCourseNoSchedule && (
+                      <span className="mono" style={{ fontSize: 9.5, color: 'var(--warning)' }}>Schedule not published</span>
+                    )}
+                    {selectedCourseNotOffered && (
+                      <span className="mono" style={{ fontSize: 9.5, color: 'var(--warning)' }}>{offeringStatusLabel(activeSeason)}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => typeof onOpenCourse === 'function' && onOpenCourse(selectedCourse.id)}
+                  style={{ padding: '6px 9px', borderRadius: 7, border: '1px solid var(--border)', fontSize: 11 }}
+                >
+                  View Details
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => typeof onRemoveCourse === 'function' && onRemoveCourse(selectedCourse.id)}
+                  style={{ padding: '6px 9px', borderRadius: 7, border: '1px solid var(--border)', color: 'var(--accent)', fontSize: 11 }}
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+
+            {sectionControls.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {sectionControls.map(({ course, type, options, sectionIdx, selected }) => (
+                  <div
+                    key={`${course.id}-${type}`}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'minmax(0, 1fr) auto',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '7px 8px',
+                      borderRadius: 8,
+                      border: '1px solid var(--border)',
+                      background: 'var(--surface)',
+                    }}
+                  >
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                        <span style={{ width: 8, height: 8, borderRadius: 999, background: colorOf[course.id], flexShrink: 0 }} />
+                        <span className="mono" style={{ fontWeight: 700, fontSize: 11 }}>{course.id}</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {sectionTypeLabel(type)}
+                        </span>
+                      </div>
+                      <div className="mono" style={{ marginTop: 2, color: 'var(--text-tertiary)', fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {selected.days.join('')} {compactTimeLabel(selected.start)}-{compactTimeLabel(selected.end)}{selected.room ? ` · ${selected.room}` : ''}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <button
+                        type="button"
+                        onClick={(event) => { event.stopPropagation(); cycleSection(course.id, type, -1); }}
+                        title={`Previous ${sectionTypeLabel(type).toLowerCase()}`}
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 7,
+                          border: '1px solid var(--border)',
+                          background: 'var(--bg)',
+                          color: 'var(--text-secondary)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Icon name="arrowLeft" size={12} />
+                      </button>
+                      <span className="mono" style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 34, textAlign: 'center' }}>
+                        {sectionIdx + 1}/{options.length}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(event) => { event.stopPropagation(); cycleSection(course.id, type, 1); }}
+                        title={`Next ${sectionTypeLabel(type).toLowerCase()}`}
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 7,
+                          border: '1px solid var(--border)',
+                          background: 'var(--bg)',
+                          color: 'var(--text-secondary)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Icon name="arrowRight" size={12} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mono" style={{ padding: '8px 9px', borderRadius: 8, background: 'var(--bg)', color: 'var(--text-tertiary)', fontSize: 10.5 }}>
+                No selectable recitation or lab sections.
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -756,7 +998,7 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
             ))}
           </div>
         ) : (
-          <CalendarView courses={courses} />
+          <CalendarView courses={courses} onOpenCourse={onOpenCourse} onRemoveCourse={removeCourse} activeSeason={activeSeason} />
         )}
 
         <button

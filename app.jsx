@@ -165,14 +165,12 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
       }]);
       return;
     }
-    const existingCourses = await Promise.all(schedule.map((course) => FRDATA.fetchCurrentCourse(course)));
-    const newUnits = existingCourses.reduce((sum, course) => sum + (Number(course?.units) || 0), 0) + (Number(c.units) || 0);
     setSchedule((s) => [...s, courseId]);
     setJustAddedId(courseId);
     setTimeout(() => setJustAddedId(null), 800);
     setMessages((m) => [...m, {
       role: 'agent',
-      text: `Added ${courseCatalogLink(c.id)} (${c.name}) to ${planningTermLabel}. You're at about ${newUnits} units. Want me to suggest something to balance the workload?`,
+      text: `Added ${courseCatalogLink(c.id)} (${c.name}) to ${planningTermLabel}.`,
     }]);
   };
 
