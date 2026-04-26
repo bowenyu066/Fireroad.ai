@@ -36,10 +36,19 @@ function parseJsonField(value, fallback) {
 }
 
 function markdownResponse(personalCourseMarkdown, warnings = [], extra = {}) {
+  const courses = parseCourseRows(personalCourseMarkdown);
+  const trimmed = String(personalCourseMarkdown || '').trim();
+  if (trimmed && courses.length === 0) {
+    console.warn('[onboarding] parseCourseRows returned 0 courses despite non-empty markdown', {
+      length: trimmed.length,
+      preview: trimmed.slice(0, 240).replace(/\n/g, '\\n'),
+    });
+    warnings = [...warnings, 'Generated personal_course.md but parsed 0 courses. The markdown table format may not match expectations.'];
+  }
   return {
     ok: true,
     personalCourseMarkdown,
-    courses: parseCourseRows(personalCourseMarkdown),
+    courses,
     warnings,
     ...extra,
   };
