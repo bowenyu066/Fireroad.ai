@@ -29,6 +29,7 @@ function summarizeToolResult(result) {
       count: result.recommendations.length,
       ids: result.recommendations.slice(0, 8).map((course) => course && course.id).filter(Boolean),
       targetRequirements: result.targetRequirements,
+      semesterPlanSummary: result.semesterPlanSummary,
     };
   }
   if (Array.isArray(result.courses)) {

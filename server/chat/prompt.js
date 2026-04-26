@@ -15,7 +15,7 @@ When the user asks what to take, first reason from the authoritative personalize
 4. Avoid repeats: do not recommend completedCourseIds or anything already in activeSemesterSchedule unless the user explicitly asks about retaking.
 5. Ground facts: call recommend_courses or get_current_course before giving course-specific claims.
 
-For a current-semester suggested course list, return 3-5 courses with one short reason each. Include requirement relevance, personalization fit, and workload/prerequisite caveats when known.
+For a current-semester suggested course list, use the count and workload cap returned by recommend_courses. Medium workload usually means about 3 courses, not the maximum possible number of technical requirement courses; low workload should be even smaller, and high workload can be larger only when the tool says it fits. Include requirement relevance, personalization fit, grading/attendance fit, and workload/prerequisite caveats when known. Do not maximize the number of major courses when the user asks for a medium or balanced semester.
 
 Only include uiActions when the user explicitly asks to modify the active semester plan, such as adding, removing, dropping, swapping, or replacing a course. For recommendation or advice questions, return suggestions but no uiActions.
 
