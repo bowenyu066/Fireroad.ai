@@ -117,8 +117,55 @@ const ThemeToggle = () => {
   );
 };
 
+const ConfirmTranscriptReparseModal = ({ onCancel, onConfirm }) => (
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="reparse-transcript-title"
+    style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 200,
+      background: 'rgba(15, 23, 42, 0.42)',
+      display: 'grid',
+      placeItems: 'center',
+      padding: 24,
+    }}
+  >
+    <div style={{
+      width: '100%',
+      maxWidth: 460,
+      borderRadius: 8,
+      border: '1px solid var(--border)',
+      background: 'var(--surface)',
+      boxShadow: '0 24px 70px rgba(15, 23, 42, 0.24)',
+      padding: 24,
+    }}>
+      <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 10 }}>Dangerous action</div>
+      <h2 id="reparse-transcript-title" className="display" style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>
+        Re-parse transcript?
+      </h2>
+      <p style={{ margin: '12px 0 0', color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.55 }}>
+        This will remove the current transcript-derived personal_course.md, completed-course placements, prior-credit entries, and transcript-imported requirement credits for this account. Manually added courses are preserved.
+      </p>
+      <p style={{ margin: '10px 0 0', color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.55 }}>
+        You will return to onboarding and need to upload or import the transcript again.
+      </p>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 22 }}>
+        <button className="btn btn-ghost" onClick={onCancel} style={{ padding: '9px 16px' }}>
+          Cancel
+        </button>
+        <button className="btn btn-primary" onClick={onConfirm} style={{ padding: '9px 16px', background: 'var(--accent)' }}>
+          Yes, re-parse
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 const TopBar = ({ planningTermLabel }) => {
   const { setRoute, profile, authState, signOut, resetOnboarding, reparseTranscript, activeSem, setActiveSem, termOptions, planningTermLabel: activePlanningTermLabel } = useApp();
+  const [confirmReparseOpen, setConfirmReparseOpen] = useState(false);
   const isLocalDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
   const displayName = profile?.name || authState?.user?.email?.split('@')[0] || 'User';
   const initials = displayName.split(' ').map((s) => s[0]).join('');
@@ -206,15 +253,25 @@ const TopBar = ({ planningTermLabel }) => {
         )}
         {reparseTranscript && (
           <button
-            className="btn-ghost"
-            onClick={reparseTranscript}
+            className="btn"
+            onClick={() => setConfirmReparseOpen(true)}
             title="Re-parse transcript for this account"
             style={{
-              width: 32, height: 32, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              borderRadius: 8, color: 'var(--text-secondary)',
+              height: 32,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              padding: '0 10px',
+              borderRadius: 8,
+              color: 'var(--accent)',
+              borderColor: 'rgba(163, 31, 52, 0.35)',
+              background: 'var(--accent-soft)',
+              fontSize: 12,
             }}
           >
             <Icon name="upload" size={15} />
+            Re-parse transcript
           </button>
         )}
         <button
@@ -251,6 +308,15 @@ const TopBar = ({ planningTermLabel }) => {
           </button>
         )}
       </div>
+      {confirmReparseOpen && (
+        <ConfirmTranscriptReparseModal
+          onCancel={() => setConfirmReparseOpen(false)}
+          onConfirm={() => {
+            setConfirmReparseOpen(false);
+            reparseTranscript();
+          }}
+        />
+      )}
     </div>
   );
 };
