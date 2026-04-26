@@ -661,6 +661,29 @@ async function buildActionResponseText(actions, context) {
   return `Done. ${descriptions.join('; ')} in ${termLabel}.`;
 }
 
+async function buildResponseSuggestions(text, debug = {}, uiActions = []) {
+  if (asArray(uiActions).length) return [];
+
+  const toolCalls = asArray(debug.toolCalls);
+  const recommendationCall = [...toolCalls].reverse().find((entry) => (
+    entry && entry.name === 'recommend_courses' && asArray(entry.result && entry.result.recommendations).length
+  ));
+  if (recommendationCall) {
+    return sanitizeSuggestions(recommendationCall.result.recommendations.map((course) => course && course.id));
+  }
+
+  const searchCall = [...toolCalls].reverse().find((entry) => (
+    entry
+    && (entry.name === 'search_current_courses' || entry.name === 'search_courses')
+    && asArray(entry.result && entry.result.results).length
+  ));
+  if (searchCall) {
+    return sanitizeSuggestions(searchCall.result.results.map((course) => course && course.id));
+  }
+
+  return sanitizeSuggestions(extractCourseIdsFromText(text));
+}
+
 async function buildApiResponse(content, context, debug, requestMessages, options = {}) {
   const log = context.log || (() => {});
   const raw = normalizeContentText(content);
@@ -679,7 +702,7 @@ async function buildApiResponse(content, context, debug, requestMessages, option
   const text = (uiActions.length
     ? await buildActionResponseText(uiActions, context)
     : raw || 'I found a grounded answer from the course data, but could not format it cleanly.').trim();
-  const suggestions = uiActions.length ? [] : await sanitizeSuggestions(extractCourseIdsFromText(text));
+  const suggestions = await buildResponseSuggestions(text, debug, uiActions);
   const traceSummary = options.traceSummary || buildTraceSummary(debug.toolCalls);
   const proposal = options.proposal || await buildProposalFromActions(uiActions, context);
   log('final:validated', {

@@ -87,7 +87,7 @@ const hasPersonalizationEvidence = (personalization, personalCourseMarkdown = ''
   );
 };
 
-const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onOpenCourse, onApplyUiActions }) => {
+const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onRemoveCourse, onOpenCourse, onApplyUiActions }) => {
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
   const scrollRef = useRef(null);
@@ -206,9 +206,11 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
         updateStreamingMessage(agentMessageId, (message) => ({
           progress: {
             ...(message.progress || {}),
+            finalAnswerStarted: Boolean(message.progress?.finalAnswerStarted || message.progress?.latestToolActivity),
             latestInterimText: append
-              ? `${coerceText(message.progress?.latestInterimText)}${safeText}`
+              ? `${message.progress?.latestToolActivity && !message.progress?.finalAnswerStarted ? '' : coerceText(message.progress?.latestInterimText)}${safeText}`
               : safeText,
+            latestToolActivity: message.progress?.latestToolActivity && !message.progress?.finalAnswerStarted ? null : message.progress?.latestToolActivity,
           },
           status: '',
         }));
@@ -240,6 +242,12 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
           updateStreamingMessage(agentMessageId, (message) => ({
             text: `${coerceText(message.text)}${safeText}`,
             status: '',
+            progress: {
+              ...(message.progress || {}),
+              finalAnswerStarted: true,
+              latestInterimText: '',
+              latestToolActivity: null,
+            },
           }));
         },
         delta: ({ text }) => {
@@ -248,6 +256,12 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
           updateStreamingMessage(agentMessageId, (message) => ({
             text: `${coerceText(message.text)}${safeText}`,
             status: '',
+            progress: {
+              ...(message.progress || {}),
+              finalAnswerStarted: true,
+              latestInterimText: '',
+              latestToolActivity: null,
+            },
           }));
         },
         text_delta: ({ text }) => {
@@ -255,6 +269,12 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
           updateStreamingMessage(agentMessageId, (message) => ({
             text: `${coerceText(message.text)}${safeText}`,
             status: '',
+            progress: {
+              ...(message.progress || {}),
+              finalAnswerStarted: true,
+              latestInterimText: '',
+              latestToolActivity: null,
+            },
           }));
         },
         progress_text: ({ text }) => updateProgressText(text, false),
@@ -350,6 +370,7 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
             msg={m}
             schedule={schedule}
             onAddCourse={onAddCourse}
+            onRemoveCourse={onRemoveCourse}
             onOpenCourse={onOpenCourse}
             onApplyUiActions={onApplyUiActions}
           />
@@ -403,7 +424,48 @@ const renderInlineMarkdown = (value) => {
   return html;
 };
 
-const renderMarkdown = (value) => {
+const COURSE_MENTION_PATTERN = /\b[A-Z0-9]{1,5}\.[A-Z0-9]{2,5}\b/gi;
+
+const extractCourseMentionCandidates = (value) => {
+  const text = coerceText(value);
+  const matches = [...text.matchAll(COURSE_MENTION_PATTERN)]
+    .filter((match) => {
+      const end = (match.index || 0) + match[0].length;
+      return !/^\s*\//.test(text.slice(end, end + 4));
+    })
+    .map((match) => match[0]);
+  return [...new Set(matches.map((match) => match.toUpperCase()))];
+};
+
+const wrapCourseMentions = (html, validCourseIds = new Set()) => {
+  let inAnchor = false;
+  let inCode = false;
+  const valid = validCourseIds instanceof Set ? validCourseIds : new Set(validCourseIds || []);
+  return html
+    .split(/(<[^>]+>)/g)
+    .map((part) => {
+      if (!part) return part;
+      if (part.startsWith('<')) {
+        const tag = part.toLowerCase();
+        if (tag.startsWith('<a ')) inAnchor = true;
+        if (tag.startsWith('</a')) inAnchor = false;
+        if (tag.startsWith('<code')) inCode = true;
+        if (tag.startsWith('</code')) inCode = false;
+        return part;
+      }
+      if (inAnchor || inCode) return part;
+      return part.replace(COURSE_MENTION_PATTERN, (match, offset, text) => {
+        const end = offset + match.length;
+        if (/^\s*\//.test(text.slice(end, end + 4))) return match;
+        const courseId = match.toUpperCase();
+        if (!valid.has(courseId)) return match;
+        return `<a href="#course-${courseId}" class="chat-course-mention mono" data-course-id="${courseId}">${match}</a>`;
+      });
+    })
+    .join('');
+};
+
+const renderMarkdown = (value, options = {}) => {
   const lines = coerceText(value).split('\n');
   const blocks = [];
   let paragraph = [];
@@ -460,7 +522,8 @@ const renderMarkdown = (value) => {
 
   flushParagraph();
   flushList();
-  return blocks.join('');
+  const html = blocks.join('');
+  return options.linkCourses ? wrapCourseMentions(html, options.validCourseIds) : html;
 };
 
 const uiActionLabel = (action) => {
@@ -536,6 +599,7 @@ const ToolActivityCard = ({ activity }) => {
 const ProgressBlock = ({ progress, fallback }) => {
   const interim = coerceText(progress?.latestInterimText);
   const activity = progress?.latestToolActivity;
+  const showActivity = activity && !progress?.finalAnswerStarted;
   return (
     <div>
       {interim ? (
@@ -543,7 +607,7 @@ const ProgressBlock = ({ progress, fallback }) => {
       ) : (
         <div style={{ color: 'var(--text-secondary)' }}>{fallback || 'Thinking...'}</div>
       )}
-      {activity && <ToolActivityCard activity={activity} />}
+      {showActivity && <ToolActivityCard activity={activity} />}
     </div>
   );
 };
@@ -657,24 +721,187 @@ const ProposalCard = ({ proposal, onApplyUiActions }) => {
   );
 };
 
-const MessageBubble = ({ msg, schedule, onAddCourse, onOpenCourse, onApplyUiActions }) => {
-  const isUser = msg.role === 'user';
-  const [suggestedCourses, setSuggestedCourses] = useState([]);
-  const [locallyAdded, setLocallyAdded] = useState([]);
-  const suggestionsKey = (msg.suggestions || []).map(coerceText).join('|');
+const areaForCourseMention = (courseId) => {
+  const value = String(courseId || '').toUpperCase();
+  if (value.startsWith('6.')) return 'cs';
+  if (value.startsWith('18.')) return 'math';
+  if (value.startsWith('8.')) return 'physics';
+  if (value.startsWith('7.')) return 'bio';
+  if (value.startsWith('21') || value.startsWith('24') || value.startsWith('17') || value.startsWith('14') || value.startsWith('15')) return 'hass';
+  return 'other';
+};
+
+const CourseMentionMenu = ({ courseId, position, schedule, onAddCourse, onRemoveCourse, onOpenCourse, onClose }) => {
+  const [course, setCourse] = useState(null);
+  const normalizedId = String(courseId || '').trim().toUpperCase();
   const scheduled = new Set((schedule || []).map((id) => String(id).toUpperCase()));
+
+  useEffect(() => {
+    let cancelled = false;
+    setCourse(null);
+    FRDATA.fetchCurrentCourse(normalizedId).then((found) => {
+      if (!cancelled) setCourse(found || null);
+    }).catch(() => {
+      if (!cancelled) setCourse(null);
+    });
+    return () => { cancelled = true; };
+  }, [normalizedId]);
+
+  if (!normalizedId) return null;
+
+  const displayName = course?.name || 'Course details';
+  const area = course?.area || areaForCourseMention(normalizedId);
+  const actionId = String(course?.id || normalizedId).toUpperCase();
+  const isScheduled = scheduled.has(actionId) || scheduled.has(normalizedId);
+  const popoverStyle = position ? {
+    position: 'fixed',
+    left: position.left,
+    top: position.top,
+    width: 380,
+    maxWidth: 'calc(100vw - 24px)',
+    marginTop: 0,
+    zIndex: 3000,
+  } : {};
+
+  const handleScheduleAction = () => {
+    if (isScheduled) {
+      if (typeof onRemoveCourse === 'function') onRemoveCourse(actionId);
+    } else if (typeof onAddCourse === 'function') {
+      onAddCourse(actionId);
+    }
+    if (typeof onClose === 'function') onClose();
+  };
+
+  return (
+    <div className="chat-course-popover" style={popoverStyle}>
+      <div className="chat-course-popover-main">
+        <AreaDot area={area} size={7} />
+        <span className="mono" style={{ color: 'var(--text)' }}>{normalizedId}</span>
+        <span className="chat-course-popover-title">{displayName}</span>
+      </div>
+      <div className="chat-course-popover-actions">
+        <button
+          type="button"
+          className={isScheduled ? 'btn-ghost' : 'btn-primary'}
+          onClick={handleScheduleAction}
+          style={{
+            padding: '6px 11px',
+            borderRadius: 999,
+            border: isScheduled ? '1px solid var(--border)' : '1px solid var(--accent)',
+            fontSize: 12,
+          }}
+        >
+          {isScheduled ? 'Remove' : 'Add'}
+        </button>
+        <button
+          type="button"
+          className="btn-ghost"
+          onClick={() => {
+            if (typeof onOpenCourse === 'function') onOpenCourse(actionId);
+            if (typeof onClose === 'function') onClose();
+          }}
+          style={{ padding: '6px 11px', borderRadius: 999, border: '1px solid var(--border)', fontSize: 12 }}
+        >
+          View Details
+        </button>
+        <button
+          type="button"
+          className="btn-ghost"
+          onClick={onClose}
+          aria-label="Close course actions"
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: 999,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icon name="x" size={13} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const MessageBubble = ({ msg, schedule, onAddCourse, onRemoveCourse, onOpenCourse, onApplyUiActions }) => {
+  const isUser = msg.role === 'user';
+  const [courseMenu, setCourseMenu] = useState(null);
+  const [validCourseMentions, setValidCourseMentions] = useState(new Set());
+  const [invalidCourseMentions, setInvalidCourseMentions] = useState(new Set());
   const displayText = isUser ? coerceText(msg.text) : coerceText(msg.text);
-  const messageHtml = renderMarkdown(displayText);
+  const courseCandidates = extractCourseMentionCandidates(displayText);
+  const courseCandidateKey = courseCandidates.join('|');
+  const immediatelyValidCourseIds = new Set([
+    ...validCourseMentions,
+    ...(schedule || []).map((id) => String(id).toUpperCase()),
+    ...(msg.suggestions || []).map((id) => coerceText(id).toUpperCase()),
+  ]);
+  const messageHtml = renderMarkdown(displayText, {
+    linkCourses: !isUser,
+    validCourseIds: immediatelyValidCourseIds,
+  });
   const showProgressOnly = !isUser && msg.streaming && !displayText;
   const proposal = !isUser && !msg.streaming ? normalizeProposal(msg.proposal, msg.uiActions) : null;
 
   useEffect(() => {
+    if (isUser || !courseCandidates.length) return undefined;
     let cancelled = false;
-    Promise.all((msg.suggestions || []).map((id) => FRDATA.fetchCurrentCourse(id))).then((courses) => {
-      if (!cancelled) setSuggestedCourses(courses.filter(Boolean));
+    const knownValid = validCourseMentions;
+    const knownInvalid = invalidCourseMentions;
+    const toCheck = courseCandidates.filter((courseId) => (
+      !knownValid.has(courseId)
+      && !knownInvalid.has(courseId)
+      && !(schedule || []).map((id) => String(id).toUpperCase()).includes(courseId)
+    ));
+    if (!toCheck.length) return undefined;
+
+    Promise.all(toCheck.map((courseId) => (
+      FRDATA.fetchCurrentCourse(courseId)
+        .then((course) => ({ courseId, ok: Boolean(course) }))
+        .catch(() => ({ courseId, ok: false }))
+    ))).then((results) => {
+      if (cancelled) return;
+      const nextValid = results.filter((item) => item.ok).map((item) => item.courseId);
+      const nextInvalid = results.filter((item) => !item.ok).map((item) => item.courseId);
+      if (nextValid.length) {
+        setValidCourseMentions((current) => new Set([...current, ...nextValid]));
+      }
+      if (nextInvalid.length) {
+        setInvalidCourseMentions((current) => new Set([...current, ...nextInvalid]));
+      }
     });
+
     return () => { cancelled = true; };
-  }, [suggestionsKey]);
+  }, [courseCandidateKey, isUser]);
+
+  useEffect(() => {
+    if (!courseMenu) return undefined;
+    const close = (event) => {
+      if (event.target?.closest?.('.chat-course-popover')) return;
+      if (event.target?.closest?.('[data-course-id]')) return;
+      setCourseMenu(null);
+    };
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [courseMenu]);
+
+  const handleCourseMentionClick = (event) => {
+    const mention = event.target?.closest?.('[data-course-id]');
+    if (!mention) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const courseId = String(mention.getAttribute('data-course-id') || '').trim().toUpperCase();
+    if (!courseId) return;
+    const rect = mention.getBoundingClientRect();
+    const menuWidth = 380;
+    const menuHeight = 88;
+    const left = Math.max(12, Math.min(rect.left, window.innerWidth - menuWidth - 12));
+    const aboveTop = rect.top - menuHeight - 8;
+    const top = aboveTop >= 12 ? aboveTop : Math.min(rect.bottom + 8, window.innerHeight - menuHeight - 12);
+    setCourseMenu({ courseId, position: { left, top } });
+  };
 
   return (
     <div style={{
@@ -693,8 +920,12 @@ const MessageBubble = ({ msg, schedule, onAddCourse, onOpenCourse, onApplyUiActi
           <ProgressBlock progress={msg.progress} fallback={msg.status} />
         ) : (
           <>
-            <div className="chat-markdown" dangerouslySetInnerHTML={{ __html: messageHtml }} />
-            {msg.streaming && msg.progress?.latestToolActivity && (
+            <div
+              className="chat-markdown"
+              onClickCapture={handleCourseMentionClick}
+              dangerouslySetInnerHTML={{ __html: messageHtml }}
+            />
+            {msg.streaming && msg.progress?.latestToolActivity && !msg.progress?.finalAnswerStarted && (
               <ToolActivityCard activity={msg.progress.latestToolActivity} />
             )}
             {!msg.streaming && msg.traceSummary?.checked?.length > 0 && (
@@ -704,49 +935,20 @@ const MessageBubble = ({ msg, schedule, onAddCourse, onOpenCourse, onApplyUiActi
         )}
       </div>
 
-      {proposal && (
-        <ProposalCard proposal={proposal} onApplyUiActions={onApplyUiActions} />
+      {!isUser && courseMenu?.courseId && (
+        <CourseMentionMenu
+          courseId={courseMenu.courseId}
+          position={courseMenu.position}
+          schedule={schedule}
+          onAddCourse={onAddCourse}
+          onRemoveCourse={onRemoveCourse}
+          onOpenCourse={onOpenCourse}
+          onClose={() => setCourseMenu(null)}
+        />
       )}
 
-      {suggestedCourses.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-          {suggestedCourses.map((c) => {
-            const courseId = String(c.id || '').toUpperCase();
-            const isAdded = scheduled.has(courseId) || locallyAdded.includes(courseId);
-            return (
-              <div key={c.id} style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '6px 6px 6px 10px', borderRadius: 999,
-                background: 'var(--surface-2)', border: '1px solid var(--border)',
-                fontSize: 12,
-              }}>
-                <button onClick={() => onOpenCourse(c.id)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <AreaDot area={c.area} size={6} />
-                  <span className="mono">{c.id}</span>
-                  <span style={{ color: 'var(--text-secondary)' }}>{c.name}</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setLocallyAdded((current) => current.includes(courseId) ? current : [...current, courseId]);
-                    onAddCourse(c.id);
-                  }}
-                  disabled={isAdded}
-                  style={{
-                    padding: '3px 9px', borderRadius: 999,
-                    background: isAdded ? 'var(--surface)' : 'var(--accent)',
-                    color: isAdded ? 'var(--text-tertiary)' : '#fff',
-                    border: isAdded ? '1px solid var(--border)' : '1px solid var(--accent)',
-                    fontSize: 11,
-                    fontWeight: 500,
-                    cursor: isAdded ? 'default' : 'pointer',
-                  }}
-                >
-                  {isAdded ? 'Added' : 'Add'}
-                </button>
-              </div>
-            );
-          })}
-        </div>
+      {proposal && (
+        <ProposalCard proposal={proposal} onApplyUiActions={onApplyUiActions} />
       )}
     </div>
   );
@@ -1617,7 +1819,7 @@ const GuidedChoice = ({ title, value, onChange, options }) => (
 );
 
 // ============== Recommendations panel (bottom-right) ==============
-const Recommendations = ({ schedule, onAddCourse, onOpenCourse }) => {
+const Recommendations = ({ schedule, onAddCourse, onRemoveCourse, onOpenCourse }) => {
   const [sort, setSort] = useState('match'); // match | workload | units
   const [recs, setRecs] = useState([]);
   const [recsStatus, setRecsStatus] = useState('loading');
@@ -1654,6 +1856,7 @@ const Recommendations = ({ schedule, onAddCourse, onOpenCourse }) => {
     if (sort === 'workload') return a.hydrant - b.hydrant;
     return b.units - a.units;
   });
+  const scheduledSet = new Set((schedule || []).map((id) => String(id).toUpperCase()));
 
   const savePersonalization = (nextPersonalization) => {
     const normalizedPersonalization = normalizePersonalization(clonePersonalization(nextPersonalization));
@@ -1745,6 +1948,8 @@ const Recommendations = ({ schedule, onAddCourse, onOpenCourse }) => {
         )}
         {sorted.map((c) => {
           const m = c.personalMatch || FRDATA.getMatch(c.id);
+          const courseId = String(c.id || '').toUpperCase();
+          const isScheduled = scheduledSet.has(courseId);
           return (
             <div
               key={c.id}
@@ -1775,14 +1980,22 @@ const Recommendations = ({ schedule, onAddCourse, onOpenCourse }) => {
                 )}
               </div>
               <button
-                onClick={(e) => { e.stopPropagation(); onAddCourse(c.id); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isScheduled && typeof onRemoveCourse === 'function') {
+                    onRemoveCourse(c.id);
+                    return;
+                  }
+                  onAddCourse(c.id);
+                }}
                 style={{
                   padding: '5px 10px', borderRadius: 6, fontSize: 11, fontWeight: 500,
-                  background: 'var(--surface-2)', border: '1px solid var(--border)',
-                  color: 'var(--text)',
+                  background: isScheduled ? 'var(--surface)' : 'var(--surface-2)',
+                  border: `1px solid ${isScheduled ? 'var(--accent)' : 'var(--border)'}`,
+                  color: isScheduled ? 'var(--accent)' : 'var(--text)',
                 }}
               >
-                + Add
+                {isScheduled ? 'Remove' : '+ Add'}
               </button>
             </div>
           );

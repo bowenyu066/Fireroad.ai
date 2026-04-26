@@ -278,14 +278,14 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
           <AgentPanel
             messages={messages} setMessages={setMessages}
             profile={profile} schedule={schedule}
-            onAddCourse={onAddCourse} onOpenCourse={onOpenCourse}
+            onAddCourse={onAddCourse} onRemoveCourse={onRemoveCourse} onOpenCourse={onOpenCourse}
             onApplyUiActions={applyUiActions}
           />
         </div>
 
         {/*
           Recommendations panel hidden per product decision (kept for future use):
-          <Recommendations schedule={schedule} onAddCourse={onAddCourse} onOpenCourse={onOpenCourse} />
+          <Recommendations schedule={schedule} onAddCourse={onAddCourse} onRemoveCourse={onRemoveCourse} onOpenCourse={onOpenCourse} />
         */}
       </div>
     </div>
