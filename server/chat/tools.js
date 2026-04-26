@@ -55,6 +55,20 @@ function normalizeSchedule(schedule) {
   return ids;
 }
 
+function semesterSeason(semId) {
+  const value = String(semId || '').toUpperCase();
+  if (value.startsWith('IAP')) return 'iap';
+  if (value.startsWith('SU')) return 'summer';
+  if (value.startsWith('F')) return 'fall';
+  if (value.startsWith('S')) return 'spring';
+  return null;
+}
+
+function isOfferedInSemester(course, semId) {
+  const season = semesterSeason(semId);
+  return !season || !course || !course.offered || course.offered[season] !== false;
+}
+
 function normalizeProfile(profile) {
   const incoming = profile && typeof profile === 'object' ? profile : {};
   return {
@@ -676,6 +690,7 @@ async function recommendCourses(args = {}, context = {}) {
     maxWorkload,
     requirements: targetRequirements,
     departments,
+    semester: context.activeSem || '',
   });
   if (!pool.results.length && targetRequirements.length) {
     pool = await searchCurrentCourses({
@@ -683,9 +698,11 @@ async function recommendCourses(args = {}, context = {}) {
       maxResults: Math.max(maxResults * 8, 40),
       maxWorkload,
       departments,
+      semester: context.activeSem || '',
     });
   }
-  const exactUnmetCourses = (await Promise.all(unmetCourseIds.slice(0, 40).map(fetchCurrentCourse))).filter(Boolean);
+  const exactUnmetCourses = (await Promise.all(unmetCourseIds.slice(0, 40).map(fetchCurrentCourse)))
+    .filter((course) => course && isOfferedInSemester(course, context.activeSem));
   const poolById = new Map();
   [...exactUnmetCourses, ...pool.results].forEach((course) => {
     if (course && course.id && !poolById.has(course.id)) poolById.set(course.id, course);
@@ -965,7 +982,7 @@ function checkDegreeRequirementsTool(args = {}, context = {}) {
   return requirementStatusForProfile(profile, courses);
 }
 
-async function validateUiAction(action, schedule) {
+async function validateUiAction(action, schedule, context = {}) {
   if (!action || typeof action !== 'object') {
     return { ok: false, reason: 'Action must be an object.' };
   }
@@ -981,6 +998,11 @@ async function validateUiAction(action, schedule) {
 
   if (!course) {
     return { ok: false, reason: `Course ${courseId || 'unknown'} does not exist in the current catalog.` };
+  }
+
+  if ((type === 'add_course' || type === 'replace_course') && !isOfferedInSemester(course, context.activeSem)) {
+    const term = context.planningTermLabel || context.activeSem || 'the active semester';
+    return { ok: false, reason: `${course.id} is not offered in ${term}.` };
   }
 
   if (type === 'replace_course') {
@@ -1011,7 +1033,7 @@ async function validateUiAction(action, schedule) {
 
 async function validateUiActionTool(args = {}, context = {}) {
   const schedule = scheduleForTool(args, context);
-  return validateUiAction(args.action, schedule);
+  return validateUiAction(args.action, schedule, context);
 }
 
 async function sanitizeSuggestions(suggestions) {

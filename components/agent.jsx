@@ -672,9 +672,13 @@ const ProposalCard = ({ proposal, onApplyUiActions }) => {
       return;
     }
     appliedRef.current = true;
-    const undo = onApplyUiActions(actions);
-    undoRef.current = typeof undo === 'function' ? undo : null;
-    setState('applied');
+    Promise.resolve(onApplyUiActions(actions)).then((undo) => {
+      undoRef.current = typeof undo === 'function' ? undo : null;
+      setState('applied');
+    }).catch((error) => {
+      console.error('[proposal] failed to apply ui actions', error);
+      setState('applied');
+    });
   }, [proposal, actions, onApplyUiActions]);
 
   if (!proposal || state === 'dismissed') return null;
@@ -731,7 +735,22 @@ const areaForCourseMention = (courseId) => {
   return 'other';
 };
 
+const semesterSeasonForAgent = (semId) => {
+  const value = String(semId || '').toUpperCase();
+  if (value.startsWith('IAP')) return 'iap';
+  if (value.startsWith('SU')) return 'summer';
+  if (value.startsWith('F')) return 'fall';
+  if (value.startsWith('S')) return 'spring';
+  return null;
+};
+
+const isCourseOfferedForAgent = (course, semId) => {
+  const season = semesterSeasonForAgent(semId);
+  return !season || !course?.offered || course.offered[season] !== false;
+};
+
 const CourseMentionMenu = ({ courseId, position, schedule, onAddCourse, onRemoveCourse, onOpenCourse, onClose }) => {
+  const { activeSem } = useApp();
   const [course, setCourse] = useState(null);
   const normalizedId = String(courseId || '').trim().toUpperCase();
   const scheduled = new Set((schedule || []).map((id) => String(id).toUpperCase()));
@@ -753,6 +772,7 @@ const CourseMentionMenu = ({ courseId, position, schedule, onAddCourse, onRemove
   const area = course?.area || areaForCourseMention(normalizedId);
   const actionId = String(course?.id || normalizedId).toUpperCase();
   const isScheduled = scheduled.has(actionId) || scheduled.has(normalizedId);
+  const notOffered = course && !isCourseOfferedForAgent(course, activeSem);
   const popoverStyle = position ? {
     position: 'fixed',
     left: position.left,
@@ -766,7 +786,7 @@ const CourseMentionMenu = ({ courseId, position, schedule, onAddCourse, onRemove
   const handleScheduleAction = () => {
     if (isScheduled) {
       if (typeof onRemoveCourse === 'function') onRemoveCourse(actionId);
-    } else if (typeof onAddCourse === 'function') {
+    } else if (!notOffered && typeof onAddCourse === 'function') {
       onAddCourse(actionId);
     }
     if (typeof onClose === 'function') onClose();
@@ -784,14 +804,18 @@ const CourseMentionMenu = ({ courseId, position, schedule, onAddCourse, onRemove
           type="button"
           className={isScheduled ? 'btn-ghost' : 'btn-primary'}
           onClick={handleScheduleAction}
+          disabled={!isScheduled && notOffered}
+          title={!isScheduled && notOffered ? `Not offered in ${activeSem}` : undefined}
           style={{
             padding: '6px 11px',
             borderRadius: 999,
             border: isScheduled ? '1px solid var(--border)' : '1px solid var(--accent)',
             fontSize: 12,
+            opacity: !isScheduled && notOffered ? 0.55 : 1,
+            cursor: !isScheduled && notOffered ? 'not-allowed' : 'pointer',
           }}
         >
-          {isScheduled ? 'Remove' : 'Add'}
+          {isScheduled ? 'Remove' : (notOffered ? 'Not offered' : 'Add')}
         </button>
         <button
           type="button"

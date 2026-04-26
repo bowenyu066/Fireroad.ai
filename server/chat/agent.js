@@ -596,7 +596,7 @@ async function validateFinalActions(actions, context, debug, allowActions) {
   const validated = [];
 
   for (const action of asArray(actions)) {
-    const validation = await validateUiAction(action, workingSchedule);
+    const validation = await validateUiAction(action, workingSchedule, context);
     debug.finalActionValidation.push({ action, validation });
     if (!validation.ok) continue;
 
