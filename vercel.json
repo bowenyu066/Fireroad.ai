@@ -4,7 +4,22 @@
     {
       "src": "server.js",
       "use": "@vercel/node",
-      "config": { "maxDuration": 120 }
+      "config": {
+        "maxDuration": 120,
+        "includeFiles": [
+          "index.html",
+          "styles.css",
+          "*.jsx",
+          "data.js",
+          "components/**",
+          "shared/**",
+          "prompt*.md",
+          "data/courses.json",
+          "data/reqs.json",
+          "data/most_taken.json",
+          "data/requirements/**"
+        ]
+      }
     }
   ],
   "routes": [
