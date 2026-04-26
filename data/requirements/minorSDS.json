@@ -1,0 +1,151 @@
+{
+  "title-no-degree": "Interdisciplinary",
+  "list-id": "minorSDS.reql",
+  "title": "Minor in Statistics and Data Science",
+  "medium-title": "Statistics and Data Science Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "req": "6.9080"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "6.100A"
+                },
+                {
+                  "req": "6.100B"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "title": "Foundation 1"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "2.087"
+            },
+            {
+              "req": "18.03"
+            },
+            {
+              "req": "18.06"
+            },
+            {
+              "req": "18.061"
+            }
+          ],
+          "title": "Foundation 2"
+        }
+      ],
+      "threshold-desc": "select all"
+    },
+    {
+      "connection-type": "any",
+      "desc": "Consult minor advisor about potential substitutions.",
+      "reqs": [
+        {
+          "req": "1.010"
+        },
+        {
+          "req": "6.3700"
+        },
+        {
+          "req": "9.07"
+        },
+        {
+          "req": "14.30"
+        },
+        {
+          "req": "15.069"
+        },
+        {
+          "req": "16.09"
+        },
+        {
+          "req": "18.600"
+        }
+      ],
+      "threshold-desc": "select any",
+      "title": "Statistics 1"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "14.32"
+        },
+        {
+          "req": "15.075"
+        },
+        {
+          "req": "18.650"
+        }
+      ],
+      "title": "Statistics 2"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "1.00"
+        },
+        {
+          "req": "2.086"
+        },
+        {
+          "req": "6.3800"
+        },
+        {
+          "req": "6.3900"
+        },
+        {
+          "req": "6.8711"
+        },
+        {
+          "req": "6.8301"
+        },
+        {
+          "req": "14.36"
+        },
+        {
+          "req": "15.053"
+        },
+        {
+          "req": "16.90"
+        },
+        {
+          "req": "18.065"
+        },
+        {
+          "req": "18.642"
+        }
+      ],
+      "title": "Computation & Data Analysis"
+    },
+    {
+      "req": "IDS.012",
+      "title": "Capstone"
+    }
+  ],
+  "short-title": "IDS",
+  "desc": "Statistics, the science of making inferences and decisions under uncertainty, is becoming increasingly relevant in the modern world due to the widespread availability of and access to unprecedented amounts of data and computational resources. Unlike classical statistics, the need to process and manage massive amounts of data has become a key feature of modern statistics. This aspect of managing and processing data is popularly referred to as \"data science.\""
+}

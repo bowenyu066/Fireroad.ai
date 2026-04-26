@@ -1,0 +1,144 @@
+{
+  "title-no-degree": "Renewable Energy Machines",
+  "list-id": "neetCES.reql",
+  "title": "NEET Certificate in Renewable Energy Machines",
+  "url": "https://neet.mit.edu/threads/rem",
+  "medium-title": "NEET Renewable Energy Machines",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "3.007"
+                },
+                {
+                  "req": "22.03"
+                }
+              ],
+              "threshold-desc": "select either"
+            },
+            {
+              "req": "1.101"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "2.00"
+                },
+                {
+                  "req": "2.00A"
+                },
+                {
+                  "req": "2.00B"
+                }
+              ],
+              "threshold-desc": "select any"
+            }
+          ],
+          "title": "Sophomore Fall"
+        },
+        {
+          "req": "22.071",
+          "title": "Sophomore Spring"
+        }
+      ],
+      "title": "Sophomore Year"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 1,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "SuperUROP in energy",
+              "plain-string": true
+            },
+            {
+              "req": "1.020"
+            }
+          ],
+          "title": "Junior Spring"
+        }
+      ],
+      "title": "Junior Year"
+    },
+    {
+      "connection-type": "all",
+      "desc": "Senior Fall: TBA Large-scale design-build-test of complete energy system; or a SuperUROP in energy.",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 12,
+                "criterion": "units",
+                "type": "GTE"
+              },
+              "req": "Complete energy system",
+              "plain-string": true,
+              "threshold-desc": "select any 12 units"
+            },
+            {
+              "threshold": {
+                "cutoff": 1,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "SuperUROP in energy",
+              "plain-string": true
+            }
+          ],
+          "title": "Senior Fall"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "16.634"
+            },
+            {
+              "req": "16.84"
+            }
+          ],
+          "title": "Senior Spring"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Senior Year"
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 6",
+      "req": "3 units of 22.003 each semester",
+      "threshold": {
+        "cutoff": 6,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "title": "Seminar",
+      "desc": "This interactive seminar is focused on identifying and solving major issues facing renewable energy. Each week features conversations with guest speakers from academia and industry who are experts in renewable energy and climate science."
+    }
+  ],
+  "short-title": "NEET",
+  "desc": "The Renewable Energy Machines thread trains students on the energy production, conversion, storage, and transmission technologies that produce little to no CO2 or greenhouse emissions. Every nation on earth except one recently affirmed their willingness to decrease CO2 and other greenhouse gas emissions, recognizing the issues and challenges facing the creation of a new, ultra-clean baseload energy generation system for developed and developing nations. The Renewable Energy Machines thread will prepare students to fully participate and lead in the creation of the world’s truly low-carbon grids and systems. Students will receive a solid foundation in the technical, economic, and societal aspects of low-carbon energy generation and distribution."
+}

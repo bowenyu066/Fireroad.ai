@@ -6,6 +6,7 @@ const currentRoutes = require('./routes/current');
 const healthRoutes = require('./routes/health');
 const historyRoutes = require('./routes/history');
 const onboardingRoutes = require('./onboarding/routes');
+const requirementsRoutes = require('./routes/requirements');
 const { getDb } = require('./history/db');
 
 const boolEnv = (name, fallback) => {
@@ -53,6 +54,7 @@ function createApp() {
   app.use('/api/current', currentRoutes);
   app.use('/api/history', historyRoutes);
   app.use('/api/onboarding', onboardingRoutes);
+  app.use('/api/requirements', requirementsRoutes);
 
   app.use(express.static(rootDir));
 

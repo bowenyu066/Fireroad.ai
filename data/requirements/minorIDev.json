@@ -1,0 +1,81 @@
+{
+  "title-no-degree": "Urban Studies and Planning",
+  "list-id": "minorIDev.reql",
+  "title": "Minor in International Development",
+  "medium-title": "11 Minor (International Development)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 2",
+          "reqs": [
+            {
+              "req": "11.005"
+            },
+            {
+              "req": "11.025"
+            },
+            {
+              "req": "11.140"
+            }
+          ],
+          "title": "Introduction to International Development Theories and Practice"
+        }
+      ],
+      "title": "Tier I"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 4,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 4",
+          "reqs": [
+            {
+              "req": "11.002"
+            },
+            {
+              "req": "11.027"
+            },
+            {
+              "req": "11.144"
+            },
+            {
+              "req": "11.147"
+            },
+            {
+              "req": "11.164"
+            },
+            {
+              "req": "11.165"
+            },
+            {
+              "req": "11.166"
+            },
+            {
+              "req": "EC.715"
+            }
+          ],
+          "title": "Specialized Topics in International Development"
+        }
+      ],
+      "title": "Tier II"
+    }
+  ],
+  "short-title": "11",
+  "desc": "The HASS Minor in International Development aims to increase students’ ability to understand, analyze, and tackle problems of global poverty and economic development in the developing world. Challenges include increasing urbanization; the need for industrial growth as well as jobs for an increasing number of educated youth; the crisis of resources and infrastructure; the fragmentation of state capacity and rising violence; ethical and moral issues raised by development planning; the role of appropriate technology and research; and popular discontent. The minor emphasizes problem-solving, multidisciplinarity, and an understanding of institutions at various levels—from the local to the global—as the keys to solving today’s problems in emerging countries.\n\nAdditional subjects not listed above may be included in the minor at the discretion of the minor advisor."
+}

@@ -1,0 +1,262 @@
+{
+  "title-no-degree": "Business Analytics",
+  "list-id": "major15-2.reql",
+  "title": "Bachelor of Science in Business Analytics",
+  "url": "https://mitsloan.mit.edu/undergrad/15-2-business-analytics-major-requirements",
+  "medium-title": "15-2 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "6.100A"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "6.1010"
+            },
+            {
+              "req": "6.100B"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "6.3900"
+            },
+            {
+              "req": "15.0711"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "15.053"
+        },
+        {
+          "req": "15.076"
+        },
+        {
+          "req": "15.276"
+        },
+        {
+          "req": "15.312"
+        },
+        {
+          "req": "15.780"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.069"
+            },
+            {
+              "req": "14.30"
+            },
+            {
+              "req": "18.05"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold-desc": "select any 5 subjects",
+      "title": "Restricted Electives",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.0201"
+            },
+            {
+              "req": "15.0251"
+            },
+            {
+              "req": "15.0341"
+            },
+            {
+              "req": "15.037"
+            },
+            {
+              "req": "15.068"
+            },
+            {
+              "req": "15.0711"
+            },
+            {
+              "req": "15.093"
+            },
+            {
+              "req": "15.285"
+            },
+            {
+              "req": "15.450"
+            },
+            {
+              "req": "15.456"
+            },
+            {
+              "req": "15.458"
+            },
+            {
+              "req": "15.570"
+            },
+            {
+              "req": "15.669"
+            },
+            {
+              "req": "15.6731"
+            },
+            {
+              "req": "15.690"
+            },
+            {
+              "req": "15.7611"
+            },
+            {
+              "req": "15.762"
+            },
+            {
+              "req": "15.763"
+            },
+            {
+              "req": "15.777"
+            },
+            {
+              "req": "15.8141"
+            },
+            {
+              "req": "15.819"
+            },
+            {
+              "req": "15.871"
+            },
+            {
+              "req": "15.8731"
+            },
+            {
+              "req": "15.8741"
+            },
+            {
+              "req": "15.C08"
+            },
+            {
+              "req": "15.C571"
+            }
+          ],
+          "threshold-desc": "select any 2"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "LTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.417"
+            },
+            {
+              "req": "15.401"
+            },
+            {
+              "req": "15.501"
+            },
+            {
+              "req": "15.9001"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "LTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "1.041"
+            },
+            {
+              "req": "6.034"
+            },
+            {
+              "req": "6.042"
+            },
+            {
+              "req": "6.050"
+            },
+            {
+              "req": "9.401"
+            },
+            {
+              "req": "9.66"
+            },
+            {
+              "req": "14.12"
+            },
+            {
+              "req": "14.15"
+            },
+            {
+              "req": "18.06"
+            },
+            {
+              "req": "18.615"
+            },
+            {
+              "req": "IDS.012"
+            }
+          ],
+          "threshold-desc": "select at most 2"
+        }
+      ],
+      "connection-type": "all",
+      "threshold": {
+        "cutoff": 5,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Five full subjects from the approved list of subjects. At least three full subjects must be from Course 15. A full subject is either 9 or 12 units. A half subject is 6 units."
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "15.276"
+        },
+        {
+          "req": "15.312"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "15-2",
+  "desc": ""
+}

@@ -1,0 +1,108 @@
+{
+  "title-no-degree": "Finance",
+  "list-id": "minor15-3old.reql",
+  "title": "Minor in Finance (Old)",
+  "url": "https://mitsloan.mit.edu/undergrad/15-3-finance-minor-requirements",
+  "medium-title": "15 Minor (Finance) (Old)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.417"
+            },
+            {
+              "req": "15.401"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.418"
+            },
+            {
+              "req": "15.402"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "15.501"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "15.4331"
+        },
+        {
+          "req": "15.4371"
+        },
+        {
+          "req": "15.438"
+        },
+        {
+          "req": "15.4311"
+        },
+        {
+          "req": "15.4341"
+        },
+        {
+          "req": "15.4451"
+        },
+        {
+          "req": "15.447"
+        },
+        {
+          "req": "15.450"
+        },
+        {
+          "req": "15.456"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "15.458"
+            },
+            {
+              "req": "15.459"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "req": "15.466"
+        },
+        {
+          "req": "15.467"
+        },
+        {
+          "req": "15.5181"
+        },
+        {
+          "req": "15.535"
+        }
+      ],
+      "title": "Restricted Electives"
+    }
+  ],
+  "short-title": "15",
+  "desc": "The Minor in Finance provides undergraduates in other majors with an understanding of the major areas of finance—corporate finance and investments. The minor will prepare students to understand the different roles in financial industries and how to apply their major course of study to succeed in these fields."
+}

@@ -1,0 +1,152 @@
+{
+  "title-no-degree": "Materials Science and Engineering",
+  "list-id": "minor3.reql",
+  "title": "Minor in Materials Science and Engineering",
+  "medium-title": "3 Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "3.010"
+        },
+        {
+          "req": "3.020"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "3.013"
+        },
+        {
+          "req": "3.023"
+        },
+        {
+          "req": "3.030"
+        },
+        {
+          "req": "3.033"
+        },
+        {
+          "req": "3.044"
+        },
+        {
+          "req": "3.042"
+        }
+      ],
+      "title": "Core Subjects"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "3.004"
+        },
+        {
+          "req": "3.017"
+        },
+        {
+          "req": "3.021"
+        },
+        {
+          "req": "3.046"
+        },
+        {
+          "req": "3.052"
+        },
+        {
+          "req": "3.053"
+        },
+        {
+          "req": "3.054"
+        },
+        {
+          "req": "3.055"
+        },
+        {
+          "req": "3.063"
+        },
+        {
+          "req": "3.064"
+        },
+        {
+          "req": "3.07"
+        },
+        {
+          "req": "3.071"
+        },
+        {
+          "req": "3.074"
+        },
+        {
+          "req": "3.080"
+        },
+        {
+          "req": "3.081"
+        },
+        {
+          "req": "3.086"
+        },
+        {
+          "req": "3.087"
+        },
+        {
+          "req": "3.088"
+        },
+        {
+          "req": "3.14"
+        },
+        {
+          "req": "3.15"
+        },
+        {
+          "req": "3.152"
+        },
+        {
+          "req": "3.154"
+        },
+        {
+          "req": "3.155"
+        },
+        {
+          "req": "3.156"
+        },
+        {
+          "req": "3.16"
+        },
+        {
+          "req": "3.17"
+        },
+        {
+          "req": "3.171"
+        },
+        {
+          "req": "3.18"
+        },
+        {
+          "req": "3.19"
+        }
+      ],
+      "title": "Restricted Electives"
+    }
+  ],
+  "short-title": "3",
+  "desc": "The Minor in Materials Science and Engineering consists of six undergraduate subjects totaling at least 72 units from the list of Required, Core, and Restricted Electives in the departmental program. The two required subjects must be taken, along with 2 core subjects and 2 restricted electives. With the approval of the minor advisor, students may substitute one subject taken outside the department for one of the core or restricted elective subjects, provided that the coverage of the substituted subject is similar to one of those in the departmental program. A minimum of 60 units must be Course 3 subject units, with the exception being if the minor proposal includes 18.03. In this case, a minimum of 48 Course 3 credits may be approved. Examples of minor programs in materials science and engineering can be obtained from the department."
+}

@@ -1,0 +1,122 @@
+{
+  "title-no-degree": "Mechanical Engineering",
+  "list-id": "major2a.reql",
+  "title": "Engineering as Recommended by the Department of Mechanical Engineering",
+  "medium-title": "2-A Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "2.00"
+            },
+            {
+              "req": "2.00A"
+            },
+            {
+              "req": "2.00B"
+            },
+            {
+              "req": "2.00C"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "req": "2.001"
+        },
+        {
+          "req": "2.003"
+        },
+        {
+          "req": "2.005"
+        },
+        {
+          "req": "2.086"
+        },
+        {
+          "req": "2.671"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "2.678"
+            },
+            {
+              "req": "2.674"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "18.03"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "2.009"
+            },
+            {
+              "req": "2.013"
+            },
+            {
+              "req": "2.750"
+            },
+            {
+              "req": "2.760"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Required Core Subjects"
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 72 units",
+      "req": "72 units",
+      "threshold": {
+        "cutoff": 72,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "title": "Elective Subjects with Engineering Content",
+      "desc": "Must include one REST subject outside Course 2. These electives define a concentrated area of study which must be approved by the 2-A review committee. The concentration electives must form an engineering topic. Concentration electives must include one subject that meets the REST GIR, but not subjects that fulfill a HASS GIR. In some cases, non-engineering subjects may be necessary for the particular engineering topic defined by the concentration (e.g., management subjects for an engineering management concentration), in which case additional engineering subjects may be required to meet the engineering accreditation standards. In all cases, the relationship of concentration subjects to the engineering topic must be obvious."
+    },
+    {
+      "threshold": {
+        "cutoff": 1,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "2.671"
+        },
+        {
+          "req": "2.009"
+        },
+        {
+          "req": "2.013"
+        },
+        {
+          "req": "2.750"
+        },
+        {
+          "req": "2.760"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "2",
+  "desc": "Course 2-A is designed for students whose academic and career goals demand greater breadth and flexibility than are allowed under the mechanical engineering program, Course 2. To a large extent, the 2-A program allows students an opportunity to tailor a curriculum to their own needs, starting from a solid mechanical engineering base. The program combines a rigorous grounding in core mechanical engineering topics with an individualized course of study focused on a second area that the student designs with the help and approval of the 2-A faculty advisor. The program leads to the degree Bachelor of Science in Engineering as Recommended by the Department of Mechanical Engineering."
+}

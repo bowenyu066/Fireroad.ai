@@ -1,0 +1,203 @@
+{
+  "title-no-degree": "Latin American and Latino/a Studies",
+  "list-id": "minorLALS.reql",
+  "title": "Minor in Latin American and Latino/a Studies",
+  "medium-title": "21 Minor (Latin American Studies)",
+  "reqs": [
+    {
+      "threshold-desc": "select any 2",
+      "title": "Area I: Language",
+      "reqs": [
+        {
+          "req": "21G.703"
+        },
+        {
+          "req": "21G.704"
+        },
+        {
+          "req": "21G.711"
+        },
+        {
+          "req": "21G.712"
+        },
+        {
+          "req": "21G.713"
+        },
+        {
+          "req": "21G.714"
+        },
+        {
+          "req": "21G.715"
+        },
+        {
+          "req": "21G.803"
+        },
+        {
+          "req": "21G.804"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Two language subjects beginning at Levels III and IV, either in Spanish or Portuguese, satisfy the Area I language requirement. MIT offers Levels III and IV of Spanish every semester and offers Level III of Portuguese every fall semester and Level IV every spring semester. Students who demonstrate competence beyond Level IV may either take two advanced language subjects (highly recommended) or two more subjects from Areas II, III, and IV."
+    },
+    {
+      "req": "17.55",
+      "title": "Required Subject"
+    },
+    {
+      "distinct-threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "threshold-desc": "select any 4 from at least 2 categories",
+      "title": "Additional Areas",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "21G.070"
+                },
+                {
+                  "req": "21G.072"
+                },
+                {
+                  "req": "21G.074"
+                },
+                {
+                  "req": "21L.019"
+                }
+              ],
+              "title": "Taught in English"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "21G.735"
+                },
+                {
+                  "req": "21G.731"
+                },
+                {
+                  "req": "21G.736"
+                },
+                {
+                  "req": "21L.638"
+                },
+                {
+                  "req": "21L.639"
+                },
+                {
+                  "req": "21L640"
+                }
+              ],
+              "title": "Taught in Spanish"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "threshold-desc": "optional - select any",
+              "req": "21G.820",
+              "title": "Taught in Portuguese"
+            }
+          ],
+          "title": "Area II: Humanities and the Arts"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "17.55"
+            },
+            {
+              "req": "3.982"
+            },
+            {
+              "req": "3.983"
+            },
+            {
+              "req": "21A.506"
+            }
+          ],
+          "title": "Area III: Social Studies"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 3,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "Appropriate Harvard or Wellesley subjects",
+              "plain-string": true,
+              "threshold-desc": "select any 3"
+            },
+            {
+              "req": "21H.171"
+            },
+            {
+              "req": "21H.172"
+            },
+            {
+              "req": "21H.273"
+            }
+          ],
+          "title": "Area IV: Historical Studies"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 4,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "For students who are not required to take Area I subjects and opt not to take advanced language subjects (see footnote 1 above), all six subjects for the minor must be taken from Areas II, III, and IV, with at least one subject from each area. Students may not take more than one subject focused on the Iberian Peninsula."
+    }
+  ],
+  "short-title": "21",
+  "desc": "The Minor in Latin American and Latino/a Studies is designed for students interested in the languages, history, politics, and cultures of Latin America and in its presence in the United States. Students are encouraged to develop a program that is both international and comparative in perspective, and that takes into account the heterogeneous cultural experiences of people living in the vast territory encompassed by the term Latin America, as well as of those living in the United States who identify themselves as Latino/a."
+}

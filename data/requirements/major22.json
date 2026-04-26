@@ -1,0 +1,231 @@
+{
+  "title-no-degree": "Nuclear Science and Engineering",
+  "list-id": "major22.reql",
+  "title": "Bachelor of Science in Nuclear Science and Engineering",
+  "medium-title": "22 Major - Focused",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "2.005"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "18.03"
+            },
+            {
+              "req": "18.032"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "22.01"
+        }
+      ],
+      "title": "Basic Requirements"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "22.02"
+        },
+        {
+          "req": "22.033"
+        },
+        {
+          "req": "22.04"
+        },
+        {
+          "req": "22.05"
+        },
+        {
+          "req": "22.06"
+        },
+        {
+          "req": "22.061"
+        },
+        {
+          "req": "22.09"
+        }
+      ],
+      "title": "Required Core Subjects"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "22.THT"
+        },
+        {
+          "req": "22.THU"
+        }
+      ],
+      "title": "Required Thesis"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "6.3700"
+        },
+        {
+          "req": "18.04"
+        },
+        {
+          "req": "18.05"
+        },
+        {
+          "req": "18.075"
+        },
+        {
+          "req": "18.600"
+        }
+      ],
+      "title": "Mathematics Elective"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "1.000"
+        },
+        {
+          "req": "2.086"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "6.100A"
+            },
+            {
+              "req": "6.100B"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "req": "12.010"
+        },
+        {
+          "req": "22.C25"
+        }
+      ],
+      "title": "Computation Elective"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "1.050"
+        },
+        {
+          "req": "2.001"
+        },
+        {
+          "req": "3.010"
+        },
+        {
+          "req": "3.013"
+        },
+        {
+          "req": "8.03"
+        }
+      ],
+      "title": "Materials Science and Physics Elective"
+    },
+    {
+      "connection-type": "any",
+      "desc": "In consultation with advisor, select one subject in NSE.",
+      "reqs": [
+        {
+          "req": "2.006"
+        },
+        {
+          "req": "3.14"
+        },
+        {
+          "req": "6.UAP"
+        },
+        {
+          "req": "22.022"
+        },
+        {
+          "req": "22.039"
+        },
+        {
+          "req": "22.051"
+        },
+        {
+          "req": "22.054"
+        },
+        {
+          "req": "22.055"
+        },
+        {
+          "req": "22.071"
+        },
+        {
+          "req": "22.072"
+        },
+        {
+          "req": "22.074"
+        },
+        {
+          "req": "22.078"
+        },
+        {
+          "req": "22.081"
+        },
+        {
+          "req": "22.14"
+        },
+        {
+          "req": "22.15"
+        },
+        {
+          "req": "22.212"
+        },
+        {
+          "req": "22.213"
+        },
+        {
+          "req": "22.251"
+        },
+        {
+          "req": "22.313"
+        },
+        {
+          "req": "22.315"
+        },
+        {
+          "req": "22.611"
+        },
+        {
+          "req": "22.615"
+        },
+        {
+          "req": "22.62"
+        },
+        {
+          "req": "22.814"
+        }
+      ],
+      "threshold-desc": "select any",
+      "title": "Restricted Electives in NSE"
+    }
+  ],
+  "short-title": "22",
+  "desc": "The department's undergraduate program offers a strong foundation in science-based engineering, providing the skills and knowledge for a broad range of careers. The program develops scientific and engineering fundamentals in the production, interactions, measurement, and control of radiation arising from nuclear processes. In addition, the program introduces students to thermal-fluid engineering, electronics, and computational methods. Building upon these fundamentals, students understand the principles, design, and appropriate application of nuclear-based systems that have broad societal impacts in energy, human health, and security—for example, reactors, imaging systems, detectors, and plasma confinement. In addition, they develop professional skills in quantitative research, written and oral technical communication, team building, and leadership. The program provides excellent preparation for subsequent graduate education and research in a broad range of fields. In the nuclear field, there is high demand for nuclear engineers around the world as the nuclear energy industry continues to expand. Other nuclear and radiation applications are increasingly important in medicine, industry, and government. This degree is ABET accredited."
+}

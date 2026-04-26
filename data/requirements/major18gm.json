@@ -1,0 +1,156 @@
+{
+  "title-no-degree": "General Mathematics",
+  "list-id": "major18gm.reql",
+  "title": "Bachelor of Science in Mathematics (General Mathematics Option)",
+  "medium-title": "18 Major (General)",
+  "reqs": [
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "18.03"
+        },
+        {
+          "req": "18.032"
+        },
+        {
+          "req": "18.152"
+        },
+        {
+          "req": "18.303"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "Select eight 12-unit subjects of essentially different content, including at least six advanced subjects (first decimal digit one or higher).",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "18.06"
+            },
+            {
+              "req": "18.700"
+            },
+            {
+              "req": "18.701"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "threshold": {
+            "cutoff": 6,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "6 subjects (first decimal ≥ 1)",
+          "plain-string": true,
+          "threshold-desc": "select any 6"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "1 additional subject",
+          "plain-string": true
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Restricted Electives"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "all",
+      "threshold-desc": "select any 2 subjects",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "18.104"
+            },
+            {
+              "req": "18.204"
+            },
+            {
+              "req": "18.384"
+            },
+            {
+              "req": "18.424"
+            },
+            {
+              "req": "18.434"
+            },
+            {
+              "req": "18.504"
+            },
+            {
+              "req": "18.704"
+            },
+            {
+              "req": "18.784"
+            },
+            {
+              "req": "18.821"
+            },
+            {
+              "req": "18.904"
+            },
+            {
+              "req": "18.994"
+            }
+          ],
+          "title": "Option A"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "8.06"
+            },
+            {
+              "req": "14.18"
+            },
+            {
+              "req": "14.33"
+            },
+            {
+              "req": "18.100P"
+            },
+            {
+              "req": "18.100Q"
+            },
+            {
+              "req": "18.200"
+            },
+            {
+              "req": "18.642"
+            }
+          ],
+          "title": "Option B"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "18",
+  "desc": "In addition to the General Institute Requirements, the requirements consist of Differential Equations, plus eight additional 12-unit subjects in Course 18 of essentially different content, including at least six advanced subjects (first decimal digit one or higher). One of these eight subjects must be Linear Algebra. This leaves available 84 units of unrestricted electives. The requirements are flexible in order to accommodate students who pursue programs that combine mathematics with a related field (such as physics, economics, or management) as well as students who are interested in both pure and applied mathematics. More details can be found on the degree chart."
+}

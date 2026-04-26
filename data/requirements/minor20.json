@@ -1,0 +1,82 @@
+{
+  "title-no-degree": "Biological Engineering",
+  "list-id": "minor20.reql",
+  "title": "Minor in Toxicology and Environmental Health",
+  "medium-title": "20 Minor (Toxicology & Environmental Health)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "20.102"
+        },
+        {
+          "req": "20.104"
+        },
+        {
+          "req": "20.106"
+        }
+      ],
+      "title": "Core Subjects"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "5.310"
+        },
+        {
+          "req": "7.02"
+        },
+        {
+          "req": "20.109"
+        }
+      ],
+      "title": "Laboratory Core"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "1.080A"
+            },
+            {
+              "req": "1.080B"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "req": "1.089"
+        },
+        {
+          "req": "5.07"
+        },
+        {
+          "req": "7.05"
+        },
+        {
+          "req": "7.06"
+        },
+        {
+          "req": "7.28"
+        },
+        {
+          "req": "20.URG"
+        },
+        {
+          "req": "22.01"
+        }
+      ],
+      "title": "Restricted Electives"
+    }
+  ],
+  "short-title": "20",
+  "desc": "The Department of Biological Engineering offers an undergraduate Minor in Toxicology and Environmental Health. The goal of this program is to meet the growing demand for undergraduates to acquire the intellectual tools needed to understand and assess the impact of new products and processes on human health, and to provide a perspective on the risks of human exposure to synthetic and natural chemicals, physical agents, and microorganisms."
+}

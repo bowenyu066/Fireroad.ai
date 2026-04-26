@@ -1,0 +1,103 @@
+{
+  "title-no-degree": "Global Studies and Languages",
+  "list-id": "minorGerman.reql",
+  "title": "Minor in German",
+  "medium-title": "21G Minor (German)",
+  "reqs": [
+    {
+      "threshold-desc": "optional - select any",
+      "title": "Tier I",
+      "reqs": [
+        {
+          "req": "21G.403"
+        },
+        {
+          "req": "21G.404"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 0,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Two subjects or fewer depending on demonstrated level of entering competence."
+    },
+    {
+      "threshold-desc": "select any 2",
+      "title": "Tier II",
+      "reqs": [
+        {
+          "req": "21G.405"
+        },
+        {
+          "req": "21G.409"
+        },
+        {
+          "req": "21G.410"
+        },
+        {
+          "req": "21G.412"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Select two or three of the following subjects in German language, literature, and culture."
+    },
+    {
+      "threshold-desc": "select any 2",
+      "title": "Tier III",
+      "reqs": [
+        {
+          "req": "17.561"
+        },
+        {
+          "req": "21G.019"
+        },
+        {
+          "req": "21G.055"
+        },
+        {
+          "req": "21G.057"
+        },
+        {
+          "req": "21G.058"
+        },
+        {
+          "req": "21G.059"
+        },
+        {
+          "req": "21G.414"
+        },
+        {
+          "req": "21G.415"
+        },
+        {
+          "req": "21G.416"
+        },
+        {
+          "req": "21G.417"
+        },
+        {
+          "req": "21G.418"
+        },
+        {
+          "req": "21G.420"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Select two or three of the following advanced subjects in German literature and culture."
+    }
+  ],
+  "short-title": "21G",
+  "desc": ""
+}

@@ -1,0 +1,255 @@
+{
+  "title-no-degree": "Materials Science and Engineering",
+  "list-id": "major3a.reql",
+  "title": "Bachelor of Science as Recommended by the Department of Materials Science and Engineering",
+  "medium-title": "3-A Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "3.013"
+            },
+            {
+              "req": "3.023"
+            },
+            {
+              "req": "3.029"
+            },
+            {
+              "req": "3.030"
+            },
+            {
+              "req": "3.033"
+            },
+            {
+              "req": "3.044"
+            },
+            {
+              "req": "3.042"
+            }
+          ],
+          "threshold-desc": "select any 3"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "18.03"
+            },
+            {
+              "req": "18.06"
+            },
+            {
+              "req": "18.C06"
+            },
+            {
+              "req": "18.032"
+            },
+            {
+              "req": "CC.1803"
+            },
+            {
+              "req": "ES.1803"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "req": "3.010"
+        },
+        {
+          "req": "3.020"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold": {
+        "cutoff": 36,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 36 units",
+      "reqs": [
+        {
+          "req": "3.004"
+        },
+        {
+          "req": "3.017"
+        },
+        {
+          "req": "3.021"
+        },
+        {
+          "req": "3.039"
+        },
+        {
+          "req": "3.041"
+        },
+        {
+          "req": "3.046"
+        },
+        {
+          "req": "3.052"
+        },
+        {
+          "req": "3.053"
+        },
+        {
+          "req": "3.054"
+        },
+        {
+          "req": "3.055"
+        },
+        {
+          "req": "3.056"
+        },
+        {
+          "req": "3.063"
+        },
+        {
+          "req": "3.064"
+        },
+        {
+          "req": "3.07"
+        },
+        {
+          "req": "3.071"
+        },
+        {
+          "req": "3.074"
+        },
+        {
+          "req": "3.080"
+        },
+        {
+          "req": "3.081"
+        },
+        {
+          "req": "3.086"
+        },
+        {
+          "req": "3.087"
+        },
+        {
+          "req": "3.088"
+        },
+        {
+          "req": "3.14"
+        },
+        {
+          "req": "3.15"
+        },
+        {
+          "req": "3.152"
+        },
+        {
+          "req": "3.154"
+        },
+        {
+          "req": "3.155"
+        },
+        {
+          "req": "3.156"
+        },
+        {
+          "req": "3.16"
+        },
+        {
+          "req": "3.17"
+        },
+        {
+          "req": "3.171"
+        },
+        {
+          "req": "3.173"
+        },
+        {
+          "req": "3.18"
+        },
+        {
+          "req": "3.19"
+        }
+      ],
+      "title": "Restricted Electives"
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 66 units",
+      "req": "66 units",
+      "threshold": {
+        "cutoff": 66,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "title": "Electives",
+      "desc": "Select 66 units from a proposal of study approved by the department. Students must develop a program of elective subjects totaling 66 units appropriate to their stated goals in their Course 3-A Program Proposal as approved by the DMSE Undergraduate Committee."
+    },
+    {
+      "connection-type": "all",
+      "desc": "The combination of 3.010 and 3.020 is equivalent to one communication-intensive subject (CI-M) in fulfillment of the Communication Requirement. For the second CI-M, students typically take 3.042 or 3.155J, but a range of options in other departments are available. Please refer to the 2020-2021 MIT Bulletin for the full degree chart and all CI-M choices",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "3.010"
+            },
+            {
+              "req": "3.020"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "2.009"
+            },
+            {
+              "req": "2.671"
+            },
+            {
+              "req": "3.042"
+            },
+            {
+              "req": "3.155"
+            },
+            {
+              "req": "7.003"
+            },
+            {
+              "req": "10.26"
+            },
+            {
+              "req": "10.28"
+            },
+            {
+              "req": "10.29"
+            },
+            {
+              "req": "10.467"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "3",
+  "desc": "Students planning to follow this curriculum must submit a program of study no later than the beginning of the their junior year.\n\nSome students may be attracted to the many opportunities available in the materials discipline, but also have special interests that are not satisfied by the Course 3 program. For instance, some students may wish to take more biology and chemistry subjects in preparation for medical school or more management subjects prior to entering an MBA or law program. In these cases, the 3-A program may be of value as a more flexible curriculum in which a larger number of elective choices is available.\n\nThe curriculum requirements for Course 3-A are similar to, but more flexible than, those for Course 3."
+}

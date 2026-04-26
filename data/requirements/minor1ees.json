@@ -1,0 +1,47 @@
+{
+  "title-no-degree": "Civil and Environmental Engineering",
+  "list-id": "minor1ees.reql",
+  "title": "Minor in Environmental Engineering Science",
+  "medium-title": "1 Minor (Environmental Engineering)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "1.018A"
+        },
+        {
+          "req": "1.060A"
+        },
+        {
+          "req": "1.061A"
+        },
+        {
+          "req": "1.070A"
+        },
+        {
+          "req": "1.080A"
+        },
+        {
+          "req": "1.089A"
+        },
+        {
+          "req": "1.091"
+        },
+        {
+          "req": "1.092"
+        },
+        {
+          "req": "1.106"
+        },
+        {
+          "req": "1.107"
+        }
+      ],
+      "title": "Required Subjects"
+    }
+  ],
+  "short-title": "1",
+  "desc": ""
+}

@@ -143,7 +143,7 @@ const CAL_PALETTE = ['#4A8FE8','#E8704A','#7C4AE8','#E84A7A','#14B8A6','#F59E0B'
 const CalendarView = ({ courses }) => {
   const days = ['M', 'T', 'W', 'R', 'F'];
   const dayLabels = { M: 'Mon', T: 'Tue', W: 'Wed', R: 'Thu', F: 'Fri' };
-  const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+  const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
   const colorOf = {};
   courses.forEach((c, i) => { colorOf[c.id] = CAL_PALETTE[i % CAL_PALETTE.length]; });
 
@@ -390,7 +390,7 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
   const courses = schedule.map((id) => courseMap[id] || FRDATA.getCourse(id)).filter(Boolean);
   const totalUnits = courses.reduce((s, c) => s + c.units, 0);
   const reqsCovered = new Set();
-  courses.forEach((c) => c.satisfies.forEach((r) => reqsCovered.add(r)));
+  courses.forEach((c) => (c.requirements || c.satisfies || []).forEach((r) => reqsCovered.add(r)));
 
   const mergeLoadedCourses = (coursesToMerge) => {
     setCourseMap((current) => ({
@@ -512,27 +512,140 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
 
       {/* Footer summary */}
       <div style={{ borderTop: '1px solid var(--border)', padding: '14px 20px', background: 'var(--bg)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <span className="eyebrow">Summary</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <span className="eyebrow">This semester</span>
           <span className="mono" style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
             <span style={{ color: 'var(--text)' }}>{totalUnits}</span> units
           </span>
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-          {FRDATA.profile.remainingReqs.map((r) => {
-            const covered = reqsCovered.has(r);
-            return (
-              <span key={r} className="mono" style={{
-                fontSize: 11, padding: '3px 8px', borderRadius: 999,
-                background: covered ? 'rgba(34, 197, 94, 0.1)' : 'var(--surface-2)',
-                color: covered ? 'var(--success)' : 'var(--text-secondary)',
-                border: '1px solid ' + (covered ? 'var(--success)' : 'var(--border)'),
-              }}>
-                {covered ? '✓ ' : ''}{r}
-              </span>
-            );
-          })}
-        </div>
+        <RequirementsPanel schedule={schedule} />
+      </div>
+    </div>
+  );
+};
+
+// ============== Requirements panel ==============
+const RequirementsPanel = ({ schedule }) => {
+  const { profile } = useApp();
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState({});
+  const reqRef = useRef(0);
+
+  const major = profile && profile.major;
+  const taken = (profile && profile.taken) || [];
+  const allCourses = [...new Set([...taken, ...schedule])];
+  const cacheKey = major + '|' + [...allCourses].sort().join(',');
+
+  useEffect(() => {
+    if (!major) return;
+    const id = ++reqRef.current;
+    setLoading(true);
+    fetch('/api/requirements/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ major, courses: allCourses }),
+    })
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(data => { if (reqRef.current === id) setResult(data); })
+      .catch(() => {})
+      .finally(() => { if (reqRef.current === id) setLoading(false); });
+  }, [cacheKey]);
+
+  const toggle = (id) => setExpanded(e => ({ ...e, [id]: !e[id] }));
+
+  if (loading) return (
+    <div style={{ fontSize: 12, color: 'var(--text-tertiary)', padding: '8px 0' }}>Checking requirements…</div>
+  );
+  if (!result) return null;
+
+  const pct = result.totalCount > 0 ? Math.round(result.satisfiedCount / result.totalCount * 100) : 0;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <span className="eyebrow">{result.title || 'Requirements'}</span>
+        <span className="mono" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+          {result.satisfiedCount}/{result.totalCount}
+        </span>
+      </div>
+      <div className="match-bar green" style={{ height: 4, marginBottom: 12 }}>
+        <span style={{ width: `${pct}%`, transition: 'width 600ms cubic-bezier(0.2,0.8,0.2,1)' }} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {result.groups.map(group => {
+          const isOpen = !!expanded[group.id];
+          const statusColor = group.satisfied ? 'var(--success)' : group.isManual ? 'var(--warning)' : 'var(--border-strong)';
+          return (
+            <div key={group.id}>
+              {/* Top-level requirement row */}
+              <button
+                onClick={() => toggle(group.id)}
+                style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', fontSize: 12 }}
+              >
+                <span style={{
+                  width: 14, height: 14, borderRadius: 3, flexShrink: 0,
+                  background: group.satisfied ? 'var(--success)' : 'transparent',
+                  border: `1.5px solid ${statusColor}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', fontSize: 9, fontWeight: 700,
+                }}>
+                  {group.satisfied ? '✓' : ''}
+                </span>
+                <span style={{ flex: 1, color: group.satisfied ? 'var(--text)' : 'var(--text-secondary)' }}>
+                  {group.label}
+                </span>
+                {group.progress && !group.satisfied && (
+                  <span className="mono" style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{group.progress}</span>
+                )}
+                <Icon name={isOpen ? 'chevronUp' : 'chevronDown'} size={11} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
+              </button>
+
+              {/* Expanded: sub-groups (e.g. Centers → Data/Model/Decision/…) */}
+              {isOpen && group.subGroups && (
+                <div style={{ paddingLeft: 22, paddingBottom: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {group.subGroups.map(sub => {
+                    const subColor = sub.satisfied ? 'var(--success)' : sub.isManual ? 'var(--warning)' : 'var(--border-strong)';
+                    return (
+                      <div key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', fontSize: 11 }}>
+                        <span style={{
+                          width: 12, height: 12, borderRadius: 3, flexShrink: 0,
+                          background: sub.satisfied ? 'var(--success)' : 'transparent',
+                          border: `1.5px solid ${subColor}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#fff', fontSize: 8, fontWeight: 700,
+                        }}>
+                          {sub.satisfied ? '✓' : ''}
+                        </span>
+                        <span style={{ flex: 1, color: sub.satisfied ? 'var(--text)' : 'var(--text-tertiary)' }}>{sub.label}</span>
+                        {!sub.satisfied && sub.unmet.length > 0 && (
+                          <span className="mono" style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>
+                            e.g. {sub.unmet[0]}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Expanded: leaf-level unmet courses (when no sub-groups) */}
+              {isOpen && !group.subGroups && !group.satisfied && (
+                <div style={{ paddingLeft: 22, paddingBottom: 6, fontSize: 11, color: 'var(--text-tertiary)', lineHeight: 1.7 }}>
+                  {group.isManual
+                    ? 'Requires manual verification'
+                    : group.unmet.length > 0
+                      ? <>Still needed: {group.unmet.map((id, i) => (
+                          <span key={id} className="mono" style={{ color: 'var(--text-secondary)' }}>
+                            {i > 0 ? ', ' : ''}{id}
+                          </span>
+                        ))}</>
+                      : 'Not satisfied'}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

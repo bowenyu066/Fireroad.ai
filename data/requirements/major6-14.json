@@ -1,0 +1,286 @@
+{
+  "title-no-degree": "Computer Science and Economics",
+  "list-id": "major6-14.reql",
+  "title": "Bachelor of Science in Computer Science, Economics, and Data Science",
+  "medium-title": "6-14 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "18.06",
+          "title": "Mathematics"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "6.100A"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "6.1010"
+                },
+                {
+                  "req": "6.100B"
+                }
+              ],
+              "threshold-desc": "select either"
+            },
+            {
+              "req": "6.1210"
+            },
+            {
+              "req": "6.1200"
+            },
+            {
+              "req": "6.1220"
+            }
+          ],
+          "title": "Computation/Algorithms"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "14.01"
+                },
+                {
+                  "req": "14.03"
+                }
+              ],
+              "threshold-desc": "select either"
+            },
+            {
+              "req": "14.32"
+            }
+          ],
+          "title": "Economics"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "6.041A"
+                },
+                {
+                  "req": "6.041B"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "14.30"
+            },
+            {
+              "req": "18.600"
+            }
+          ],
+          "title": "Introductory Probability and Statistics"
+        },
+        {
+          "req": "6.3900",
+          "title": "Data Science"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "6.UAT"
+                },
+                {
+                  "req": "6.UAR"
+                },
+                {
+                  "req": "15.276"
+                }
+              ],
+              "threshold-desc": "select any"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "14.05"
+                },
+                {
+                  "req": "14.18"
+                },
+                {
+                  "req": "14.33"
+                }
+              ],
+              "threshold-desc": "select any"
+            }
+          ],
+          "title": "Project-Based"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "req": "6.3260"
+            },
+            {
+              "req": "15.053"
+            }
+          ],
+          "title": "Computer Science"
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 3",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "threshold-desc": "select any",
+              "reqs": [
+                {
+                  "req": "14.20"
+                },
+                {
+                  "req": "14.27"
+                },
+                {
+                  "req": "14.36"
+                },
+                {
+                  "req": "14.38"
+                },
+                {
+                  "req": "14.39"
+                },
+                {
+                  "req": "14.41"
+                },
+                {
+                  "req": "14.42"
+                },
+                {
+                  "req": "14.43"
+                },
+                {
+                  "req": "14.44"
+                },
+                {
+                  "req": "14.64"
+                },
+                {
+                  "req": "14.75"
+                },
+                {
+                  "req": "14.76"
+                },
+                {
+                  "req": "15.780"
+                }
+              ],
+              "title": "Data Science"
+            },
+            {
+              "connection-type": "any",
+              "threshold-desc": "select any",
+              "reqs": [
+                {
+                  "req": "14.04"
+                },
+                {
+                  "req": "14.12"
+                },
+                {
+                  "req": "14.13"
+                },
+                {
+                  "req": "14.15"
+                },
+                {
+                  "req": "14.16"
+                },
+                {
+                  "req": "14.19"
+                },
+                {
+                  "req": "14.26"
+                },
+                {
+                  "req": "14.54"
+                }
+              ],
+              "title": "Theory"
+            }
+          ],
+          "title": "Economics"
+        }
+      ],
+      "title": "Elective Subjects"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "6.UAT"
+            },
+            {
+              "req": "6.UAR"
+            },
+            {
+              "req": "15.276"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "14.05"
+            },
+            {
+              "req": "14.18"
+            },
+            {
+              "req": "14.33"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "6-14",
+  "desc": "Contemporary electronically mediated platforms for market-level and individual exchange combine complex human decisions with intensive computation and data processing, all interacting within an engineered economic environment. Examples include: online markets, crowdsourcing platforms, spectrum auctions, financial platforms, crypto currencies, and large scale matching/allocation systems such as kidney exchange and public school choice systems. These platforms encompass a growing slice of economic activity and are shifting the scope and efficiency of market and non-market exchanges. Some forms of exchange that were simply infeasible due to coordination or information frictions (centralized kidney exchange, vehicle sharing) are suddenly available and important. Other market activities that were previously thought to require centralization and oversight, can now be decentralized and self-regulated (crypto-currency being the leading example). Moreover, the technology enabling that decentralization (so-called blockchain) is likely to have many further applications."
+}

@@ -1,0 +1,57 @@
+{
+  "title-no-degree": "Materials Science and Engineering",
+  "list-id": "minor3c.reql",
+  "title": "Minor in Archaeology and Materials",
+  "medium-title": "3-C Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "3.012"
+        },
+        {
+          "req": "3.014"
+        },
+        {
+          "req": "3.022"
+        },
+        {
+          "req": "3.985"
+        },
+        {
+          "req": "3.986"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "3.981"
+        },
+        {
+          "req": "3.982"
+        },
+        {
+          "req": "3.983"
+        },
+        {
+          "req": "3.987"
+        },
+        {
+          "req": "3.990"
+        },
+        {
+          "req": "3.993"
+        }
+      ],
+      "title": "Elective"
+    }
+  ],
+  "short-title": "3-C",
+  "desc": "With the approval of the minor advisor, students may substitute one subject taken outside the Course 3 program, provided the coverage is equivalent. The 3-C minor advisor, Dr. Kathryn Grossman, will ensure that the minor program forms a coherent group of subjects."
+}

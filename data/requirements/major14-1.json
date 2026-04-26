@@ -1,0 +1,113 @@
+{
+  "title-no-degree": "Economics",
+  "list-id": "major14-1.reql",
+  "title": "Bachelor of Science in Economics",
+  "medium-title": "14-1 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "14.01"
+            },
+            {
+              "req": "14.03"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "14.02"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "14.05"
+            },
+            {
+              "req": "14.06"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "14.30"
+        },
+        {
+          "req": "14.32"
+        },
+        {
+          "req": "14.33"
+        },
+        {
+          "req": "14.THU"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "14.04"
+            },
+            {
+              "req": "14.12"
+            },
+            {
+              "req": "14.15"
+            },
+            {
+              "req": "14.16"
+            },
+            {
+              "req": "14.19"
+            },
+            {
+              "req": "14.26"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold": {
+        "cutoff": 4,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "threshold-desc": "select any 4",
+      "req": "4 economics subjects",
+      "plain-string": true,
+      "title": "Restricted Electives"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "14.33"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "14.05"
+            },
+            {
+              "req": "14.18"
+            }
+          ],
+          "threshold-desc": "select either"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "14-1",
+  "desc": "Course 14-1, leading to the Bachelor of Science in Economics, combines training in technical economics with opportunities for a broad and balanced undergraduate education. Students may choose from a diversified group of undergraduate subjects and are encouraged to engage in independent research."
+}

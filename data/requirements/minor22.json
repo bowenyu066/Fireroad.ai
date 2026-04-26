@@ -1,0 +1,97 @@
+{
+  "title-no-degree": "Nuclear Science and Engineering",
+  "list-id": "minor22.reql",
+  "title": "Minor in Nuclear Science and Engineering",
+  "medium-title": "22 Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "18.03"
+        },
+        {
+          "req": "22.01"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "22.02"
+        },
+        {
+          "req": "22.033"
+        },
+        {
+          "req": "22.05"
+        },
+        {
+          "req": "22.06"
+        },
+        {
+          "req": "22.09"
+        }
+      ],
+      "title": "NSE Electives"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select either",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 12,
+                "criterion": "units",
+                "type": "GTE"
+              },
+              "req": "12 units of Course 22 coursework",
+              "plain-string": true,
+              "threshold-desc": "select any 12 units"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "2.005"
+                },
+                {
+                  "req": "8.03"
+                }
+              ],
+              "threshold-desc": "select either"
+            }
+          ],
+          "title": "Option 1"
+        },
+        {
+          "threshold": {
+            "cutoff": 24,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "threshold-desc": "select any 24 units",
+          "req": "24 units of Course 22 coursework",
+          "plain-string": true,
+          "title": "Option 2"
+        }
+      ],
+      "title": "Foundation and Specialized Subjects"
+    }
+  ],
+  "short-title": "22",
+  "desc": "This minor allows students from any major outside of Course 22 to delve deeper into advanced topics within the department or to support interdisciplinary areas of interest in nuclear science and engineering."
+}

@@ -1,0 +1,105 @@
+{
+  "title-no-degree": "Physics, EAPS",
+  "list-id": "minorAstro.reql",
+  "title": "Minor in Astronomy",
+  "medium-title": "Astronomy Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "8.03"
+        },
+        {
+          "req": "8.282"
+        },
+        {
+          "req": "18.03"
+        }
+      ],
+      "title": "Astronomy, Mathematics, and Physics"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select either",
+      "reqs": [
+        {
+          "req": "8.284"
+        },
+        {
+          "req": "8.286"
+        }
+      ],
+      "title": "Astrophysics"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "12.400"
+        },
+        {
+          "req": "12.420"
+        },
+        {
+          "req": "12.425"
+        }
+      ],
+      "title": "Planetary Astronomy"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "12.410"
+        },
+        {
+          "req": "12.43"
+        },
+        {
+          "req": "12.431"
+        }
+      ],
+      "title": "Instrumentation and Observations"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "8.UR"
+            },
+            {
+              "req": "12.UR"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "8.THU"
+            },
+            {
+              "req": "12.THU"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "12.411"
+        }
+      ],
+      "title": "Independent Project in Astonomy"
+    }
+  ],
+  "short-title": "Astronomy",
+  "desc": "The Minor in Astronomy, offered jointly by the Department of Earth, Atmospheric, and Planetary Sciences and the Department of Physics, covers the observational and theoretical foundations of astronomy. A minimum of four subjects taken for the astronomy minor cannot also count toward a major or another minor."
+}

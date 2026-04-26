@@ -1,0 +1,247 @@
+{
+  "title-no-degree": "Biology",
+  "list-id": "major7a.reql",
+  "title": "Bachelor of Science in Biology",
+  "medium-title": "7-A Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "5.12"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "5.60"
+            },
+            {
+              "req": "20.110"
+            },
+            {
+              "req": "2.005"
+            },
+            {
+              "req": "3.012"
+            },
+            {
+              "req": "8.044"
+            },
+            {
+              "req": "10.213"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "req": "7.03"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "7.05"
+            },
+            {
+              "req": "5.07"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "7.06"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "7.02"
+            },
+            {
+              "req": "20.109"
+            }
+          ],
+          "threshold-desc": "select either"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 3",
+      "reqs": [
+        {
+          "req": "7.08"
+        },
+        {
+          "req": "7.09"
+        },
+        {
+          "req": "7.20"
+        },
+        {
+          "req": "7.21"
+        },
+        {
+          "req": "7.22"
+        },
+        {
+          "req": "7.23"
+        },
+        {
+          "req": "7.26"
+        },
+        {
+          "req": "7.27"
+        },
+        {
+          "req": "7.28"
+        },
+        {
+          "req": "7.29"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "7.30A"
+            },
+            {
+              "req": "7.30B"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "req": "7.31"
+        },
+        {
+          "req": "7.32"
+        },
+        {
+          "req": "7.33"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "7.37"
+            },
+            {
+              "req": "7.371"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "7.41"
+        },
+        {
+          "req": "7.45"
+        },
+        {
+          "req": "7.49"
+        },
+        {
+          "req": "9.15"
+        },
+        {
+          "req": "9.17"
+        }
+      ],
+      "title": "Restricted Electives"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "7.02"
+            },
+            {
+              "req": "20.109"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "3.014"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "5.383"
+                },
+                {
+                  "req": "5.382"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "6.021"
+            },
+            {
+              "req": "7.19"
+            },
+            {
+              "req": "8.13"
+            },
+            {
+              "req": "9.12"
+            },
+            {
+              "req": "9.17"
+            },
+            {
+              "req": "9.28"
+            },
+            {
+              "req": "10.26"
+            },
+            {
+              "req": "10.27"
+            },
+            {
+              "req": "10.28"
+            },
+            {
+              "req": "10.29"
+            },
+            {
+              "req": "20.380"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "7-A",
+  "desc": "Course 7-A is designed for students who wish to obtain a background in biology as preparation for careers without laboratory research. Course 7-A has the same core requirements as Course 7, but does not require a 30-unit laboratory subject within its Restricted Electives.\n\nStudents are encouraged to use their elective subjects for more advanced subjects in their field and for additional study in basic and advanced subjects offered in various departments."
+}

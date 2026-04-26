@@ -1,0 +1,69 @@
+{
+  "title-no-degree": "Comparative Media Studies",
+  "list-id": "minorCMS.reql",
+  "title": "Minor in Comparative Media Studies",
+  "medium-title": "CMS Minor",
+  "reqs": [
+    {
+      "req": "CMS.100",
+      "title": "Introductory"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "CMS.335"
+        },
+        {
+          "req": "CMS.362"
+        },
+        {
+          "req": "CMS.400"
+        },
+        {
+          "req": "CMS.405"
+        },
+        {
+          "req": "CMS.590"
+        },
+        {
+          "req": "CMS.609"
+        },
+        {
+          "req": "CMS.614"
+        },
+        {
+          "req": "CMS.622"
+        },
+        {
+          "req": "CMS.633"
+        },
+        {
+          "req": "CMS.634"
+        },
+        {
+          "req": "21W.752"
+        }
+      ],
+      "title": "Intermediate"
+    },
+    {
+      "req": "CMS.701",
+      "title": "Advanced"
+    },
+    {
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "threshold-desc": "select any 3",
+      "req": "3 subjects",
+      "plain-string": true,
+      "title": "Electives"
+    }
+  ],
+  "short-title": "CMS",
+  "desc": "The minor requires six subjects that reflect the comparative study of media. It is organized into three tiers, and each student designs his or her own plan of study in consultation with an advisor in the field."
+}

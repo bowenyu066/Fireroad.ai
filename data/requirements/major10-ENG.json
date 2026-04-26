@@ -1,0 +1,295 @@
+{
+  "title-no-degree": "Chemical Engineering",
+  "list-id": "major10-ENG.reql",
+  "title": "Bachelor of Science in Engineering as Recommended by the Department of Chemical Engineering",
+  "medium-title": "10-ENG Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "5.601"
+        },
+        {
+          "req": "10.10"
+        },
+        {
+          "req": "10.213"
+        },
+        {
+          "req": "10.301"
+        },
+        {
+          "req": "10.302"
+        },
+        {
+          "req": "10.37"
+        },
+        {
+          "req": "18.03"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "All subjects are suitable for any concentration within the program. In consultation with the advisor, students select one subject from each of the three groups. Students may not exceed the 45-unit cap except by petition.",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "10.26"
+            },
+            {
+              "req": "10.27"
+            },
+            {
+              "req": "10.28"
+            },
+            {
+              "req": "10.29"
+            },
+            {
+              "req": "10.467"
+            }
+          ],
+          "title": "Group I"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "1.106"
+                },
+                {
+                  "req": "1.107"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "2.671"
+            },
+            {
+              "req": "3.014"
+            },
+            {
+              "req": "5.310"
+            },
+            {
+              "req": "10.702"
+            },
+            {
+              "req": "12.335"
+            },
+            {
+              "req": "20.109"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "5.351"
+                },
+                {
+                  "req": "5.352"
+                },
+                {
+                  "req": "5.353"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "title": "Group II"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "1.00"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "1.018A"
+                },
+                {
+                  "req": "1.018B"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "1.080A"
+                },
+                {
+                  "req": "1.080B"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "3.012"
+            },
+            {
+              "req": "3.155"
+            },
+            {
+              "req": "5.12"
+            },
+            {
+              "req": "5.61"
+            },
+            {
+              "req": "6.00"
+            },
+            {
+              "req": "7.03"
+            },
+            {
+              "req": "8.21"
+            }
+          ],
+          "title": "Group III"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Foundational Concepts"
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 39 units",
+      "req": "39-48 units",
+      "threshold": {
+        "cutoff": 39,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "title": "Engineering Concentration",
+      "desc": "These four electives define a concentrated area of study in one of the following designated concentrations: biomedical engineering, energy, environmental studies, or materials process and design."
+    },
+    {
+      "threshold": {
+        "cutoff": 12,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 12 units",
+      "reqs": [
+        {
+          "req": "10.THU",
+          "title": "Option 1"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "10.490"
+            },
+            {
+              "req": "10.491"
+            },
+            {
+              "req": "10.492"
+            },
+            {
+              "req": "10.493"
+            },
+            {
+              "req": "10.494"
+            }
+          ],
+          "title": "Option 2"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "10.910"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "10.492"
+                },
+                {
+                  "req": "10.493"
+                },
+                {
+                  "req": "10.494"
+                }
+              ],
+              "threshold-desc": "select any"
+            }
+          ],
+          "title": "Option 3"
+        }
+      ],
+      "title": "Capstone"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "10.26"
+        },
+        {
+          "req": "10.27"
+        },
+        {
+          "req": "10.28"
+        },
+        {
+          "req": "10.29"
+        },
+        {
+          "req": "10.467"
+        },
+        {
+          "req": "2.671"
+        },
+        {
+          "req": "3.014"
+        },
+        {
+          "req": "10.702"
+        },
+        {
+          "req": "12.335"
+        },
+        {
+          "req": "20.109"
+        },
+        {
+          "req": "3.155"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "10-ENG",
+  "desc": "The 10-ENG degree program is designed to offer flexibility within the context of chemical engineering while ensuring significant engineering content, and is a complement to our chemical engineering degree programs 10 and 10-B. The degree is designed to enable students to pursue a deeper level of understanding in a specific interdisciplinary field that is relevant to the chemical engineering core discipline. The degree requirements include all of the core chemical engineering coursework, plus a chosen set of three foundational concept subjects and four subjects with engineering content that make up a comprehensive concentration specific to the interdisciplinary area selected by the student. The concentrations have been selected by the Department of Chemical Engineering to represent new and developing cross-disciplinary areas that benefit from a strong foundation in engineering within the chemical engineering context. Details of the concentrations are available from the Chemical Engineering Student Office and the department's website."
+}

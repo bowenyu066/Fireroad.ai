@@ -1,0 +1,104 @@
+{
+  "title-no-degree": "Political Science",
+  "list-id": "minor17.reql",
+  "title": "Minor in Political Science",
+  "medium-title": "17 Minor",
+  "reqs": [
+    {
+      "threshold-desc": "select either",
+      "title": "Tier I: Introductory",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "LTE"
+          },
+          "req": "1-2 introductory classes",
+          "plain-string": true,
+          "threshold-desc": "select at most 2"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "17.01"
+            },
+            {
+              "req": "17.20"
+            },
+            {
+              "req": "17.40"
+            },
+            {
+              "req": "17.50"
+            }
+          ],
+          "title": "Examples"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 1,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Select at least one but no more than two introductory classes, which are designated by two-digit numbers. These classes provide broad theoretical and/or empirical overviews of their subject matter."
+    },
+    {
+      "threshold-desc": "select any 4",
+      "title": "Tier II: Upper-Level",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 5,
+            "criterion": "subjects",
+            "type": "LTE"
+          },
+          "req": "4-5 upper-level classes",
+          "plain-string": true,
+          "threshold-desc": "select at most 5"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "17.051"
+            },
+            {
+              "req": "17.317"
+            },
+            {
+              "req": "17.473"
+            },
+            {
+              "req": "17.483"
+            }
+          ],
+          "title": "Examples"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 4,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Select at least four but no more than five upper-level classes, which are designated by three-digit numbers. These specialized classes provide students with advanced and in-depth examination of their subject matter."
+    }
+  ],
+  "short-title": "17",
+  "desc": "The objective of the minor is to deepen and expand student knowledge of the discipline of political science. It consists of six subjects divided into two tiers, selected from the discipline's subfields as listed in the online MIT Subject Listing & Schedule."
+}

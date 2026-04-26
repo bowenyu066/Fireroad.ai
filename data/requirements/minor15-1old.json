@@ -1,0 +1,95 @@
+{
+  "title-no-degree": "Management",
+  "list-id": "minor15-1old.reql",
+  "title": "Minor in Management (Old)",
+  "url": "https://mitsloan.mit.edu/undergrad/15-1-management-minor-requirements",
+  "medium-title": "15 Minor (Management) (Old)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "15.301"
+                },
+                {
+                  "req": "15.310"
+                },
+                {
+                  "req": "15.312"
+                }
+              ],
+              "threshold-desc": "select any"
+            },
+            {
+              "req": "15.501"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "15.417"
+                },
+                {
+                  "req": "15.401"
+                }
+              ],
+              "threshold-desc": "select either"
+            },
+            {
+              "req": "15.7611"
+            },
+            {
+              "req": "15.8141"
+            },
+            {
+              "req": "15.9001"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold-desc": "select any 3",
+      "title": "Restricted Electives",
+      "reqs": [
+        {
+          "req": "14.01"
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "3 Course 15 subjects",
+          "plain-string": true,
+          "threshold-desc": "select any 3"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Select any three Course 15 subjects other than Undergraduate Research Opportunities Program (UROP) and general-elective transfer credit. (Two six-unit subjects count as a single elective subject.)"
+    }
+  ],
+  "short-title": "15",
+  "desc": "The Minor in Management provides undergraduates in other majors with an understanding of the business, human, and organizational dimensions of scientific and technological enterprise."
+}

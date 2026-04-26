@@ -1,0 +1,263 @@
+{
+  "title-no-degree": "Interdisciplinary",
+  "list-id": "minorEnergy.reql",
+  "title": "Minor in Energy Studies",
+  "medium-title": "Energy Studies Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "req": "8.21"
+            },
+            {
+              "req": "12.021"
+            }
+          ],
+          "title": "Science Foundations"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "req": "14.01"
+            },
+            {
+              "req": "15.0111"
+            }
+          ],
+          "title": "Economics Foundations"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "11.142"
+            },
+            {
+              "req": "14.44"
+            },
+            {
+              "req": "15.0201"
+            },
+            {
+              "req": "15.2191"
+            }
+          ],
+          "title": "Social Science Foundations"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "2.60"
+            },
+            {
+              "req": "11.165"
+            },
+            {
+              "req": "22.081"
+            },
+            {
+              "req": "EC.711"
+            },
+            {
+              "req": "EC.712"
+            }
+          ],
+          "title": "Energy Tech, Eng in Context"
+        }
+      ],
+      "title": "Core Curriculum"
+    },
+    {
+      "threshold": {
+        "cutoff": 24,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 24 units",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "1.018"
+            },
+            {
+              "req": "1.020"
+            },
+            {
+              "req": "1.071"
+            },
+            {
+              "req": "1.079"
+            },
+            {
+              "req": "1.801"
+            },
+            {
+              "req": "2.005"
+            },
+            {
+              "req": "2.006"
+            },
+            {
+              "req": "2.570"
+            },
+            {
+              "req": "2.603"
+            },
+            {
+              "req": "2.612"
+            },
+            {
+              "req": "2.627"
+            },
+            {
+              "req": "2.813"
+            },
+            {
+              "req": "3.003"
+            },
+            {
+              "req": "3.004"
+            },
+            {
+              "req": "3.012"
+            },
+            {
+              "req": "3.030"
+            },
+            {
+              "req": "3.154"
+            },
+            {
+              "req": "3.18"
+            },
+            {
+              "req": "4.401"
+            },
+            {
+              "req": "4.432"
+            },
+            {
+              "req": "5.352"
+            },
+            {
+              "req": "5.372"
+            },
+            {
+              "req": "5.60"
+            },
+            {
+              "req": "6.061"
+            },
+            {
+              "req": "6.131"
+            },
+            {
+              "req": "6.152"
+            },
+            {
+              "req": "6.701"
+            },
+            {
+              "req": "10.04"
+            },
+            {
+              "req": "10.05"
+            },
+            {
+              "req": "10.213"
+            },
+            {
+              "req": "10.27"
+            },
+            {
+              "req": "10.28"
+            },
+            {
+              "req": "10.302"
+            },
+            {
+              "req": "10.426"
+            },
+            {
+              "req": "11.162"
+            },
+            {
+              "req": "12.213"
+            },
+            {
+              "req": "12.346"
+            },
+            {
+              "req": "14.42"
+            },
+            {
+              "req": "15.026"
+            },
+            {
+              "req": "16.001"
+            },
+            {
+              "req": "16.002"
+            },
+            {
+              "req": "16.003"
+            },
+            {
+              "req": "16.004"
+            },
+            {
+              "req": "22.033"
+            },
+            {
+              "req": "22.04"
+            },
+            {
+              "req": "22.054"
+            },
+            {
+              "req": "22.06"
+            },
+            {
+              "req": "STS.032"
+            }
+          ],
+          "title": "Standard Electives"
+        },
+        {
+          "threshold": {
+            "cutoff": 24,
+            "criterion": "units",
+            "type": "LTE"
+          },
+          "threshold-desc": "select at most 24 units",
+          "req": "Substituted subjects",
+          "plain-string": true,
+          "title": "Substitutions"
+        }
+      ],
+      "title": "Electives"
+    }
+  ],
+  "short-title": "Energy",
+  "desc": "Energy is a fundamentally multidisciplinary topic. Transforming the world’s energy systems requires combining expertise from numerous fields in engineering and technology, natural and social science, and policy. A diversity of disciplinary perspectives is necessary to equip students to work in this complex, evolving field.\n\nThe Energy Studies Minor for undergraduates is an Institute-wide program that complements the deep expertise obtained in any major with a broad understanding of the interlinked realms of science, technology, and social sciences as they relate to energy and associated environmental challenges. The minor curriculum integrates these three domains in a thoroughly multidisciplinary program. The Energy Minor Oversight Committee, including faculty representatives from all five Schools, oversees the Energy Studies Minor program.\n\nSee the Energy Studies Minor website for potential elective and core subject substitutions or additions."
+}

@@ -1,0 +1,136 @@
+{
+  "title-no-degree": "Architecture",
+  "list-id": "minorHistAAD.reql",
+  "title": "Minor in the History of Architecture, Art and Design",
+  "medium-title": "4 Minor (History of Architecture)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "4.601"
+            },
+            {
+              "req": "4.602"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "4.605"
+            },
+            {
+              "req": "4.614"
+            }
+          ],
+          "threshold-desc": "select either"
+        }
+      ],
+      "title": "Tier I"
+    },
+    {
+      "threshold-desc": "select any 3 subjects",
+      "title": "Tier II",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "4.603"
+            },
+            {
+              "req": "4.605"
+            },
+            {
+              "req": "4.614"
+            },
+            {
+              "req": "4.657"
+            }
+          ],
+          "title": "History of Architecture and Design"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "4.601"
+            },
+            {
+              "req": "4.602"
+            },
+            {
+              "req": "4.635"
+            },
+            {
+              "req": "4.636"
+            },
+            {
+              "req": "4.641"
+            },
+            {
+              "req": "4.651"
+            }
+          ],
+          "title": "History of Art"
+        }
+      ],
+      "connection-type": "all",
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Select three of the following with no more than two subjects from either the history of art or the history of architecture."
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "1 adv. seminar in history of art/architecture",
+          "plain-string": true
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "1 Harvard or Wellesley subject",
+          "plain-string": true
+        },
+        {
+          "req": "4.609"
+        }
+      ],
+      "title": "Tier III"
+    }
+  ],
+  "short-title": "4",
+  "desc": "The HASS Minor in the History of Architecture, Art and Design is designed to enable students to concentrate on the historical, theoretical, and critical issues associated with artistic and architectural production. Introductions to the historical frameworks and stylistic conventions of art and architectural history are followed by more concentrated study of particular periods and theoretical problems in visual culture and in cultural history in general."
+}

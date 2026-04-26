@@ -1,0 +1,120 @@
+{
+  "title-no-degree": "Global Studies and Languages",
+  "list-id": "majorFrench.reql",
+  "title": "Bachelor of Science in Global Studies and Languages (French Studies)",
+  "medium-title": "21G Major (French)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "21G.301"
+        },
+        {
+          "req": "21G.302"
+        }
+      ],
+      "title": "Prerequisite Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "Registration for 21G.306 and 21G.307 must be simultaneous with a subject from the second row.",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "21G.304"
+            },
+            {
+              "req": "21G.306"
+            },
+            {
+              "req": "21G.307"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "21G.308"
+            },
+            {
+              "req": "21G.310"
+            },
+            {
+              "req": "21G.311"
+            },
+            {
+              "req": "21G.312"
+            },
+            {
+              "req": "21G.315"
+            },
+            {
+              "req": "21G.320"
+            },
+            {
+              "req": "21G.321"
+            },
+            {
+              "req": "21G.322"
+            },
+            {
+              "req": "21G.325"
+            },
+            {
+              "req": "21G.326"
+            },
+            {
+              "req": "21G.341"
+            },
+            {
+              "req": "21G.344"
+            },
+            {
+              "req": "21G.346"
+            },
+            {
+              "req": "21G.347"
+            },
+            {
+              "req": "21G.348"
+            }
+          ],
+          "threshold-desc": "select any 2"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "A coherent program of eight subjects beyond French II, which may include a pre-thesis tutorial (21G.THT) and a thesis (21G.THU).",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 8,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "8 subjects beyond French II",
+          "plain-string": true,
+          "threshold-desc": "select any 8"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Restricted Electives"
+    }
+  ],
+  "short-title": "21G",
+  "desc": "Program I in French Studies, Program II in German Studies, and Program III in Spanish Studies are designed to provide competence in reading, writing, and speaking; general knowledge of French, German, or Spanish culture and literature; and advanced subjects in literature, film, and cultural studies.\n\nFor each option, the student designs a program in consultation with an advisor in order to meet individual interests, abilities, and goals. However, all majors reflect a balance of historical, geographical, cultural, and linguistic competence."
+}

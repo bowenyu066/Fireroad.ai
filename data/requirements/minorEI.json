@@ -1,0 +1,131 @@
+{
+  "title-no-degree": "Entrepreneurship and Innovation",
+  "list-id": "minorEI.reql",
+  "title": "Minor in Entrepreneurship and Innovation",
+  "medium-title": "E&I Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "15.359"
+        },
+        {
+          "req": "15.373"
+        }
+      ],
+      "title": "Core Curriculum"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "3.086"
+            },
+            {
+              "req": "6.805"
+            },
+            {
+              "req": "11.005"
+            },
+            {
+              "req": "11.123"
+            },
+            {
+              "req": "11.142"
+            },
+            {
+              "req": "11.165"
+            },
+            {
+              "req": "15.031"
+            },
+            {
+              "req": "15.3641"
+            },
+            {
+              "req": "17.307"
+            },
+            {
+              "req": "17.309"
+            },
+            {
+              "req": "17.315"
+            },
+            {
+              "req": "STS.002"
+            },
+            {
+              "req": "STS.004"
+            },
+            {
+              "req": "STS.032"
+            },
+            {
+              "req": "STS.088"
+            },
+            {
+              "req": "EC.701"
+            }
+          ],
+          "title": "E&I in Context"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "2.96"
+            },
+            {
+              "req": "6.915"
+            },
+            {
+              "req": "10.02"
+            },
+            {
+              "req": "15.3941"
+            },
+            {
+              "req": "15.668"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "6.902"
+                },
+                {
+                  "req": "6.911"
+                },
+                {
+                  "req": "6.912"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "title": "Leadership of Teams and Organizations"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "1 appropriate D-Lab substitution",
+          "plain-string": true
+        }
+      ],
+      "title": "Electives"
+    }
+  ],
+  "short-title": "E&I",
+  "desc": "The Minor in Entrepreneurship and Innovation (E&I Minor) educates students to serve as leaders in the innovation economy with the knowledge, skills, and confidence to develop, scale, and deliver breakthrough solutions to real-world problems. They will be prepared to do so within a range of organizational contexts: an entrepreneurial start-up of their own, as key members of a founding team, or as an entrepreneurial member of a large organization.\n\nJointly offered by the Schools of Engineering and Management, the minor is designed as an interdisciplinary program with a coherent combination of conceptual and practical elements that draws on a wealth of prior educational activities in this domain.\n\nIn special cases, other advanced project coursework may be substituted with the appoval of the minor advisor. A minimum of three subjects (or 36 units) taken for the Entrepreneurship and Innovation minor cannot also count toward a student's major or other minor."
+}

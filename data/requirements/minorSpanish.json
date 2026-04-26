@@ -1,0 +1,157 @@
+{
+  "title-no-degree": "Global Studies and Languages",
+  "list-id": "minorSpanish.reql",
+  "title": "Minor in Spanish",
+  "url": "http://catalog.mit.edu/schools/humanities-arts-social-sciences/global-studies-languages/#spanish-minor",
+  "medium-title": "21G Minor (Spanish)",
+  "reqs": [
+    {
+      "distinct-threshold": {
+        "cutoff": 0,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "threshold-desc": "select any 6",
+      "reqs": [
+        {
+          "threshold-desc": "optional - select any",
+          "title": "Tier I",
+          "reqs": [
+            {
+              "req": "21G.703"
+            },
+            {
+              "req": "21G.704"
+            }
+          ],
+          "connection-type": "any",
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "desc": "Two subjects or fewer depending on demonstrated level of entering competence."
+        },
+        {
+          "threshold-desc": "optional - select any",
+          "title": "Tier II",
+          "reqs": [
+            {
+              "req": "21G.706"
+            },
+            {
+              "req": "21G.707"
+            },
+            {
+              "req": "21G.710"
+            },
+            {
+              "req": "21G.711"
+            },
+            {
+              "req": "21G.712"
+            },
+            {
+              "req": "21G.713"
+            },
+            {
+              "req": "21G.714"
+            },
+            {
+              "req": "21G.715"
+            },
+            {
+              "req": "21G.795"
+            }
+          ],
+          "connection-type": "any",
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "desc": "Select three of the following subjects or fewer depending on demonstrated level of entering competence from the Spanish Intermediate Subjects in Language, Literature, and Culture listing."
+        },
+        {
+          "threshold-desc": "select any 2",
+          "title": "Tier III",
+          "reqs": [
+            {
+              "req": "21G.070"
+            },
+            {
+              "req": "21G.072"
+            },
+            {
+              "req": "21G.073"
+            },
+            {
+              "req": "21G.078"
+            },
+            {
+              "req": "21G.084"
+            },
+            {
+              "req": "21H.173"
+            },
+            {
+              "req": "21H.270"
+            },
+            {
+              "req": "21H.273"
+            },
+            {
+              "req": "21L.019"
+            },
+            {
+              "req": "21G.716"
+            },
+            {
+              "req": "21G.717"
+            },
+            {
+              "req": "21G.731"
+            },
+            {
+              "req": "21G.732"
+            },
+            {
+              "req": "21G.735"
+            },
+            {
+              "req": "21G.736"
+            },
+            {
+              "req": "21G.738"
+            },
+            {
+              "req": "21G.739"
+            },
+            {
+              "req": "21G.740"
+            },
+            {
+              "req": "21G.784"
+            }
+          ],
+          "connection-type": "any",
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "desc": "Select two of the following subjects or more depending on demonstrated level of entering competence from the Spanish Advanced Subjects in Literature and Culture listing."
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 6,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "The Minor in Spanish consists of six subjects arranged into three levels of study."
+    }
+  ],
+  "short-title": "21G",
+  "desc": ""
+}

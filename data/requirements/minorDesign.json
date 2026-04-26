@@ -1,0 +1,189 @@
+{
+  "title-no-degree": "Architecture",
+  "list-id": "minorDesign.reql",
+  "title": "Minor in Design",
+  "medium-title": "4 Minor (Design)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "4.021"
+        },
+        {
+          "req": "4.053"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "4.031"
+            },
+            {
+              "req": "4.032"
+            }
+          ],
+          "threshold-desc": "select either"
+        }
+      ],
+      "title": "Group 1"
+    },
+    {
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 3",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "2.00A"
+            },
+            {
+              "req": "2.00"
+            },
+            {
+              "req": "2.007"
+            },
+            {
+              "req": "2.009"
+            },
+            {
+              "req": "4.031"
+            },
+            {
+              "req": "4.041"
+            },
+            {
+              "req": "4.043"
+            },
+            {
+              "req": "4.110"
+            },
+            {
+              "req": "4.118"
+            },
+            {
+              "req": "4.125"
+            },
+            {
+              "req": "4.451"
+            },
+            {
+              "req": "4.501"
+            },
+            {
+              "req": "4.657"
+            },
+            {
+              "req": "EC.720"
+            },
+            {
+              "req": "MAS.377"
+            }
+          ],
+          "title": "Objects"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "4.032"
+            },
+            {
+              "req": "4.051"
+            },
+            {
+              "req": "4.053"
+            },
+            {
+              "req": "4.500"
+            },
+            {
+              "req": "4.502"
+            },
+            {
+              "req": "4.504"
+            },
+            {
+              "req": "4.520"
+            },
+            {
+              "req": "CMS.405"
+            },
+            {
+              "req": "CMS.622"
+            },
+            {
+              "req": "CMS.633"
+            },
+            {
+              "req": "MAS.110"
+            }
+          ],
+          "title": "Information"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "4.301"
+            },
+            {
+              "req": "4.302"
+            },
+            {
+              "req": "4.307"
+            },
+            {
+              "req": "4.320"
+            },
+            {
+              "req": "4.322"
+            },
+            {
+              "req": "4.341"
+            },
+            {
+              "req": "4.354"
+            },
+            {
+              "req": "4.602"
+            },
+            {
+              "req": "21M.603"
+            },
+            {
+              "req": "CMS.362"
+            },
+            {
+              "req": "CMS.634"
+            }
+          ],
+          "title": "Art & Experience"
+        }
+      ],
+      "title": "Group 2"
+    }
+  ],
+  "short-title": "4",
+  "desc": "The Minor in Design (D-Minor) provides a hub at MIT where undergraduate students can learn core principles of design in dynamic studio settings, develop a sensibility for visual and physical form, and help contribute to new ways of designing that are applicable across a spectrum of areas.\n\nThis minor is a way for students who see the value of design as a means of approaching problems they normally encounter within their own major to receive a rigorous conceptual foundation along with a strong design skill set. The objective is to prepare students to pursue diverse career paths or further education in multiple areas of design from product design to 3-D design to visual communication, and to enable them to take advantage of emerging opportunities in industry and academia."
+}

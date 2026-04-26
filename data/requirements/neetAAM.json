@@ -1,0 +1,115 @@
+{
+  "title-no-degree": "Advanced Materials Machines",
+  "list-id": "neetAAM.reql",
+  "title": "NEET Certificate in Advanced Materials Machines",
+  "url": "https://neet.mit.edu/threads/amm",
+  "medium-title": "NEET Advanced Materials Machines",
+  "reqs": [
+    {
+      "connection-type": "any",
+      "desc": "Recommended sophomore fall.",
+      "reqs": [
+        {
+          "req": "3.007"
+        },
+        {
+          "req": "22.03"
+        }
+      ],
+      "threshold-desc": "select either",
+      "title": "Intro Project"
+    },
+    {
+      "desc": "Recommended junior year",
+      "req": "2.008",
+      "title": "Intermediate Project"
+    },
+    {
+      "threshold-desc": "select any 2",
+      "title": "Capstone",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "UROP in materials and manufacturing",
+          "plain-string": true
+        },
+        {
+          "req": "3.042"
+        },
+        {
+          "req": "2.013"
+        },
+        {
+          "req": "2.014"
+        },
+        {
+          "req": "2.S981"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Can be taken junior and/or senior year."
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 3",
+      "req": "3 semesters of 3.006",
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "title": "Seminar",
+      "desc": "(Participation in 3 semesters over the course of 3 years, can do more)"
+    },
+    {
+      "threshold": {
+        "cutoff": 0,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "optional - select any",
+      "reqs": [
+        {
+          "req": "3.012"
+        },
+        {
+          "req": "2.001"
+        },
+        {
+          "req": "3.044"
+        },
+        {
+          "req": "3.032"
+        },
+        {
+          "req": "2.005"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "2.001"
+            },
+            {
+              "req": "2.002"
+            }
+          ],
+          "threshold-desc": "select all"
+        }
+      ],
+      "title": "Suggested Foundations"
+    }
+  ],
+  "short-title": "NEET",
+  "desc": "Learn to rapidly prototype and explore the novel materials, technologies and processes that will define the future of production. Discover how engineers scale up materials-intensive manufacturing enterprises from prototyping, production and then product and process innovation. Learn about additive manufacturing, 3D printing, powder and casting processes, advanced polymer processing approaches all applied to the aerospace, automotive, energy, and health care sectors!"
+}

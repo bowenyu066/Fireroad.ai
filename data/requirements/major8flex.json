@@ -1,0 +1,182 @@
+{
+  "title-no-degree": "Physics",
+  "list-id": "major8flex.reql",
+  "title": "Bachelor of Science in Physics (Flexible Option)",
+  "medium-title": "8-Flex Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "18.03"
+            },
+            {
+              "req": "18.032"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "8.03"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "8.04"
+            },
+            {
+              "req": "8.041"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "8.044"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "8.21"
+            },
+            {
+              "req": "8.223"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "8.05"
+            },
+            {
+              "req": "8.051"
+            },
+            {
+              "req": "8.20"
+            },
+            {
+              "req": "8.033"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "any",
+      "desc": "Subject to the approval of the department.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "Lab subject in another dept",
+          "plain-string": true
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "Experimental research project",
+          "plain-string": true
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "Senior thesis",
+          "plain-string": true
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "Experimental summer internship",
+          "plain-string": true
+        },
+        {
+          "req": "8.13"
+        }
+      ],
+      "threshold-desc": "select any",
+      "title": "Experimental Experiences"
+    },
+    {
+      "connection-type": "all",
+      "desc": "The three additional subjects should form one intellectually coherent unit in some area, not necessarily physics, subject to the approval of the department.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "1 additional physics subject",
+          "plain-string": true
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "3 additional subjects",
+          "plain-string": true,
+          "threshold-desc": "select any 3"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Restricted Electives"
+    },
+    {
+      "threshold-desc": "select any 2",
+      "title": "Communication-Intensive Subjects",
+      "reqs": [
+        {
+          "req": "8.06"
+        },
+        {
+          "req": "8.13"
+        },
+        {
+          "req": "8.14"
+        },
+        {
+          "req": "8.226"
+        },
+        {
+          "req": "12.410"
+        },
+        {
+          "req": "STS.042"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "The department and the Subcommittee on the Communication Requirement may accept substitution of one of the department's two required CI-M subjects with a CI-M subject in another department if it forms a natural part of the student's physics program."
+    }
+  ],
+  "short-title": "8",
+  "desc": "This option is designed for students who wish to develop a strong background in the fundamentals of physics and then build on this foundation as they prepare for career paths that may not involve a graduate degree in physics. Many students find an understanding of the basic concepts of physics and an appreciation of the physicist's approach to problem solving an excellent preparation for the growing spectrum of nontraditional, technology-related career opportunities, as well as for careers in business, law, medicine, or engineering. Additionally, the flexible option makes it more possible for students with diverse intellectual interests to pursue a second major in another department.\n\nStudents following this option must also complete a focus requirement—three subjects forming one intellectually coherent unit in some area (not necessarily physics), subject to the approval of the department and separate from those used by the student to satisfy the HASS requirement. Areas of focus chosen by students have included astronomy, biology, computational physics, theoretical physics, nanotechnology, history of science, science and technology policy, philosophy, and science teaching. Some students may choose to satisfy their experimental and exploration requirements in the same area as their focus; others may opt for greater breadth by choosing other fields to fulfill these requirements.\n\nAlthough students may choose this option at any time in their undergraduate career, many decide on the flexible major during their sophomore year in order to have enough time to craft a program that best suits their individual needs. Specific subject choices for the experimental and focus requirements require the written approval of the Flexible Program coordinator, Dr. Sean P. Robinson."
+}

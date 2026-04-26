@@ -1,0 +1,102 @@
+{
+  "title-no-degree": "Digital Cities",
+  "list-id": "neetDC.reql",
+  "title": "NEET Certificate in Digital Cities",
+  "url": "https://neet.mit.edu/threads/dc",
+  "medium-title": "NEET Digital Cities",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "11.001"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "6.100A"
+            },
+            {
+              "req": "6.100B"
+            }
+          ],
+          "threshold-desc": "select all"
+        }
+      ],
+      "title": "Foundation Subjects"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "11.007"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "11.154"
+            },
+            {
+              "req": "6.C35"
+            },
+            {
+              "req": "11.C35"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "req": "11.138"
+        }
+      ],
+      "title": "Project-Based Subjects"
+    },
+    {
+      "connection-type": "any",
+      "desc": "Offered every semester",
+      "reqs": [
+        {
+          "req": "22.003"
+        },
+        {
+          "req": "3.006"
+        }
+      ],
+      "threshold-desc": "select either",
+      "title": "Seminar Courses"
+    },
+    {
+      "threshold": {
+        "cutoff": 0,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "optional - select any",
+      "reqs": [
+        {
+          "req": "11.188"
+        },
+        {
+          "req": "6.1010"
+        },
+        {
+          "req": "11.S196"
+        },
+        {
+          "req": "11.523"
+        },
+        {
+          "req": "11.524"
+        }
+      ],
+      "title": "Suggested Electives"
+    }
+  ],
+  "short-title": "NEET",
+  "desc": "Digital Cities (DC) emphasizes the development of fundamental skills in urban planning and policy including ethics, justice, and engagement; statistics, data science, and geospatial analysis and visualization; and computational thinking, simulation, and user experience.\n\nThis thread prepares you to build technology that serves the public good and to design and implement public interest technology or civic technology specialized for the urban environment. You will prepare to plan and build the cities of the future by immersing in the emerging intersections of computer science and urban planning."
+}

@@ -1,0 +1,181 @@
+{
+  "title-no-degree": "Chemistry",
+  "list-id": "major5.reql",
+  "title": "Bachelor of Science in Chemistry",
+  "medium-title": "5 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "5.03"
+        },
+        {
+          "req": "5.07"
+        },
+        {
+          "req": "5.12"
+        },
+        {
+          "req": "5.13"
+        },
+        {
+          "req": "5.601"
+        },
+        {
+          "req": "5.602"
+        },
+        {
+          "req": "5.611"
+        },
+        {
+          "req": "5.612"
+        }
+      ],
+      "title": "Required Lecture Subjects"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "5.04"
+        },
+        {
+          "req": "5.08"
+        },
+        {
+          "req": "5.43"
+        },
+        {
+          "req": "5.62"
+        }
+      ],
+      "title": "Restricted Lecture Electives"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "5.351"
+        },
+        {
+          "req": "5.352"
+        },
+        {
+          "req": "5.353"
+        },
+        {
+          "req": "5.361"
+        }
+      ],
+      "title": "Required Laboratory Subjects"
+    },
+    {
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 3",
+      "reqs": [
+        {
+          "req": "5.362"
+        },
+        {
+          "req": "5.363"
+        },
+        {
+          "req": "5.371"
+        },
+        {
+          "req": "5.372"
+        },
+        {
+          "req": "5.373"
+        },
+        {
+          "req": "5.381"
+        },
+        {
+          "req": "5.382"
+        },
+        {
+          "req": "5.383"
+        }
+      ],
+      "title": "Laboratory Restricted Electives"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select either",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "5.362"
+            },
+            {
+              "req": "5.363"
+            },
+            {
+              "req": "5.371"
+            },
+            {
+              "req": "5.372"
+            },
+            {
+              "req": "5.373"
+            },
+            {
+              "req": "5.381"
+            },
+            {
+              "req": "5.382"
+            },
+            {
+              "req": "5.383"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "req": "5.39"
+        }
+      ],
+      "title": "Elective Labs"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "5.352"
+        },
+        {
+          "req": "5.382"
+        },
+        {
+          "req": "5.39"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "5",
+  "desc": "The Department of Chemistry offers an undergraduate program sufficiently flexible in its electives to provide excellent preparation for careers in many different areas of chemistry. Course 5 is designed to provide an education based on science, both for those who intend to go on to graduate study and those who intend to pursue a professional career immediately in either chemistry or an allied field, such as medicine, in which a sound knowledge of chemistry is important. Students receive thorough instruction in the principles of chemistry, supplemented by a strong foundation in mathematics, physics, biology, and the humanities. A Certification in Biochemistry by the American Chemical Society can be received with a bachelor's degree for students who have concentrated in this area. The Department of Chemistry also teaches courses jointly with the departments of Biology, Chemical Engineering, Biological Engineering, and Materials Science and Engineering.\n\nChoose at least two subjects in the major that are designated as communication-intensive (CI-M) to fulfill the Communication Requirement."
+}

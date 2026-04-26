@@ -1,0 +1,125 @@
+{
+  "title-no-degree": "Music",
+  "list-id": "major21M-1.reql",
+  "title": "Bachelor of Science in Music",
+  "url": "http://catalog.mit.edu/degree-charts/music-course-21m/",
+  "medium-title": "21M-1 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "21M.401"
+            },
+            {
+              "req": "21M.405"
+            },
+            {
+              "req": "21M.410"
+            },
+            {
+              "req": "21M.421"
+            },
+            {
+              "req": "21M.423"
+            },
+            {
+              "req": "21M.426"
+            },
+            {
+              "req": "21M.442"
+            },
+            {
+              "req": "21M.445"
+            },
+            {
+              "req": "21M.450"
+            },
+            {
+              "req": "21M.451"
+            },
+            {
+              "req": "21M.460"
+            },
+            {
+              "req": "21M.470"
+            },
+            {
+              "req": "21M.480"
+            },
+            {
+              "req": "21M.490"
+            }
+          ],
+          "threshold-desc": "select any 2"
+        },
+        {
+          "req": "21M.301"
+        },
+        {
+          "req": "21M.500"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "21M.220"
+            },
+            {
+              "req": "21M.235"
+            },
+            {
+              "req": "21M.260"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "21M.291"
+            },
+            {
+              "req": "21M.292"
+            },
+            {
+              "req": "21M.293"
+            },
+            {
+              "req": "21M.294"
+            },
+            {
+              "req": "21M.299"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 60 units",
+      "req": "60 units of electives",
+      "threshold": {
+        "cutoff": 60,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "title": "Restricted Electives",
+      "desc": "In consultation with the advisor, select 60 units from the music curriculum (21M.000 - 21M.599)."
+    }
+  ],
+  "short-title": "21M",
+  "desc": "The undergraduate program leading to the Bachelor of Science in Music degree comprises a grounding in foundational skills in music history and culture, performance, and music theory; a capstone Advanced Seminar; and a coherent program in a musical specialty. Six required subjects (one of which consists of two 6-unit terms of performance, and two of which satisfy the CI-M requirement) and five restricted electives satisfy these requirements, but should be supplemented by additional electives. The program is analogous to those for music majors at leading liberal arts institutions and prepares a student for graduate study in music. Students should demonstrate proficiency in musical fundamentals and have performance experience before declaring the major and should consult the major advisor in music no later than the first term of their junior year."
+}

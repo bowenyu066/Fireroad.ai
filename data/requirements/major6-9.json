@@ -1,0 +1,369 @@
+{
+  "title-no-degree": "Computation and Cognition",
+  "list-id": "major6-9.reql",
+  "title": "Bachelor of Science in Computation and Cognition",
+  "medium-title": "6-9 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "6.100A"
+            },
+            {
+              "req": "9.01"
+            }
+          ],
+          "title": "Foundational Subjects"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "6.1200"
+            },
+            {
+              "req": "18.03"
+            },
+            {
+              "req": "18.06"
+            }
+          ],
+          "title": "Mathematics"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "6.3800"
+            },
+            {
+              "req": "9.07"
+            },
+            {
+              "req": "6.3700"
+            }
+          ],
+          "title": "Probability and Statistics"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "6.3900"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "6.3000"
+                },
+                {
+                  "req": "6.4100"
+                }
+              ],
+              "threshold-desc": "select either"
+            }
+          ],
+          "title": "Header"
+        },
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 2",
+          "reqs": [
+            {
+              "req": "6.2000"
+            },
+            {
+              "req": "6.1210"
+            },
+            {
+              "req": "6.1010"
+            }
+          ],
+          "title": "Foundation"
+        }
+      ],
+      "title": "EECS Program"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "9.09"
+            },
+            {
+              "req": "9.13"
+            },
+            {
+              "req": "9.18"
+            },
+            {
+              "req": "9.21"
+            },
+            {
+              "req": "9.35"
+            },
+            {
+              "req": "9.40"
+            }
+          ],
+          "title": "Brain Systems/Neurophysiology"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "9.19"
+            },
+            {
+              "req": "9.49"
+            },
+            {
+              "req": "9.53"
+            },
+            {
+              "req": "9.66"
+            },
+            {
+              "req": "9.85"
+            }
+          ],
+          "title": "Computation and Cognition"
+        }
+      ],
+      "title": "BCS Program"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "6.4100"
+            },
+            {
+              "req": "6.4200"
+            },
+            {
+              "req": "6.8301"
+            },
+            {
+              "req": "6.8611"
+            },
+            {
+              "req": "9.19"
+            },
+            {
+              "req": "9.21"
+            },
+            {
+              "req": "9.35"
+            },
+            {
+              "req": "9.40"
+            },
+            {
+              "req": "9.49"
+            },
+            {
+              "req": "9.66"
+            }
+          ],
+          "title": "BCS/EECS Joint Electives"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "9.09"
+            },
+            {
+              "req": "9.13"
+            },
+            {
+              "req": "9.18"
+            },
+            {
+              "req": "9.24"
+            },
+            {
+              "req": "9.26"
+            },
+            {
+              "req": "9.36"
+            },
+            {
+              "req": "9.42"
+            },
+            {
+              "req": "9.46"
+            },
+            {
+              "req": "9.53"
+            },
+            {
+              "req": "9.85"
+            }
+          ],
+          "title": "BCS Electives"
+        }
+      ],
+      "title": "Program Electives"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "6.2040"
+        },
+        {
+          "req": "6.2050"
+        },
+        {
+          "req": "6.2060"
+        },
+        {
+          "req": "6.2370"
+        },
+        {
+          "req": "6.4200"
+        },
+        {
+          "req": "6.4880"
+        },
+        {
+          "req": "9.17"
+        },
+        {
+          "req": "9.59"
+        },
+        {
+          "req": "9.60"
+        }
+      ],
+      "title": "Laboratory Subjects"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "6.UAT"
+        },
+        {
+          "req": "6.UAR"
+        },
+        {
+          "req": "9.41"
+        },
+        {
+          "req": "9.58"
+        }
+      ],
+      "title": "Advanced Undergraduate Project"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "6.UAT"
+        },
+        {
+          "req": "6.UAR"
+        },
+        {
+          "req": "9.41"
+        },
+        {
+          "req": "9.58"
+        },
+        {
+          "req": "9.85"
+        },
+        {
+          "req": "6.2040"
+        },
+        {
+          "req": "6.2060"
+        },
+        {
+          "req": "6.4880"
+        },
+        {
+          "req": "6.4200"
+        },
+        {
+          "req": "6.2370"
+        },
+        {
+          "req": "6.4890"
+        },
+        {
+          "req": "9.17"
+        },
+        {
+          "req": "9.59"
+        },
+        {
+          "req": "9.60"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "6-9",
+  "desc": "The Department of Electrical Engineering and Computer Science and the Department of Brain and Cognitive Sciences offer a joint curriculum leading to a Bachelor of Science in Computation and Cognition that focuses on the emerging field of computational and engineering approaches to brain science, cognition and machine intelligence. The curriculum provides flexibility to accommodate students with a wide diversity of interests in this area — from biologically-inspired approaches to artificial intelligence, to reverse engineering circuits in the brain. This joint program prepares students for careers that include advanced applications of artificial intelligence and machine learning, as well as further graduate study in systems and cognitive neuroscience. Students in the program are full members of both departments, with one academic advisor from each department."
+}

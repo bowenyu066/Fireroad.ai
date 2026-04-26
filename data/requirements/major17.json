@@ -1,0 +1,324 @@
+{
+  "title-no-degree": "Political Science",
+  "list-id": "major17.reql",
+  "title": "Bachelor of Science in Political Science",
+  "medium-title": "17 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "Students typically enroll in subjects as follows: 17.801, fall term, junior year; 17.803, spring term, junior year; 17.THT, fall term, senior year; 17.THU, spring term, senior year.",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "17.801"
+            },
+            {
+              "req": "17.803"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 2,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "2 course 17 electives",
+              "plain-string": true,
+              "threshold-desc": "select any 2"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "17.THT"
+                },
+                {
+                  "req": "17.THU"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "threshold-desc": "select either"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "Select seven subjects, including one subject from the each of the four groups listed below and three additional political science subjects representing a coherent plan of study. Specific subjects satisfying these criteria should be chosen in consultation with a faculty advisor.",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "threshold-desc": "select any",
+              "reqs": [
+                {
+                  "req": "17.007"
+                },
+                {
+                  "req": "17.01"
+                },
+                {
+                  "req": "17.021"
+                },
+                {
+                  "req": "17.03"
+                },
+                {
+                  "req": "17.035"
+                },
+                {
+                  "req": "17.04"
+                },
+                {
+                  "req": "17.05"
+                },
+                {
+                  "req": "17.051"
+                }
+              ],
+              "title": "Political Philosophy/Social Theory"
+            },
+            {
+              "connection-type": "any",
+              "threshold-desc": "select any",
+              "reqs": [
+                {
+                  "req": "17.20"
+                },
+                {
+                  "req": "17.245"
+                },
+                {
+                  "req": "17.251"
+                },
+                {
+                  "req": "17.261"
+                },
+                {
+                  "req": "17.263"
+                },
+                {
+                  "req": "17.265"
+                },
+                {
+                  "req": "17.267"
+                },
+                {
+                  "req": "17.269"
+                },
+                {
+                  "req": "17.275"
+                },
+                {
+                  "req": "17.28"
+                }
+              ],
+              "title": "American Politics"
+            },
+            {
+              "connection-type": "any",
+              "threshold-desc": "select either",
+              "reqs": [
+                {
+                  "connection-type": "any",
+                  "threshold-desc": "select any",
+                  "reqs": [
+                    {
+                      "req": "17.30"
+                    },
+                    {
+                      "req": "17.303"
+                    },
+                    {
+                      "req": "17.307"
+                    },
+                    {
+                      "req": "17.309"
+                    },
+                    {
+                      "req": "17.315"
+                    },
+                    {
+                      "req": "17.317"
+                    },
+                    {
+                      "req": "17.391"
+                    },
+                    {
+                      "req": "17.393"
+                    },
+                    {
+                      "req": "17.395"
+                    },
+                    {
+                      "req": "17.397"
+                    }
+                  ],
+                  "title": "Option 1"
+                },
+                {
+                  "threshold": {
+                    "cutoff": 1,
+                    "criterion": "subjects",
+                    "type": "GTE"
+                  },
+                  "req": "1 subject in another field",
+                  "plain-string": true,
+                  "title": "Option 2"
+                }
+              ],
+              "title": "Public Policy"
+            },
+            {
+              "connection-type": "any",
+              "threshold-desc": "select either",
+              "reqs": [
+                {
+                  "connection-type": "any",
+                  "threshold-desc": "select any",
+                  "reqs": [
+                    {
+                      "req": "17.40"
+                    },
+                    {
+                      "req": "17.401"
+                    },
+                    {
+                      "req": "17.407"
+                    },
+                    {
+                      "req": "17.41"
+                    },
+                    {
+                      "req": "17.411"
+                    },
+                    {
+                      "req": "17.42"
+                    },
+                    {
+                      "req": "17.433"
+                    },
+                    {
+                      "req": "17.445"
+                    },
+                    {
+                      "req": "17.447"
+                    },
+                    {
+                      "req": "17.473"
+                    },
+                    {
+                      "req": "17.483"
+                    }
+                  ],
+                  "title": "Option 1"
+                },
+                {
+                  "connection-type": "any",
+                  "threshold-desc": "select any",
+                  "reqs": [
+                    {
+                      "req": "17.50"
+                    },
+                    {
+                      "req": "17.509"
+                    },
+                    {
+                      "req": "17.515"
+                    },
+                    {
+                      "req": "17.523"
+                    },
+                    {
+                      "req": "17.53"
+                    },
+                    {
+                      "req": "17.537"
+                    },
+                    {
+                      "req": "17.55"
+                    },
+                    {
+                      "req": "17.56"
+                    },
+                    {
+                      "req": "17.561"
+                    },
+                    {
+                      "req": "17.565"
+                    },
+                    {
+                      "req": "17.567"
+                    },
+                    {
+                      "req": "17.569"
+                    },
+                    {
+                      "req": "17.57"
+                    },
+                    {
+                      "req": "17.571"
+                    },
+                    {
+                      "req": "17.581"
+                    },
+                    {
+                      "req": "17.591"
+                    }
+                  ],
+                  "title": "Option 2"
+                }
+              ],
+              "title": "International Politics"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "3 political science subjects",
+          "plain-string": true,
+          "threshold-desc": "select any 3"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Restricted Electives"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "17.801"
+        },
+        {
+          "req": "17.803"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "17",
+  "desc": "The political science curriculum for undergraduates combines professional social science training with opportunities for a broad liberal arts education. Students may choose subjects from a wide range of both undergraduate and graduate offerings, and are encouraged to engage in independent research projects. In addition, the department sponsors an internship program in which students work in governmental agencies, legislative offices, community associations, international organizations, and advocacy groups at all levels.\n\nThe undergraduate program prepares students for study in political science, law, public policy, and related fields, and for careers in government, business, law, research, teaching, or journalism. This program is also designed to give students, whatever their career objectives, an understanding of political institutions and processes. Some students want to focus on political systems themselves; others choose to concentrate on the political aspects of public policy, focusing on such issues as the environment, health, or arms control. Both of these perspectives are found in the program."
+}

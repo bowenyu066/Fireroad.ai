@@ -1,0 +1,107 @@
+{
+  "title-no-degree": "Interdisciplinary",
+  "list-id": "minorPSM.reql",
+  "title": "Minor in Polymers and Soft Matter",
+  "medium-title": "Polymers and Soft Matter Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "These subjects can count as part of the required subjects or as restricted electives, but not both. Students majoring in Course 2, 2-A, or 2-OE may not count 2.001 toward the minor. Students majoring in Course 3, 3-A, or 3-C may not count 3.012 toward the minor. Students majoring in Course 5 may not count 5.60 toward the minor.  Students majoring in Course 10, 10-B, 10-C, or 10-ENG may not count 10.10 toward the minor.",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "3.016"
+            },
+            {
+              "req": "18.03"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "3.063"
+        },
+        {
+          "req": "5.12"
+        },
+        {
+          "req": "10.01"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "2.001"
+            },
+            {
+              "req": "3.012"
+            },
+            {
+              "req": "5.60"
+            },
+            {
+              "req": "10.10"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "any",
+      "desc": "Students must select an elective subject that is outside of the major field of study as approved by their minor advisor. As a general guideline, the elective should be from outside of the student's major department. Students may substitute a one-semester UROP (12 units) in an area of research relevant to polymers and soft matter science or engineering. UROP must be approved by minor advisor.",
+      "reqs": [
+        {
+          "req": "2.001"
+        },
+        {
+          "req": "2.627"
+        },
+        {
+          "req": "3.012"
+        },
+        {
+          "req": "3.032"
+        },
+        {
+          "req": "3.034"
+        },
+        {
+          "req": "3.055"
+        },
+        {
+          "req": "5.07"
+        },
+        {
+          "req": "5.13"
+        },
+        {
+          "req": "5.43"
+        },
+        {
+          "req": "5.60"
+        },
+        {
+          "req": "10.00"
+        },
+        {
+          "req": "10.10"
+        },
+        {
+          "req": "10.443"
+        },
+        {
+          "req": "20.110"
+        }
+      ],
+      "threshold-desc": "select any",
+      "title": "Electives"
+    }
+  ],
+  "short-title": "Polymers",
+  "desc": "Polymers and soft materials are critical components of existing and next-generation technologies. The Minor in Polymers and Soft Matter (MPSM) is designed to equip students with the basic knowledge of polymer science and engineering required to solve problems in this diverse and essential field. Students pursuing the Minor complete four foundational subjects focusing on organic chemistry, polymer physics, and polymer engineering; a half-subject (6 units) on the basics of ethical guidelines for research; and one elective subject or approved UROP experience. Only one subject taken for the Minor in Polymers and Soft Matter can also count toward a student's major or other minor."
+}

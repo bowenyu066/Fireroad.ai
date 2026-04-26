@@ -1,0 +1,455 @@
+{
+  "title-no-degree": "Computer Science and Molecular Biology",
+  "list-id": "major6-7.reql",
+  "title": "Bachelor of Science in Computer Science and Molecular Biology",
+  "medium-title": "6-7 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "6.100A"
+                },
+                {
+                  "req": "6.100L"
+                },
+                {
+                  "req": "6.1020"
+                }
+              ],
+              "threshold-desc": "select any"
+            },
+            {
+              "req": "6.120A"
+            },
+            {
+              "req": "6.C06"
+            }
+          ],
+          "title": "Mathematics and Introductory"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "5.12"
+            },
+            {
+              "req": "5.601"
+            }
+          ],
+          "title": "Chemistry"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "7.002"
+                },
+                {
+                  "req": "7.003"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "20.109"
+            }
+          ],
+          "title": "Introductory Laboratory"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "threshold-desc": "select all",
+              "reqs": [
+                {
+                  "req": "6.1010"
+                },
+                {
+                  "req": "6.1210"
+                },
+                {
+                  "connection-type": "any",
+                  "reqs": [
+                    {
+                      "req": "6.3900"
+                    },
+                    {
+                      "connection-type": "all",
+                      "reqs": [
+                        {
+                          "req": "6.C01"
+                        },
+                        {
+                          "req": "7.C01"
+                        }
+                      ],
+                      "threshold-desc": "select all"
+                    }
+                  ],
+                  "threshold-desc": "select either"
+                }
+              ],
+              "title": "Computer Science Foundational"
+            },
+            {
+              "connection-type": "all",
+              "threshold-desc": "select all",
+              "reqs": [
+                {
+                  "req": "7.03"
+                },
+                {
+                  "connection-type": "any",
+                  "reqs": [
+                    {
+                      "req": "7.05"
+                    },
+                    {
+                      "req": "5.07"
+                    }
+                  ],
+                  "threshold-desc": "select either"
+                },
+                {
+                  "req": "7.06"
+                }
+              ],
+              "title": "Biological Science Foundational"
+            }
+          ],
+          "title": "Foundational Subjects"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "1.088"
+            },
+            {
+              "req": "18.413"
+            },
+            {
+              "req": "6.4710"
+            },
+            {
+              "req": "6.8701"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "7.093"
+                },
+                {
+                  "req": "7.094"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "7.032"
+            },
+            {
+              "req": "7.033"
+            }
+          ],
+          "title": "Computational Biology"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "6.UAT"
+            },
+            {
+              "req": "6.UAR"
+            },
+            {
+              "req": "7.19"
+            }
+          ],
+          "title": "Technical Communication"
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "all",
+          "threshold-desc": "select any 3 subjects",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "threshold-desc": "select any",
+              "reqs": [
+                {
+                  "req": "1.018"
+                },
+                {
+                  "req": "10.441"
+                },
+                {
+                  "req": "12.031"
+                },
+                {
+                  "req": "20.110"
+                },
+                {
+                  "req": "20.205"
+                },
+                {
+                  "req": "20.230"
+                },
+                {
+                  "req": "5.08"
+                },
+                {
+                  "req": "6.4710"
+                },
+                {
+                  "req": "7.08"
+                },
+                {
+                  "connection-type": "all",
+                  "reqs": [
+                    {
+                      "req": "7.093"
+                    },
+                    {
+                      "req": "7.094"
+                    }
+                  ],
+                  "threshold-desc": "select all"
+                },
+                {
+                  "req": "7.20"
+                },
+                {
+                  "req": "7.21"
+                },
+                {
+                  "req": "7.23"
+                },
+                {
+                  "req": "7.24"
+                },
+                {
+                  "req": "7.26"
+                },
+                {
+                  "req": "7.27"
+                },
+                {
+                  "req": "7.28"
+                },
+                {
+                  "req": "7.29"
+                },
+                {
+                  "req": "7.30"
+                },
+                {
+                  "req": "7.31"
+                },
+                {
+                  "req": "7.32"
+                },
+                {
+                  "req": "7.33"
+                },
+                {
+                  "req": "7.35"
+                },
+                {
+                  "req": "7.37"
+                },
+                {
+                  "req": "7.371"
+                },
+                {
+                  "req": "7.45"
+                },
+                {
+                  "req": "7.46"
+                },
+                {
+                  "req": "7.49"
+                },
+                {
+                  "req": "9.09"
+                },
+                {
+                  "req": "9.17"
+                },
+                {
+                  "req": "9.18"
+                },
+                {
+                  "req": "9.26"
+                },
+                {
+                  "req": "HST.540"
+                }
+              ],
+              "title": "Biology Restricted Electives"
+            },
+            {
+              "connection-type": "any",
+              "threshold-desc": "select any",
+              "reqs": [
+                {
+                  "req": "18.404"
+                },
+                {
+                  "req": "6.3020"
+                },
+                {
+                  "req": "6.3730"
+                },
+                {
+                  "req": "6.4210"
+                },
+                {
+                  "req": "6.5151"
+                },
+                {
+                  "req": "6.5831"
+                },
+                {
+                  "req": "6.5931"
+                },
+                {
+                  "req": "6.7411"
+                },
+                {
+                  "req": "6.8301"
+                },
+                {
+                  "req": "6.8371"
+                },
+                {
+                  "req": "6.8611"
+                },
+                {
+                  "req": "6.8701"
+                },
+                {
+                  "req": "6.8711"
+                },
+                {
+                  "req": "6.8801"
+                }
+              ],
+              "title": "AI+D Advanced Undergraduate Subjects"
+            },
+            {
+              "connection-type": "any",
+              "threshold-desc": "select any",
+              "reqs": [
+                {
+                  "req": "1.088"
+                },
+                {
+                  "req": "18.413"
+                },
+                {
+                  "req": "6.4710"
+                },
+                {
+                  "req": "6.8701"
+                },
+                {
+                  "connection-type": "all",
+                  "reqs": [
+                    {
+                      "req": "7.093"
+                    },
+                    {
+                      "req": "7.094"
+                    }
+                  ],
+                  "threshold-desc": "select all"
+                },
+                {
+                  "req": "7.032"
+                },
+                {
+                  "req": "7.033"
+                }
+              ],
+              "title": "Computational Biology"
+            }
+          ],
+          "title": "Two additional Restricted Elective subjects"
+        }
+      ],
+      "title": "Restricted Electives"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "7.002"
+            },
+            {
+              "req": "7.003"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "req": "20.109"
+        },
+        {
+          "req": "6.UAR"
+        },
+        {
+          "req": "6.UAT"
+        },
+        {
+          "req": "7.19"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "6-7",
+  "desc": "The Bachelor of Science in Computer Science and Molecular Biology prepares students for careers that leverage computational biology (e.g., pharmaceuticals, bioinformatics, medicine, etc.) as well as further graduate study in biology, in computer science, and in emerging programs at the interface. Students in this program who have a strong academic record will be offered an opportunity to continue through the five-year master's program, leading to the Master of Engineering in Computer Science and Molecular Biology."
+}

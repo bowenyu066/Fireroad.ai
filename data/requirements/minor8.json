@@ -1,0 +1,30 @@
+{
+  "title-no-degree": "Physics",
+  "list-id": "minor8.reql",
+  "title": "Minor in Physics",
+  "medium-title": "8 Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 5,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "5 Course 8 subjects beyond GIRs",
+          "plain-string": true,
+          "threshold-desc": "select any 5"
+        },
+        {
+          "req": "18.03"
+        }
+      ],
+      "title": "Required Subjects"
+    }
+  ],
+  "short-title": "8",
+  "desc": ""
+}

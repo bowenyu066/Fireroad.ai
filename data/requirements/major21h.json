@@ -1,0 +1,77 @@
+{
+  "title-no-degree": "History",
+  "list-id": "major21h.reql",
+  "title": "Bachelor of Science in History",
+  "medium-title": "21H Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "Select one 21H seminar subject for which the first digit after the decimal point is 3 (excluding 21H.390).",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "1 21H seminar",
+          "plain-string": true
+        },
+        {
+          "req": "21H.390"
+        },
+        {
+          "req": "21H.THT"
+        },
+        {
+          "req": "21H.THU"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "Select a coherent program, in consultation with a major advisor, of seven subjects from the history curriculum and three related subjects from a second HASS discipline. The seven 21H subjects must be drawn from two geographical areas and include one pre-modern subject (before 1700) and one modern subject.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 7,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "7 history subjects",
+          "plain-string": true,
+          "threshold-desc": "select any 7"
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "3 subjects from another HASS",
+          "plain-string": true,
+          "threshold-desc": "select any 3"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Restricted Electives"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "21H.390"
+        },
+        {
+          "req": "21H.THU"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "21H",
+  "desc": "The program leading to the degree of Bachelor of Science in History is designed to encourage students to discover and reconstruct the past, to confront and understand the complexity of past human behavior for itself, and to inform their sense of the historical present. The curriculum includes the selection of at least one subject taken from the curriculum's 21H undergraduate seminars. Students are expected to take seven additional subjects of their own choice, selected in consultation with a major advisor. These must include subjects drawn from at least two geographical areas, as well as one pre-modern (before 1700) and one modern subject."
+}

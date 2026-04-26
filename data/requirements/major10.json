@@ -1,0 +1,218 @@
+{
+  "title-no-degree": "Chemical Engineering",
+  "list-id": "major10.reql",
+  "title": "Bachelor of Science in Chemical Engineering",
+  "medium-title": "10 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "5.12"
+        },
+        {
+          "req": "5.310"
+        },
+        {
+          "req": "5.601"
+        },
+        {
+          "req": "10.10"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "18.03"
+            },
+            {
+              "req": "18.032"
+            }
+          ],
+          "threshold-desc": "select either"
+        }
+      ],
+      "title": "Foundational Subjects"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "5.03"
+            },
+            {
+              "req": "5.07"
+            },
+            {
+              "req": "5.13"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "5.611"
+                },
+                {
+                  "req": "5.612"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "7.05"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "10.26"
+            },
+            {
+              "req": "10.27"
+            },
+            {
+              "req": "10.28"
+            },
+            {
+              "req": "10.29"
+            },
+            {
+              "req": "10.467"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "req": "10.213"
+        },
+        {
+          "req": "10.301"
+        },
+        {
+          "req": "10.302"
+        }
+      ],
+      "title": "Intermediate Subjects"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "10.492A"
+            },
+            {
+              "req": "10.492B"
+            },
+            {
+              "req": "10.493"
+            },
+            {
+              "req": "10.494A"
+            },
+            {
+              "req": "10.494B"
+            }
+          ],
+          "threshold-desc": "select any 2"
+        },
+        {
+          "req": "10.32"
+        },
+        {
+          "req": "10.37"
+        },
+        {
+          "req": "10.490"
+        }
+      ],
+      "title": "Advanced Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "May be satisfied with a second term of 10.492A, 10.492B, 10.493, 10.494A, 10.494B, or a second term of 10.490 Integrated Chemical Engineering (with permission of instructor). Graduate subjects may not be used as restricted electives. In addition, the following undergraduate subjects may not be used as restricted electives: 10.04, 10.792[J], 10.806, 10.910 and 10.911 Independent Research Problem, 10.UR and 10.URG Undergraduate Research, and 10.THU. Consult the Chemical Engineering Student Office for a list of acceptable engineering lab subjects.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 6,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "req": "One subject of at least 6 units in Chemical Engineering",
+          "plain-string": true,
+          "threshold-desc": "select any 6 units"
+        },
+        {
+          "threshold": {
+            "cutoff": 9,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "req": "One subject of at least 9 units in Chemical Engineering",
+          "plain-string": true,
+          "threshold-desc": "select any 9 units"
+        },
+        {
+          "threshold": {
+            "cutoff": 6,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "req": "One engineering laboratory subject of at least 6 units",
+          "plain-string": true,
+          "threshold-desc": "select any 6 units"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Restricted Electives"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "5.310"
+        },
+        {
+          "req": "10.26"
+        },
+        {
+          "req": "10.27"
+        },
+        {
+          "req": "10.28"
+        },
+        {
+          "req": "10.29"
+        },
+        {
+          "req": "10.467"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "10",
+  "desc": "This degree is intended for the student who seeks a broad education in the application of chemical engineering to a variety of specific areas, including energy and the environment, nanotechnology, polymers and colloids, surface science, catalysis and reaction engineering, systems and process design, and biotechnology. The degree requirements include the core chemical engineering subjects with a chemistry emphasis, and the opportunity to add subjects in any of these application areas."
+}

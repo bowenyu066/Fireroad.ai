@@ -1,0 +1,616 @@
+{
+  "title-no-degree": "Biological Engineering",
+  "list-id": "major20.reql",
+  "title": "Bachelor of Science in Biological Engineering",
+  "medium-title": "20 Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "5.12"
+            },
+            {
+              "req": "6.100A"
+            },
+            {
+              "req": "6.100B"
+            },
+            {
+              "req": "7.03"
+            },
+            {
+              "req": "18.03"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "20.110"
+                },
+                {
+                  "req": "2.772"
+                }
+              ],
+              "threshold-desc": "select either"
+            }
+          ],
+          "title": "Tier I"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "5.07"
+                },
+                {
+                  "req": "7.05"
+                }
+              ],
+              "threshold-desc": "select either"
+            },
+            {
+              "req": "7.06"
+            },
+            {
+              "req": "20.109"
+            },
+            {
+              "req": "20.309"
+            },
+            {
+              "req": "20.320"
+            }
+          ],
+          "title": "Tier II"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "20.330"
+                },
+                {
+                  "req": "2.793"
+                },
+                {
+                  "req": "6.4830"
+                }
+              ],
+              "threshold-desc": "select any"
+            },
+            {
+              "req": "20.380"
+            }
+          ],
+          "title": "Tier III"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 3",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "1.010"
+            },
+            {
+              "req": "1.018"
+            },
+            {
+              "req": "1.071"
+            },
+            {
+              "req": "1.085"
+            },
+            {
+              "req": "1.088"
+            },
+            {
+              "req": "1.089"
+            }
+          ],
+          "title": "Course 1"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "2.131"
+            },
+            {
+              "req": "2.180"
+            },
+            {
+              "req": "2.391"
+            },
+            {
+              "req": "2.671"
+            },
+            {
+              "req": "2.674"
+            },
+            {
+              "req": "2.676"
+            },
+            {
+              "req": "2.71"
+            },
+            {
+              "req": "2.715"
+            },
+            {
+              "req": "2.717"
+            },
+            {
+              "req": "2.782"
+            },
+            {
+              "req": "2.785"
+            },
+            {
+              "req": "2.79"
+            },
+            {
+              "req": "2.799"
+            }
+          ],
+          "title": "Course 2"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "3.032"
+            },
+            {
+              "req": "3.052"
+            }
+          ],
+          "title": "Course 3"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "5.08"
+            },
+            {
+              "req": "5.13"
+            },
+            {
+              "req": "5.310"
+            },
+            {
+              "req": "5.54"
+            },
+            {
+              "req": "5.64"
+            },
+            {
+              "req": "5.78"
+            }
+          ],
+          "title": "Course 5"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "6.2000"
+            },
+            {
+              "req": "6.3000"
+            },
+            {
+              "req": "6.4810"
+            },
+            {
+              "req": "6.4840"
+            },
+            {
+              "req": "6.4100"
+            },
+            {
+              "req": "6.3900"
+            },
+            {
+              "req": "6.3700"
+            },
+            {
+              "req": "6.1200"
+            },
+            {
+              "req": "6.8701"
+            },
+            {
+              "req": "6.4870"
+            },
+            {
+              "req": "6.2600"
+            },
+            {
+              "req": "6.4822"
+            },
+            {
+              "req": "6.8721"
+            },
+            {
+              "req": "6.8711"
+            }
+          ],
+          "title": "Course 6"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "7.20"
+            },
+            {
+              "req": "7.21"
+            },
+            {
+              "req": "7.23"
+            },
+            {
+              "req": "7.26"
+            },
+            {
+              "req": "7.27"
+            },
+            {
+              "req": "7.28"
+            },
+            {
+              "req": "7.29"
+            },
+            {
+              "req": "7.32"
+            },
+            {
+              "req": "7.33"
+            },
+            {
+              "req": "7.37"
+            },
+            {
+              "req": "7.371"
+            },
+            {
+              "req": "7.45"
+            },
+            {
+              "req": "7.46"
+            },
+            {
+              "req": "7.493"
+            },
+            {
+              "req": "7.71"
+            },
+            {
+              "req": "7.76"
+            },
+            {
+              "req": "7.95"
+            }
+          ],
+          "title": "Course 7"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "8.241"
+            },
+            {
+              "req": "8.592"
+            },
+            {
+              "req": "8.593"
+            }
+          ],
+          "title": "Course 8"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "9.07"
+            },
+            {
+              "req": "9.12"
+            },
+            {
+              "req": "9.123"
+            },
+            {
+              "req": "9.26"
+            },
+            {
+              "req": "9.40"
+            },
+            {
+              "req": "9.49"
+            },
+            {
+              "req": "9.66"
+            }
+          ],
+          "title": "Course 9"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "10.28"
+            },
+            {
+              "req": "10.495"
+            },
+            {
+              "req": "10.544"
+            }
+          ],
+          "title": "Course 10"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "18.06"
+            },
+            {
+              "req": "18.062"
+            },
+            {
+              "req": "18.600"
+            }
+          ],
+          "title": "Course 18"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "20.005"
+            },
+            {
+              "req": "20.102"
+            },
+            {
+              "req": "20.104"
+            },
+            {
+              "req": "20.106"
+            },
+            {
+              "req": "20.129"
+            },
+            {
+              "req": "20.201"
+            },
+            {
+              "req": "20.203"
+            },
+            {
+              "req": "20.205"
+            },
+            {
+              "req": "20.213"
+            },
+            {
+              "req": "20.230"
+            },
+            {
+              "req": "20.260"
+            },
+            {
+              "req": "20.305"
+            },
+            {
+              "req": "20.310"
+            },
+            {
+              "req": "20.315"
+            },
+            {
+              "req": "20.345"
+            },
+            {
+              "req": "20.352"
+            },
+            {
+              "req": "20.361"
+            },
+            {
+              "req": "20.363"
+            },
+            {
+              "req": "20.365"
+            },
+            {
+              "req": "20.370"
+            },
+            {
+              "req": "20.373"
+            },
+            {
+              "req": "20.375"
+            },
+            {
+              "req": "20.381"
+            },
+            {
+              "req": "20.385"
+            },
+            {
+              "req": "20.390"
+            },
+            {
+              "req": "20.446"
+            },
+            {
+              "req": "20.450"
+            },
+            {
+              "req": "20.452"
+            },
+            {
+              "req": "20.487"
+            },
+            {
+              "req": "20.535"
+            },
+            {
+              "req": "20.554"
+            }
+          ],
+          "title": "Course 20"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "threshold-desc": "optional - select any",
+          "req": "22.071",
+          "title": "Course 22"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "IDS.012"
+            },
+            {
+              "req": "IDS.013"
+            }
+          ],
+          "title": "Institute for Data Systems and Society"
+        }
+      ],
+      "title": "Restricted Electives"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "20.109"
+            },
+            {
+              "req": "20.129"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "20.380"
+        }
+      ],
+      "title": "Communication-Intensive Subjects"
+    }
+  ],
+  "short-title": "20",
+  "desc": "The Department of Biological Engineering (BE) offers an undergraduate curriculum emphasizing quantitative, engineering-based analysis, design, and synthesis in the study of modern biology from the molecular to the systems level. Completion of the curriculum leads to the Bachelor of Science in Biological Engineering and prepares students for careers in diverse fields ranging from the pharmaceutical and biotechnology industries to materials, devices, ecology, and public health. Graduates of the program will be prepared to enter positions in basic research or project-oriented product development, as well as graduate school or further professional study.\n\nThe required core curriculum includes a strong foundation in biological and biochemical sciences, which are integrated with quantitative analysis and engineering principles throughout the entire core. Students who wish to pursue the Bachelor of Science in Biological Engineering are encouraged to complete the Biology General Institute Requirement during freshman year and may delay completion of Physics II until the fall term of sophomore year if necessary. The optional subject Introduction to Biological Engineering Design, offered during the spring term of freshman year, provides a framework for understanding the Biological Engineering SB program."
+}

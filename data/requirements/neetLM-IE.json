@@ -1,0 +1,107 @@
+{
+  "title-no-degree": "NEET Living Machines Thread - Immunoengineering Track",
+  "list-id": "neetLM-IE.reql",
+  "title": "NEET Certificate in Living Machines - Immunoengineering Thread",
+  "url": "https://neet.mit.edu/threads/lm",
+  "medium-title": "NEET Living Machines - Immunoengineering",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "Intellectual Diversity Requirement (IDR)",
+          "plain-string": true
+        },
+        {
+          "req": "20.051"
+        },
+        {
+          "req": "20.230"
+        },
+        {
+          "req": "20.365"
+        }
+      ],
+      "title": "Subjects"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "Internship",
+          "plain-string": true
+        },
+        {
+          "threshold": {
+            "cutoff": 15,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "req": "Senior Thesis",
+          "plain-string": true,
+          "threshold-desc": "select any 15 units"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 1,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "UROP (credit/paid)",
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "20.054"
+            }
+          ],
+          "threshold-desc": "select all"
+        }
+      ],
+      "title": "Immersion"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 60,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "req": "LM Activities (60 HEQ)",
+          "plain-string": true,
+          "threshold-desc": "select any 60 units"
+        },
+        {
+          "threshold": {
+            "cutoff": 8,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "Seminars",
+          "plain-string": true,
+          "threshold-desc": "select any 8"
+        }
+      ],
+      "title": "Growth"
+    }
+  ],
+  "short-title": "NEET",
+  "desc": "Living Machines (LM) allows you to apply engineering principles and concepts to problems in the Life and Medical Sciences, through various biotechnology innovations. As a Living Machines scholar, you have the opportunity to work on projects spanning synthetic biology, immuno-engineering, tissue engineering, microfluidics, and computational biology and other disruptive research areas, united by a theme of improving our understanding of and therapies for human disease."
+}

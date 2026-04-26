@@ -1,0 +1,161 @@
+{
+  "title-no-degree": "Chemistry",
+  "list-id": "major5-flex.reql",
+  "title": "Bachelor of Science in Chemistry (Flexible Option)",
+  "medium-title": "5-Flex Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "5.03"
+            },
+            {
+              "req": "5.07"
+            },
+            {
+              "req": "5.12"
+            },
+            {
+              "req": "5.601"
+            },
+            {
+              "req": "5.611"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "threshold": {
+            "cutoff": 24,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "5.04"
+            },
+            {
+              "req": "5.08"
+            },
+            {
+              "req": "5.13"
+            },
+            {
+              "req": "5.43"
+            },
+            {
+              "req": "5.602"
+            },
+            {
+              "req": "5.612"
+            },
+            {
+              "req": "5.62"
+            }
+          ],
+          "threshold-desc": "select any 24 units"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 36 units",
+      "req": "Approved electives",
+      "threshold": {
+        "cutoff": 36,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "title": "Elective Focus",
+      "desc": "Select a minimum of 36 units of coursework forming an intellectually coherent unit in some area, subject to the approval of the department"
+    },
+    {
+      "connection-type": "all",
+      "desc": "Laboratory Restricted Electives cannot be double-counted within the program.",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "5.351"
+            },
+            {
+              "req": "5.352"
+            },
+            {
+              "req": "5.353"
+            },
+            {
+              "req": "5.361"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 20,
+                "criterion": "units",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "5.362"
+                },
+                {
+                  "req": "5.363"
+                },
+                {
+                  "req": "5.371"
+                },
+                {
+                  "req": "5.372"
+                },
+                {
+                  "req": "5.373"
+                },
+                {
+                  "req": "5.381"
+                },
+                {
+                  "req": "5.382"
+                },
+                {
+                  "req": "5.383"
+                }
+              ],
+              "threshold-desc": "select any 20 units"
+            },
+            {
+              "threshold": {
+                "cutoff": 1,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "Approved lab subjects",
+              "plain-string": true
+            },
+            {
+              "req": "5.39"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Laboratory Requirement"
+    }
+  ],
+  "short-title": "5",
+  "desc": "The Flexible Chemistry Option, “ChemFlex,” is designed to provide an education both for those who intend to pursue chemistry as a career and for those who plan to go into an allied field, such as biotechnology or scientific consulting, in which a sound knowledge of chemistry is important. Students receive thorough instruction in the principles of chemistry, supplemented by a strong foundation in mathematics, physics, biology, and the humanities. This training can be tailored to the student's interests by the judicious choice of elective focus subjects that contribute to the major. The Department of Chemistry also teaches courses jointly with the departments of Biology, Chemical Engineering, Biological Engineering, and Materials Science and Engineering. The student's faculty advisor can offer suggestions for elective subjects that are of value in preparation for specialization in the various broad areas of chemistry. The proper choice of electives is particularly important for students planning to continue their education in a graduate program. Students at all levels are encouraged to undertake original research."
+}

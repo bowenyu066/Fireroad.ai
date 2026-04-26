@@ -1,0 +1,328 @@
+{
+  "title-no-degree": "Computer Science, Economics, and Data Science",
+  "list-id": "meng6-14.reql",
+  "title": "Master of Engineering in Computer Science, Economics, and Data Science",
+  "medium-title": "6-14 M.Eng.",
+  "reqs": [
+    {
+      "desc": "Master of Engineering Program Thesis",
+      "req": "6.THM",
+      "title": "Thesis"
+    },
+    {
+      "threshold-desc": "select any 42 units",
+      "title": "Restricted Electives",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 2",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "14.121"
+                },
+                {
+                  "req": "14.122"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "14.131"
+            },
+            {
+              "req": "14.137"
+            },
+            {
+              "req": "14.150"
+            },
+            {
+              "req": "14.161"
+            },
+            {
+              "req": "14.200"
+            },
+            {
+              "req": "14.270"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "14.380"
+                },
+                {
+                  "req": "14.381"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "14.387"
+            },
+            {
+              "req": "14.388"
+            },
+            {
+              "req": "14.420"
+            },
+            {
+              "req": "14.444"
+            },
+            {
+              "req": "14.540"
+            },
+            {
+              "req": "14.640"
+            },
+            {
+              "req": "14.750"
+            },
+            {
+              "req": "14.760"
+            },
+            {
+              "req": "15.038"
+            },
+            {
+              "req": "9.822"
+            }
+          ],
+          "title": "Economics Advanced Subjects"
+        },
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 2",
+          "reqs": [
+            {
+              "req": "6.3702"
+            },
+            {
+              "req": "6.3722"
+            },
+            {
+              "req": "6.3732"
+            },
+            {
+              "req": "6.4132"
+            },
+            {
+              "req": "6.5080"
+            },
+            {
+              "req": "6.5210"
+            },
+            {
+              "req": "6.5220"
+            },
+            {
+              "req": "6.5230"
+            },
+            {
+              "req": "6.5250"
+            },
+            {
+              "req": "6.5310"
+            },
+            {
+              "req": "6.5340"
+            },
+            {
+              "req": "6.5400"
+            },
+            {
+              "req": "6.5620"
+            },
+            {
+              "req": "6.6630"
+            },
+            {
+              "req": "6.7200"
+            },
+            {
+              "req": "6.7210"
+            },
+            {
+              "req": "6.7240"
+            },
+            {
+              "req": "6.7260"
+            },
+            {
+              "req": "6.7300"
+            },
+            {
+              "req": "6.7310"
+            },
+            {
+              "req": "6.7320"
+            },
+            {
+              "req": "6.7330"
+            },
+            {
+              "req": "6.7450"
+            },
+            {
+              "req": "6.7470"
+            },
+            {
+              "req": "6.7700"
+            },
+            {
+              "req": "6.7710"
+            },
+            {
+              "req": "6.7720"
+            },
+            {
+              "req": "6.7800"
+            },
+            {
+              "req": "6.7810"
+            },
+            {
+              "req": "6.7900"
+            },
+            {
+              "req": "6.7910"
+            },
+            {
+              "req": "6.7930"
+            },
+            {
+              "req": "6.7940"
+            },
+            {
+              "req": "6.8300"
+            },
+            {
+              "req": "6.8610"
+            }
+          ],
+          "title": "EECS/ECON Advanced Subjects"
+        }
+      ],
+      "connection-type": "all",
+      "threshold": {
+        "cutoff": 42,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "desc": "Four graduate subjects totaling at least 42 units, which includes two subjects from the approved advanced subjects in Economics and two from the approved advanced subjects in EECS/ECON"
+    },
+    {
+      "threshold-desc": "select any 24 units",
+      "title": "Mathematics Restricted Electives",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "LTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "18.650"
+            },
+            {
+              "req": "6.008"
+            },
+            {
+              "req": "6.3800"
+            },
+            {
+              "req": "IDS.014"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "LTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "18.04"
+            },
+            {
+              "req": "18.0751"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "LTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "18.1001"
+            },
+            {
+              "req": "18.1002"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "18.0851"
+            },
+            {
+              "req": "18.0861"
+            },
+            {
+              "req": "18.200A"
+            },
+            {
+              "req": "18.330"
+            },
+            {
+              "req": "18.700"
+            },
+            {
+              "req": "18.781"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 24,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "desc": "Two subjects from the list of mathematics restricted electives"
+    },
+    {
+      "desc": "MEng students are required to gain professional experience through one of the following ways: an internship (industry, government, or academic) of 4+ weeks in IAP or summer, previous employment, as part of the 6-A program, or colloquia",
+      "req": "6.9830",
+      "title": "Professional Perspective Requirement"
+    }
+  ],
+  "short-title": "6-14P",
+  "desc": "The Master of Engineering degree is awarded only to students who have already received, or who will simultaneously receive, the Bachelor of Science in Computer Science, Economics, and Data Science (Course 6-14)."
+}

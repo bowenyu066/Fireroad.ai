@@ -1,0 +1,247 @@
+{
+  "title-no-degree": "Finance",
+  "list-id": "mfin.reql",
+  "title": "Master of Finance",
+  "medium-title": "MFin",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "During the summer term, you’ll begin with rigorous courses in finance theory, financial mathematics, and financial accounting which provide foundational theories and principles you’ll draw from throughout the program and your career. MIT Undergraduates only who have taken 15.401 and 15.402, or 15.501, may be granted exemption from these requirements.",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.415"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "15.401"
+                },
+                {
+                  "req": "15.402"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.516"
+            },
+            {
+              "req": "15.501"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.454"
+            },
+            {
+              "req": "15.455"
+            }
+          ],
+          "threshold-desc": "select either"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Core"
+    },
+    {
+      "connection-type": "all",
+      "desc": "You’ll work with analytical tools—financial modeling, portfolio and pricing theory, statistics and data analytics, and computational methods—to help tackle multi-faceted challenges that arise in finance, from capital budgeting and cash flow analysis, to dynamic asset allocation and big-data-based investment strategies, and more.",
+      "reqs": [
+        {
+          "req": "15.425"
+        },
+        {
+          "req": "15.433"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.450"
+            },
+            {
+              "req": "15.457"
+            }
+          ],
+          "threshold-desc": "select either"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Advanced Subjects"
+    },
+    {
+      "threshold-desc": "select any 4",
+      "title": "Restricted Electives",
+      "reqs": [
+        {
+          "req": "15.431"
+        },
+        {
+          "req": "15.434"
+        },
+        {
+          "req": "15.437"
+        },
+        {
+          "req": "15.438"
+        },
+        {
+          "req": "15.445"
+        },
+        {
+          "req": "15.447"
+        },
+        {
+          "req": "15.456"
+        },
+        {
+          "req": "15.458"
+        },
+        {
+          "req": "15.466"
+        },
+        {
+          "req": "15.467"
+        },
+        {
+          "req": "15.481"
+        },
+        {
+          "req": "15.483"
+        },
+        {
+          "req": "15.S08"
+        },
+        {
+          "req": "15.085"
+        },
+        {
+          "req": "15.093"
+        },
+        {
+          "req": "15.470"
+        },
+        {
+          "req": "15.472"
+        },
+        {
+          "req": "15.474"
+        },
+        {
+          "req": "15.070"
+        },
+        {
+          "req": "15.471"
+        },
+        {
+          "req": "15.473"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "14.121"
+            },
+            {
+              "req": "14.122"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "req": "14.381"
+        },
+        {
+          "req": "14.384"
+        },
+        {
+          "req": "14.385"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "14.351"
+            },
+            {
+              "req": "14.352"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "14.123"
+            },
+            {
+              "req": "14.124"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "req": "14.382"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "14.453"
+            },
+            {
+              "req": "14.454"
+            }
+          ],
+          "threshold-desc": "select all"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 4,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "A minimum of four restricted electives must be taken. Select 1st year PhD Finance and Economics courses will also serve as restricted electives. You’ll choose from topics ranging from financial technology, to quantitative methods, to economics, to specialized disciplines such as healthcare finance, fixed income, mergers and acquisitions and asset management."
+    },
+    {
+      "connection-type": "any",
+      "desc": "Our signature finance Action Learning courses integrate financial theory and applications with hands-on work experience alongside financial industry practitioners. These project-based courses challenge students to solve real-world problems with MIT's partner corporations, culminating in student presentations to corporate decision makers.",
+      "reqs": [
+        {
+          "req": "15.451"
+        },
+        {
+          "req": "15.452"
+        },
+        {
+          "req": "15.453"
+        }
+      ],
+      "threshold-desc": "select any",
+      "title": "Required Action Learning"
+    },
+    {
+      "desc": "A required professional development course adds an important dimension, focusing on finance ethics and social responsibility.",
+      "req": "15.S06",
+      "title": "Required Professional Development"
+    }
+  ],
+  "short-title": "15",
+  "desc": "The Master of Finance program at MIT Sloan is a specialized advanced master's degree designed to prepare students for careers in finance.\n\nPutting ideas into action is fundamental to MIT’s approach to knowledge creation, education, and research. In the MFin program, this presents itself in a rigorous, hands-on curriculum that offers students the chance to build a deep reservoir of finance knowledge and immediately put that knowledge to work in the world. MFin students participate in Action Learning experiences including Proseminars and the Finance Lab (formerly known as the Finance Research Practicum).\n\nThe MFin curriculum consists of required fundamental and advanced subjects, restricted electives, and an action learning course. Students may choose to write a thesis or pursue an independent study, pending approval by the faculty director.\n\nThe MFin program degree is completed in 18 months. There is an option to accelerate the degree requirements and complete it in 12 months. This allows you to tailor the program to your specific needs. The degree requirements are the same for both formats; the only difference is timing. During the 18 months, students will have the option to complete an internship during the second summer term, take additional courses or use the additional time to write a thesis. The shorter timeframe allows you to earn a full MFin degree in one year—including an Action Learning experience where you’ll work with corporate partners on real-world challenges—accelerating your path to a rewarding career."
+}
