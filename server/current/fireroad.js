@@ -145,11 +145,21 @@ function expandSearchTokens(tokens) {
   return [...new Set(expanded)];
 }
 
+function semesterSeason(semId) {
+  if (!semId) return null;
+  if (semId.startsWith('IAP')) return 'iap';
+  if (semId.startsWith('SU')) return 'summer';
+  if (semId.startsWith('F')) return 'fall';
+  if (semId.startsWith('S')) return 'spring';
+  return null;
+}
+
 async function searchCurrentCourses(options = {}) {
   const query = String(options.query || '').trim().toLowerCase();
   const tokens = expandSearchTokens(query.split(/\s+/).filter(Boolean));
   const maxResults = Math.max(1, Math.min(Number(options.maxResults || options.max_results) || 10, 50));
   const maxWorkload = Number(options.maxWorkload || options.max_workload) || null;
+  const season = semesterSeason(options.semester || options.activeSem || '');
   // Map department numbers to area names in case the agent passes "18" instead of "math"
   const DEPT_TO_AREA = { '6': 'cs', '18': 'math', '8': 'physics', '7': 'bio', '5': 'other', '14': 'hass', '21': 'hass', '24': 'hass' };
   const areas = Array.isArray(options.areas)
@@ -169,6 +179,7 @@ async function searchCurrentCourses(options = {}) {
     .filter((course) => !areas.length || areas.includes(String(course.area).toLowerCase()))
     .filter((course) => !requirements.length || requirements.some((req) => course.requirements.map((r) => r.toLowerCase()).includes(req)))
     .filter((course) => !maxWorkload || !course.totalHours || course.totalHours <= maxWorkload)
+    .filter((course) => !season || !course.offered || course.offered[season] !== false)
     .map((course) => ({ course, searchScore: scoreCourse(course, query, tokens) }))
     .filter((result) => result.searchScore > 0 || !query)
     .sort((a, b) => b.searchScore - a.searchScore || a.course.id.localeCompare(b.course.id))

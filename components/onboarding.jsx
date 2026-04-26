@@ -14,14 +14,31 @@ const BUILD_PHASES = [
 ];
 
 
-const STANDINGS = [
-  ['prefrosh', 'Pre-freshman'],
-  ['freshman', 'Freshman'],
-  ['sophomore', 'Sophomore'],
-  ['junior', 'Junior'],
-  ['senior', 'Senior'],
-  ['meng', 'MEng'],
-];
+// Generate matriculation year options: 5 years back through next year (incoming frosh)
+const buildMatriculationYears = () => {
+  const current = new Date().getFullYear();
+  const options = [];
+  for (let y = current + 1; y >= current - 5; y -= 1) {
+    options.push([String(y), y === current + 1 ? `Fall ${y} (incoming)` : `Fall ${y}`]);
+  }
+  return options;
+};
+const MATRICULATION_YEARS = buildMatriculationYears();
+
+// Compute class standing label from matriculation year (for agent context)
+const standingFromMatricYear = (matricYear) => {
+  const year = parseInt(matricYear, 10);
+  if (!year) return '';
+  const now = new Date();
+  const academicYear = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+  const yearsIn = academicYear - year + 1;
+  if (yearsIn <= 0) return 'Pre-freshman';
+  if (yearsIn === 1) return 'Freshman';
+  if (yearsIn === 2) return 'Sophomore';
+  if (yearsIn === 3) return 'Junior';
+  if (yearsIn === 4) return 'Senior';
+  return 'Graduate';
+};
 
 const SKILL_LEVELS = [
   {
@@ -45,7 +62,7 @@ const emptyData = {
   name: '',
   major: 'major6-3',
   futureProgram: '',
-  standing: 'sophomore',
+  matriculationYear: String(new Date().getFullYear() - 1),
   gpa: '',
   transcriptUploaded: false,
   transcriptFileName: '',
@@ -633,7 +650,8 @@ const Onboarding = () => {
         name: data.name || profile.name,
         major: data.major === 'undecided' ? 'Undecided' : data.major,
         majorLabel,
-        year: STANDINGS.find(([id]) => id === data.standing)?.[1] || data.standing,
+        year: standingFromMatricYear(data.matriculationYear),
+        matriculationYear: data.matriculationYear ? parseInt(data.matriculationYear, 10) : null,
         taken,
         preferences: {
           ...profile.preferences,
@@ -1172,19 +1190,19 @@ const StepProfile = ({ data, upd, goNext }) => (
       <Field label="Major / intended major" required>
         <MajorSearch value={data.major} onChange={(value) => upd('major', value)} />
       </Field>
-      <Field label="Year" required>
-        <Select value={data.standing} onChange={(value) => upd('standing', value)} options={STANDINGS} />
+      <Field label="Matriculation Year" required>
+        <Select value={data.matriculationYear} onChange={(value) => upd('matriculationYear', value)} options={MATRICULATION_YEARS} />
       </Field>
     </div>
     <Field label="Future double major / minor / concentration">
       <TextInput placeholder="Minor in 18, concentration in linguistics, etc." value={data.futureProgram} onChange={(event) => upd('futureProgram', event.target.value)} />
     </Field>
-    {data.standing !== 'prefrosh' && (
+    {data.matriculationYear !== String(new Date().getFullYear() + 1) && (
       <Field label="GPA or academic standing">
         <TextInput placeholder="4.7 / 5.0, good standing, or leave blank" value={data.gpa} onChange={(event) => upd('gpa', event.target.value)} />
       </Field>
     )}
-    {data.standing === 'prefrosh' && (
+    {data.matriculationYear === String(new Date().getFullYear() + 1) && (
       <StatusPill icon="sparkle">Pre-freshman mode</StatusPill>
     )}
     <StepNav onNext={goNext} disabled={!data.name.trim()} />

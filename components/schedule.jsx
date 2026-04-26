@@ -437,7 +437,18 @@ const courseWorkloadLabel = (course) => {
   return parts.join(' · ') || 'Units TBD';
 };
 
+const semSeason = (semId) => {
+  if (!semId) return null;
+  if (semId.startsWith('IAP')) return 'iap';
+  if (semId.startsWith('SU')) return 'summer';
+  if (semId.startsWith('F')) return 'fall';
+  if (semId.startsWith('S')) return 'spring';
+  return null;
+};
+
 const ManualCourseSearch = ({ schedule, onAddCourse, onOpenCourse, onCoursesLoaded }) => {
+  const { activeSem } = useApp();
+  const season = semSeason(activeSem);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [status, setStatus] = useState('loading');
@@ -532,6 +543,7 @@ const ManualCourseSearch = ({ schedule, onAddCourse, onOpenCourse, onCoursesLoad
         {status === 'ready' && visibleResults.map((course) => {
           const isAdded = scheduled.has(course.id);
           const tags = Array.isArray(course.satisfies) ? course.satisfies.slice(0, 3) : [];
+          const notOffered = season && course.offered && course.offered[season] === false;
           return (
             <div
               key={course.id}
@@ -553,6 +565,12 @@ const ManualCourseSearch = ({ schedule, onAddCourse, onOpenCourse, onCoursesLoad
                   }}>
                     {course.name}
                   </span>
+                  {notOffered && (
+                    <span
+                      title={`Not offered in ${activeSem}`}
+                      style={{ flexShrink: 0, fontSize: 13, color: '#e6a817', lineHeight: 1 }}
+                    >⚠</span>
+                  )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginTop: 7 }}>
                   <span className="mono" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{courseWorkloadLabel(course)}</span>
@@ -997,8 +1015,14 @@ const FourYearPlanPage = () => {
   const goPlanning = (sem) => { setActiveSem(sem); setRoute({ name: 'planner' }); };
   const openCourse = (id) => setRoute({ name: 'course', id });
 
-  // Build year rows: each row is { fall: 'F26', iap: 'IAP27', spring: 'S27' }
-  const falls = semOrder.filter((s) => s.startsWith('F')).slice(0, 4);
+  // Build year rows anchored to matriculation year when available, otherwise first 4 falls
+  const matricYear = profile.matriculationYear ? parseInt(profile.matriculationYear, 10) : null;
+  const falls = (() => {
+    if (matricYear) {
+      return [0, 1, 2, 3].map((n) => `F${String((matricYear + n) % 100).padStart(2, '0')}`);
+    }
+    return semOrder.filter((s) => s.startsWith('F')).slice(0, 4);
+  })();
   const yearRows = falls.map((fall) => {
     const yy = parseInt(fall.slice(1), 10);
     const nextYY = String((yy + 1) % 100).padStart(2, '0');

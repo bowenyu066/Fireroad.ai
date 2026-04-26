@@ -116,6 +116,7 @@ window.FRDATA = (function (source) {
       recommendationReasons: current.reasons || current.recommendationReasons || [],
       rankScore: current.rankScore || current.rank_score || current.personalMatch?.total || current.personal_match?.total || 0,
       scheduleRaw: current.scheduleRaw || '',
+      offered: current.offered || null,
       current,
     };
   };

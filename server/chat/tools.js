@@ -467,13 +467,15 @@ async function summarizeSemesterPlan(args = {}, context = {}) {
   };
 }
 
-async function searchCurrentCoursesTool(args = {}) {
+async function searchCurrentCoursesTool(args = {}, context = {}) {
   const result = await searchCurrentCourses({
     query: args.query || '',
     maxResults: args.max_results || 8,
     areas: args.areas,
     requirements: args.requirements || args.satisfies,
     maxWorkload: args.max_workload,
+    departments: args.departments,
+    semester: context.activeSem || '',
   });
   return {
     ...result,
