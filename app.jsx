@@ -1,5 +1,90 @@
-/* global React, ReactDOM, FRDATA, FRAuth, PersonalCourse, AuthGate, Onboarding, ProfilePage, TopBar, SchedulePanel, FourYearPlanPage, AgentPanel, Recommendations, CourseDetail, AppCtx */
-const { useState, useEffect } = React;
+/* global React, ReactDOM, FRDATA, FRAuth, PersonalCourse, AuthGate, Onboarding, ProfilePage, TopBar, SchedulePanel, RequirementsPanel, FourYearPlanPage, AgentPanel, Recommendations, CourseDetail, AppCtx */
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ============== Draggable column resizer ==============
+// Designed to sit inside a CSS grid column of fixed 8px width — no
+// negative margins, no flex-basis tricks. The mousedown handler captures
+// drag start; the mousemove listener is attached once and reads the
+// latest onDrag from a ref so re-renders don't churn listeners.
+const ColumnResizer = ({ onDrag }) => {
+  const draggingRef = useRef(false);
+  const lastXRef = useRef(0);
+  const onDragRef = useRef(onDrag);
+  const [active, setActive] = useState(false);
+  const [hover, setHover] = useState(false);
+
+  useEffect(() => { onDragRef.current = onDrag; }, [onDrag]);
+
+  useEffect(() => {
+    const handleMove = (event) => {
+      if (!draggingRef.current) return;
+      const delta = event.clientX - lastXRef.current;
+      lastXRef.current = event.clientX;
+      if (delta !== 0) onDragRef.current(delta);
+    };
+    const handleUp = () => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      setActive(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+    };
+  }, []);
+
+  const handleMouseDown = (event) => {
+    event.preventDefault();
+    draggingRef.current = true;
+    lastXRef.current = event.clientX;
+    setActive(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  };
+
+  const highlight = active || hover;
+
+  return (
+    <div
+      onMouseDown={handleMouseDown}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        height: '100%',
+        cursor: 'col-resize',
+        position: 'relative',
+        background: 'transparent',
+        zIndex: 5,
+      }}
+      title="Drag to resize"
+    >
+      <div style={{
+        position: 'absolute', top: 0, bottom: 0, left: '50%',
+        transform: `translateX(-50%)`,
+        width: highlight ? 2 : 1,
+        background: highlight ? 'var(--accent)' : 'var(--border)',
+        transition: 'background 120ms, width 120ms',
+        pointerEvents: 'none',
+      }} />
+    </div>
+  );
+};
+
+// Section panel header, also resizable for requirements column
+const SectionHeader = ({ label, right }) => (
+  <div style={{
+    padding: '12px 16px', borderBottom: '1px solid var(--border)',
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    minHeight: 44, boxSizing: 'border-box',
+  }}>
+    <div className="eyebrow">{label}</div>
+    {right || null}
+  </div>
+);
 
 const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLabel }) => {
   const { setRoute, profile } = React.useContext(AppCtx);
@@ -110,33 +195,98 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
 
   const onOpenCourse = (id) => setRoute({ name: 'course', id });
 
+  const containerRef = useRef(null);
+  const STORAGE_KEY = 'fr-planner-pane-pixels-v1';
+  const DEFAULTS = { leftPx: 360, middlePx: 380 };
+  const MIN_PX = 60;
+  const RESIZER_PX = 8;
+
+  const [paneWidths, setPaneWidths] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      if (saved && typeof saved.leftPx === 'number' && typeof saved.middlePx === 'number') return saved;
+    } catch (_) {}
+    return DEFAULTS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(paneWidths));
+  }, [paneWidths]);
+
+  // Each boundary only moves its two adjacent panes:
+  //   left-middle  → adjusts leftPx and middlePx; right (1fr) is untouched.
+  //   middle-right → adjusts middlePx only; right (1fr) absorbs the change.
+  const adjustWidth = useCallback((boundary, deltaPx) => {
+    setPaneWidths((current) => {
+      const total = containerRef.current ? containerRef.current.clientWidth : 1200;
+      if (boundary === 'left-middle') {
+        const sum = current.leftPx + current.middlePx;
+        const newLeft = Math.max(MIN_PX, Math.min(sum - MIN_PX, current.leftPx + deltaPx));
+        return { leftPx: newLeft, middlePx: sum - newLeft };
+      }
+      if (boundary === 'middle-right') {
+        const maxMiddle = Math.max(MIN_PX, total - current.leftPx - 2 * RESIZER_PX - MIN_PX);
+        const newMiddle = Math.max(MIN_PX, Math.min(maxMiddle, current.middlePx + deltaPx));
+        return { leftPx: current.leftPx, middlePx: newMiddle };
+      }
+      return current;
+    });
+  }, []);
+
+  const gridTemplate = `${paneWidths.leftPx}px ${RESIZER_PX}px ${paneWidths.middlePx}px ${RESIZER_PX}px minmax(${MIN_PX}px, 1fr)`;
+
   return (
     <div className="fade-in" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <TopBar planningTermLabel={planningTermLabel} />
 
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 'calc(100vh - 65px)' }}>
-        <div style={{ flex: '1.3', borderRight: '1px solid var(--border)', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+      <div
+        ref={containerRef}
+        style={{
+          flex: 1,
+          display: 'grid',
+          gridTemplateColumns: gridTemplate,
+          overflow: 'hidden',
+          minHeight: 'calc(100vh - 65px)',
+        }}
+      >
+        {/* LEFT — schedule (course cards only) */}
+        <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <SchedulePanel
             schedule={schedule} setSchedule={setSchedule}
             justAddedId={justAddedId} onOpenCourse={onOpenCourse}
             onAddCourse={onAddCourse} onRemoveCourse={onRemoveCourse}
             viewMode={viewMode} setViewMode={setViewMode}
             planningTermLabel={planningTermLabel}
+            hideRequirements
           />
         </div>
-        <div style={{ flex: '1', minWidth: 380, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: '1 1 0', minHeight: 0, borderBottom: '1px solid var(--border)' }}>
-            <AgentPanel
-              messages={messages} setMessages={setMessages}
-              profile={profile} schedule={schedule}
-              onAddCourse={onAddCourse} onOpenCourse={onOpenCourse}
-              onApplyUiActions={applyUiActions}
-            />
-          </div>
-          <div style={{ flex: '1 1 0', minHeight: 0 }}>
-            <Recommendations schedule={schedule} onAddCourse={onAddCourse} onOpenCourse={onOpenCourse} />
+
+        <ColumnResizer onDrag={(delta) => adjustWidth('left-middle', delta)} />
+
+        {/* MIDDLE — course requirements */}
+        <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <SectionHeader label="Course requirements" />
+          <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', background: 'var(--bg)' }}>
+            <RequirementsPanel schedule={schedule} />
           </div>
         </div>
+
+        <ColumnResizer onDrag={(delta) => adjustWidth('middle-right', delta)} />
+
+        {/* RIGHT — agent */}
+        <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <AgentPanel
+            messages={messages} setMessages={setMessages}
+            profile={profile} schedule={schedule}
+            onAddCourse={onAddCourse} onOpenCourse={onOpenCourse}
+            onApplyUiActions={applyUiActions}
+          />
+        </div>
+
+        {/*
+          Recommendations panel hidden per product decision (kept for future use):
+          <Recommendations schedule={schedule} onAddCourse={onAddCourse} onOpenCourse={onOpenCourse} />
+        */}
       </div>
     </div>
   );

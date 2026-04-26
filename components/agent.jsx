@@ -17,6 +17,60 @@ const coerceText = (value) => {
   return '';
 };
 
+// ============== Personalization control (button + modal + save) ==============
+const PersonalizationControl = () => {
+  const { profile, setProfile, personalCourseMarkdown, setPersonalCourseMarkdown } = useApp();
+  const [open, setOpen] = useState(false);
+  const personalization = profile?.preferences?.personalization;
+
+  const savePersonalization = (nextPersonalization) => {
+    const nextProfile = {
+      ...profile,
+      preferences: {
+        ...(profile.preferences || {}),
+        personalization: nextPersonalization,
+      },
+    };
+    setProfile(nextProfile);
+
+    fetch('/api/onboarding/more-preferences', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        personalCourseMarkdown: personalCourseMarkdown || localStorage.getItem('fr-personalcourse-draft') || '# personalcourse.md\n',
+        questionnaire: nextPersonalization,
+        freeformNotes: nextPersonalization.freeformNotes || '',
+        normalizedData: nextPersonalization,
+      }),
+    })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || payload.ok === false) throw new Error(payload.error || 'Markdown personalization failed.');
+        if (payload.personalCourseMarkdown) {
+          setPersonalCourseMarkdown(payload.personalCourseMarkdown);
+          localStorage.setItem('fr-personalcourse-draft', payload.personalCourseMarkdown);
+        }
+      })
+      .catch((error) => {
+        console.warn('[personalization] background markdown sync failed', error);
+      });
+  };
+
+  return (
+    <>
+      <PersonalizationProgressButton personalization={personalization} onClick={() => setOpen(true)} />
+      {open && (
+        <FurtherPersonalizationModal
+          personalization={personalization}
+          personalCourseMarkdown={personalCourseMarkdown}
+          onClose={() => setOpen(false)}
+          onSave={savePersonalization}
+        />
+      )}
+    </>
+  );
+};
+
 // ============== Agent / chat panel (top-right) ==============
 const hasPersonalizationEvidence = (personalization, personalCourseMarkdown = '') => {
   if (String(personalCourseMarkdown || '').trim()) return true;
@@ -285,6 +339,7 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
             </div>
           </div>
         </div>
+        <PersonalizationControl />
       </div>
 
       {/* Messages */}
