@@ -649,10 +649,57 @@ const FurtherPersonalizationModal = ({ personalization, personalCourseMarkdown, 
   const [followUpQuestions, setFollowUpQuestions] = useState([]);
   const [followUpStep, setFollowUpStep] = useState(0);
   const [followUpLoading, setFollowUpLoading] = useState(false);
+  const [prefillState, setPrefillState] = useState(() => (
+    initialCompleted.length || !personalCourseMarkdown ? 'idle' : 'loading'
+  ));
   const completed = completedPersonalizationGroups(draft);
   const guidedKeys = ['workload', 'evaluation', 'interests', 'skills', 'formats', 'notes'];
   const currentKey = guidedKeys[guidedStep];
   const currentQuestion = questionCopy[currentKey] || DEFAULT_GUIDED_QUESTIONS[currentKey];
+
+  useEffect(() => {
+    if (initialCompleted.length || !personalCourseMarkdown) return undefined;
+    let cancelled = false;
+    setPrefillState('loading');
+    fetch('/api/onboarding/personalization-prefill', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        profile,
+        personalCourseMarkdown,
+      }),
+    })
+      .then((response) => response.ok ? response.json() : null)
+      .then((payload) => {
+        if (cancelled) return;
+        if (payload?.personalization) {
+          setDraft((current) => clonePersonalization({
+            ...current,
+            ...payload.personalization,
+            topicRatings: {
+              ...(current.topicRatings || {}),
+              ...(payload.personalization.topicRatings || {}),
+            },
+            formatPreferences: {
+              ...(current.formatPreferences || {}),
+              ...(payload.personalization.formatPreferences || {}),
+            },
+            desiredCoursesPerDirection: {
+              ...(current.desiredCoursesPerDirection || {}),
+              ...(payload.personalization.desiredCoursesPerDirection || {}),
+            },
+            freeformNotes: current.freeformNotes || payload.personalization.freeformNotes || '',
+          }));
+          setPrefillState(payload.source === 'model' ? 'model' : 'fallback');
+        } else {
+          setPrefillState('idle');
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setPrefillState('idle');
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -902,7 +949,15 @@ const FurtherPersonalizationModal = ({ personalization, personalCourseMarkdown, 
                 Question {guidedStep + 1}/{guidedKeys.length}
               </div>
               <div className="mono" style={{ fontSize: 11, color: questionSource === 'model' ? 'var(--accent)' : 'var(--text-tertiary)', marginBottom: 10 }}>
-                {questionSource === 'loading' ? 'Tuning question copy...' : questionSource === 'model' ? 'Personalized by agent from your profile' : 'Using default questions'}
+                {prefillState === 'loading'
+                  ? 'Reading personal_course.md...'
+                  : prefillState === 'model'
+                    ? 'Prefilled from your personal_course.md'
+                    : questionSource === 'loading'
+                      ? 'Tuning question copy...'
+                      : questionSource === 'model'
+                        ? 'Personalized by agent from your profile'
+                        : 'Using default questions'}
               </div>
               <h2 className="display" style={{ fontSize: 34, lineHeight: 1.1, margin: '0 0 10px', letterSpacing: 0 }}>
                 {currentQuestion.title}

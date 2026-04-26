@@ -57,6 +57,50 @@ function parseJsonObject(text) {
   }
 }
 
+function clampRating(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return '';
+  return Math.max(0, Math.min(10, Math.round(number)));
+}
+
+function cleanPersonalizationPrefill(value) {
+  const incoming = value && typeof value === 'object' ? value : {};
+  const topicRatings = incoming.topicRatings && typeof incoming.topicRatings === 'object' ? incoming.topicRatings : {};
+  const formatPreferences = incoming.formatPreferences && typeof incoming.formatPreferences === 'object' ? incoming.formatPreferences : {};
+  const desiredCoursesPerDirection = incoming.desiredCoursesPerDirection && typeof incoming.desiredCoursesPerDirection === 'object'
+    ? incoming.desiredCoursesPerDirection
+    : {};
+  const cleanedTopics = {};
+  Object.entries(topicRatings).forEach(([topic, ratings]) => {
+    if (!ratings || typeof ratings !== 'object') return;
+    cleanedTopics[topic] = {
+      skill: clampRating(ratings.skill),
+      interest: clampRating(ratings.interest),
+      evidence: String(ratings.evidence || '').slice(0, 240),
+    };
+  });
+  const cleanedFormats = {};
+  Object.entries(formatPreferences).forEach(([key, rating]) => {
+    cleanedFormats[key] = clampRating(rating);
+  });
+  const cleanedDesired = {};
+  Object.entries(desiredCoursesPerDirection).forEach(([key, count]) => {
+    const number = Number(count);
+    cleanedDesired[key] = Number.isFinite(number) ? Math.max(0, Math.min(8, Math.round(number))) : '';
+  });
+
+  return {
+    version: 1,
+    ratingScale: '0-10',
+    topicRatings: cleanedTopics,
+    formatPreferences: cleanedFormats,
+    desiredCoursesPerDirection: cleanedDesired,
+    freeformNotes: String(incoming.freeformNotes || '').slice(0, 1200),
+    inferredFromPersonalCourse: true,
+    inferenceSummary: String(incoming.inferenceSummary || '').slice(0, 500),
+  };
+}
+
 function buildProfile(reqBody) {
   return parseJsonField(reqBody.profile, reqBody.profile || {});
 }
@@ -489,6 +533,89 @@ ${personalCourseMarkdown || 'Not provided'}`;
     ok: true,
     questions: questions.length ? questions : fallbackQuestions,
     source: questions.length ? 'model' : 'fallback',
+  });
+}));
+
+router.post('/personalization-prefill', asyncRoute(async (req, res) => {
+  const personalCourseMarkdown = normalizeText(req.body.personalCourseMarkdown).slice(0, 16000);
+  if (!personalCourseMarkdown) {
+    res.json({ ok: true, personalization: null, source: 'empty' });
+    return;
+  }
+  if (!process.env.OPENROUTER_API_KEY) {
+    res.json({
+      ok: true,
+      personalization: null,
+      source: 'model_unavailable',
+      warning: 'OPENROUTER_API_KEY is not set, so personalization prefill was skipped.',
+    });
+    return;
+  }
+
+  const profile = req.body.profile || {};
+  const prompt = `You infer an initial course-recommendation personalization draft for Fireroad.ai from a student's personal_course.md.
+
+Return only JSON with this exact shape:
+{
+  "personalization": {
+    "topicRatings": {
+      "coding": {"skill": 0, "interest": 0, "evidence": "..."},
+      "proofs": {"skill": 0, "interest": 0, "evidence": "..."},
+      "algorithms": {"skill": 0, "interest": 0, "evidence": "..."},
+      "probability": {"skill": 0, "interest": 0, "evidence": "..."},
+      "linearAlgebra": {"skill": 0, "interest": 0, "evidence": "..."},
+      "machineLearning": {"skill": 0, "interest": 0, "evidence": "..."},
+      "systems": {"skill": 0, "interest": 0, "evidence": "..."}
+    },
+    "formatPreferences": {
+      "psets": 0,
+      "codingLabs": 0,
+      "exams": 0,
+      "labs": 0,
+      "finalProjects": 0,
+      "paperReading": 0,
+      "teamProjects": 0,
+      "presentations": 0
+    },
+    "desiredCoursesPerDirection": {
+      "machineLearning": 0,
+      "theory": 0,
+      "systems": 0,
+      "math": 0,
+      "hass": 0
+    },
+    "freeformNotes": "...",
+    "inferenceSummary": "..."
+  }
+}
+
+Rules:
+- Use 0-10 integers only for skill, interest, and format ratings.
+- Use low confidence when evidence is weak; do not infer from grades alone.
+- Skill may use completed coursework, background, resume, and skill-level sections.
+- Interest may use thumbs-up/down course preferences, freeform notes, resume projects, and planning preferences.
+- If no evidence exists for a field, use 5 for neutral/unknown.
+- Keep evidence phrases short and cite course numbers or sections when possible.
+- Do not recommend specific future courses here.
+- Do not invent facts not supported by the markdown.
+
+PROFILE_JSON:
+${JSON.stringify(profile, null, 2)}
+
+PERSONAL_COURSE_MD:
+${personalCourseMarkdown}`;
+
+  const completion = await callOpenRouter({
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.2,
+    max_tokens: 1600,
+  });
+  const parsed = parseJsonObject(completion?.choices?.[0]?.message?.content);
+  const personalization = cleanPersonalizationPrefill(parsed && parsed.personalization);
+  res.json({
+    ok: true,
+    personalization,
+    source: parsed && parsed.personalization ? 'model' : 'parse_fallback',
   });
 }));
 
