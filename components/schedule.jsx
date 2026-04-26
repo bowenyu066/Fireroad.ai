@@ -980,6 +980,20 @@ const FourYearPlanPage = () => {
 
   const totalCourses = Object.values(fourYearPlan).flat().length;
 
+  const [courseMap, setCourseMap] = useState(() =>
+    Object.fromEntries(FRDATA.catalog.map((c) => [c.id, c]))
+  );
+
+  useEffect(() => {
+    const allIds = [...new Set(Object.values(fourYearPlan).flat())];
+    if (!allIds.length) return;
+    Promise.all(allIds.map((id) => FRDATA.fetchCurrentCourse(id))).then((results) => {
+      const entries = {};
+      results.forEach((c) => { if (c) entries[c.id] = c; });
+      if (Object.keys(entries).length) setCourseMap((prev) => ({ ...prev, ...entries }));
+    }).catch(() => {});
+  }, [fourYearPlan]);
+
   const goPlanning = (sem) => { setActiveSem(sem); setRoute({ name: 'planner' }); };
   const openCourse = (id) => setRoute({ name: 'course', id });
 
@@ -993,7 +1007,7 @@ const FourYearPlanPage = () => {
 
   const SemCol = ({ sem, isIAP = false }) => {
     const courseIds = fourYearPlan[sem] || [];
-    const courses   = courseIds.map((id) => FRDATA.getCourse(id)).filter(Boolean);
+    const courses   = courseIds.map((id) => courseMap[id] || FRDATA.getCourse(id)).filter(Boolean);
     const units     = courses.reduce((s, c) => s + (c.units || 0), 0);
     const isActive  = sem === activeSem;
 
