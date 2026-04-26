@@ -12,6 +12,8 @@ export OPENROUTER_API_KEY="your_openrouter_key"
 # Optional:
 export OPENROUTER_MODEL="openai/gpt-4.1-mini"
 export OPENROUTER_TIMEOUT_MS=20000
+# Optional local demo fallback when data/courses.json cannot load:
+export DEMO_MODE=true
 npm run dev
 ```
 
@@ -21,7 +23,7 @@ The frontend still uses React 18, ReactDOM, and Babel standalone from CDN via `<
 
 ## Product Priority
 
-The current product focus is active-semester planning. Treat `fourYearPlan[activeSem]` as the single editable schedule and the primary surface for recommendations, workload checks, requirement summaries, and chat-driven add/remove actions.
+The current product focus is active-semester planning. Treat `fourYearPlan[activeSem]` as the single editable schedule and the primary surface for recommendations, workload checks, requirement summaries, and chat-driven add/remove proposals.
 
 Keep `fourYearPlan` and `activeSem` as the canonical frontend/persistence state because they preserve term-aware data. Do not add cross-semester drag/drop flows unless explicitly requested. `FourYearPlan` is kept only as a legacy read-only component export for future display work and should not be mounted from the main planner.
 
@@ -52,14 +54,14 @@ The active term selector is generated in `data.js` from the current date, using 
 
 ## Data Layer (`FRDATA`)
 
-`window.FRDATA` (defined in `data.js`) is now a browser adapter and fallback/seed layer. Current course data should come from `/api/current`, which reads and normalizes the local snapshot at `data/courses.json`:
+`window.FRDATA` (defined in `data.js`) is now a browser adapter and seed layer. Current course data should come from `/api/current`, which reads and normalizes the local snapshot at `data/courses.json`:
 
 - `FRDATA.catalog` — array of course objects with `id`, `name`, `units`, `schedule`, `days`, `time`, `satisfies`, `prereqs`, `hydrant`, `rating`, `topics`, `area`
 - `FRDATA.profile` — mock student profile (taken courses, preferences, calibration, remaining requirements)
 - `FRDATA.matchScores` — match score breakdown per course (`total`, `interest`, `workload`, `reqValue`)
 - `FRDATA.fourYearPlan`, `FRDATA.semesterLabels`, `FRDATA.semesterOrder`, `FRDATA.defaultActiveSem` — term-aware seed plan data; the editable schedule is `fourYearPlan[activeSem]`
 - `FRDATA.termOptions` — rolling term picker options generated from the current date
-- `FRDATA.fetchCurrentCourse(id)` / `FRDATA.fetchCurrentSearch(q)` / `FRDATA.fetchCurrentCatalog()` — server-backed current catalog helpers with mock fallback
+- `FRDATA.fetchCurrentCourse(id)` / `FRDATA.fetchCurrentSearch(q)` / `FRDATA.fetchCurrentCatalog()` — server-backed current catalog helpers. Do not silently fall back to mock data when these APIs fail.
 - `FRDATA.getCourse(id)` / `FRDATA.getMatch(id)` — fallback lookup helpers
 
 The planner's manual course search path must call `FRDATA.fetchCurrentSearch(...)` and treat `/api/current/search` as the primary source. Cache current search results for schedule/detail display, but do not reintroduce mock catalog filtering as the main user path.
@@ -97,13 +99,16 @@ Course area colors follow the pattern `var(--course-cs)`, `var(--course-math)`, 
 The app has a small real backend, while transcript parsing and some student-data persistence remain prototype-level:
 
 - `AgentPanel` (`components/agent.jsx`): calls `POST /api/chat`, including `studentName`, which runs the OpenRouter-backed tool-calling agent from `server/chat/*`.
-- `AgentPanel` prefers `POST /api/chat/stream` for Server-Sent Events. The stream sends status and text deltas, then a final validated payload with suggestions and `uiActions`.
-- Chat routes emit request-scoped server logs as `[agent <id>] ...`. Preserve this logging when touching agent/tool behavior; it is the primary way to debug model rounds, tool call args/results, final JSON parsing, and validated UI actions.
+- `AgentPanel` prefers `POST /api/chat/stream` for Server-Sent Events. The current stream contract separates ephemeral progress from final chat text: `progress_text`, `progress_text_delta`, `tool_activity_start`, `tool_activity_result`, `tool_activity_error`, `final_text_delta`, `trace_summary`, `proposal`, `final`, `error`, and `done`. `delta` is only a backward-compatible alias for final text.
+- Final assistant text is ordinary Markdown, not JSON. Do not ask the model to return `{ text, suggestions, uiActions }`, and do not parse tool calls or plan mutations out of final prose.
+- Tool progress is temporary UI. While streaming, show only the latest interim assistant text and current tool activity. After final, hide the progress block and optionally show the collapsed `Checked: ...` trace with safe tool input/result summaries. Do not send or render full raw tool outputs by default.
+- Plan changes are proposal/confirmation based. Legacy `uiActions` may remain in payloads for compatibility, but the frontend must render them as a proposal card with Apply/Dismiss. Only Apply calls the existing `onApplyUiActions` path.
+- Chat routes emit request-scoped server logs as `[agent <id>] ...`. Preserve this logging when touching agent/tool behavior; it is the primary way to debug model rounds, tool call args/results, trace/proposal generation, and validated UI actions.
 - Agent message text is rendered as a limited Markdown subset in `components/agent.jsx`; keep model-facing prompts aligned so responses use real Markdown lists and no raw HTML.
-- `server/current/*`: normalizes the local `data/courses.json` catalog snapshot for frontend current views, recommendations, and agent tools. Override with `CURRENT_CATALOG_PATH` when needed.
+- `server/current/*`: normalizes the local `data/courses.json` catalog snapshot for frontend current views, recommendations, and agent tools. Override with `CURRENT_CATALOG_PATH` when needed. If catalog loading fails, current routes fail by default; mock fallback is allowed only with `DEMO_MODE=true`.
 - `server/history/*`: SQLite-backed read-only historical offerings/documents/policies.
-- `server/chat/prompt.js`: keep the agent focused on the active semester and reject cross-semester roadmap mutations unless explicitly requested.
-- `server/chat/tools.js`: search, course detail, recommendations, schedule summaries, suggestion sanitization, and UI action validation should resolve courses through `server/current/fireroad.js` first. Mock data is only a fallback when the current snapshot cannot load.
+- `server/chat/prompt.js`: keep the agent focused on the active semester, final Markdown answers, tool-grounded course facts, and confirmation-based plan proposals. Reject cross-semester roadmap mutations unless a future portfolio proposal flow is explicitly implemented.
+- `server/chat/tools.js`: search, course detail, recommendations, schedule summaries, suggestion sanitization, and UI action validation should resolve courses through `server/current/fireroad.js` first. Mock data must not mask current snapshot load failures unless `DEMO_MODE=true`.
 - Match scores in `FRDATA.matchScores` should come from `POST /api/score-courses`
 - First-entry onboarding calls `/api/onboarding/*` for PDF text extraction, prompt execution, course import, and course-preference updates. The browser persists returned `personalCourseMarkdown` through Firebase client auth.
 - The workload estimate in `CourseDetail` uses `profile.calibration` (0–1 float) — calibration should eventually be computed server-side

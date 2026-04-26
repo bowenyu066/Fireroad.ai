@@ -1,0 +1,245 @@
+{
+  "title-no-degree": "Architecture",
+  "list-id": "minorArchitecture.reql",
+  "title": "Minor in Architecture",
+  "medium-title": "4 Minor (Architecture)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "4.021"
+        },
+        {
+          "req": "4.022"
+        },
+        {
+          "req": "4.605"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select either",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "4.023"
+            },
+            {
+              "req": "4.024"
+            }
+          ],
+          "title": "Option 1"
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 3",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 2,
+                "criterion": "subjects",
+                "type": "LTE"
+              },
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "4.110"
+                },
+                {
+                  "req": "4.211"
+                },
+                {
+                  "req": "4.231"
+                },
+                {
+                  "req": "4.250"
+                }
+              ],
+              "threshold-desc": "select at most 2"
+            },
+            {
+              "threshold": {
+                "cutoff": 2,
+                "criterion": "subjects",
+                "type": "LTE"
+              },
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "4.301"
+                },
+                {
+                  "req": "4.302"
+                },
+                {
+                  "req": "4.307"
+                },
+                {
+                  "req": "4.312"
+                },
+                {
+                  "req": "4.314"
+                },
+                {
+                  "req": "4.320"
+                },
+                {
+                  "req": "4.322"
+                },
+                {
+                  "req": "4.341"
+                },
+                {
+                  "req": "4.344"
+                },
+                {
+                  "req": "4.352"
+                },
+                {
+                  "req": "4.354"
+                },
+                {
+                  "req": "4.356"
+                },
+                {
+                  "req": "4.361"
+                },
+                {
+                  "req": "4.368"
+                },
+                {
+                  "req": "4.373"
+                }
+              ],
+              "threshold-desc": "select at most 2"
+            },
+            {
+              "threshold": {
+                "cutoff": 2,
+                "criterion": "subjects",
+                "type": "LTE"
+              },
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "4.401"
+                },
+                {
+                  "req": "4.411"
+                },
+                {
+                  "req": "4.42"
+                },
+                {
+                  "req": "4.432"
+                },
+                {
+                  "req": "4.440"
+                }
+              ],
+              "threshold-desc": "select at most 2"
+            },
+            {
+              "threshold": {
+                "cutoff": 2,
+                "criterion": "subjects",
+                "type": "LTE"
+              },
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "4.500"
+                },
+                {
+                  "req": "4.501"
+                },
+                {
+                  "req": "4.502"
+                },
+                {
+                  "req": "4.504"
+                },
+                {
+                  "req": "4.520"
+                },
+                {
+                  "req": "4.522"
+                },
+                {
+                  "req": "4.550"
+                }
+              ],
+              "threshold-desc": "select at most 2"
+            },
+            {
+              "threshold": {
+                "cutoff": 1,
+                "criterion": "subjects",
+                "type": "LTE"
+              },
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "4.601"
+                },
+                {
+                  "req": "4.602"
+                },
+                {
+                  "req": "4.603"
+                },
+                {
+                  "req": "4.606"
+                },
+                {
+                  "req": "4.609"
+                },
+                {
+                  "req": "4.610"
+                },
+                {
+                  "req": "4.614"
+                },
+                {
+                  "req": "4.635"
+                },
+                {
+                  "req": "4.641"
+                },
+                {
+                  "req": "4.648"
+                },
+                {
+                  "req": "4.651"
+                },
+                {
+                  "req": "4.657"
+                },
+                {
+                  "req": "4.671"
+                }
+              ],
+              "threshold-desc": "select any"
+            }
+          ],
+          "title": "Option 2"
+        }
+      ],
+      "title": "Options"
+    }
+  ],
+  "short-title": "4",
+  "desc": ""
+}

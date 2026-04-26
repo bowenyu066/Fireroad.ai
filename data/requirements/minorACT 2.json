@@ -1,0 +1,116 @@
+{
+  "title-no-degree": "Architecture",
+  "list-id": "minorACT.reql",
+  "title": "Minor in Art, Culture and Technology",
+  "medium-title": "4 Minor (Art, Culture and Technology)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "4.301"
+            },
+            {
+              "req": "4.302"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "4.601"
+            },
+            {
+              "req": "4.602"
+            },
+            {
+              "req": "4.606"
+            },
+            {
+              "req": "4.635"
+            },
+            {
+              "req": "4.641"
+            },
+            {
+              "req": "4.651"
+            },
+            {
+              "req": "4.671"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Tier I"
+    },
+    {
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 3",
+      "reqs": [
+        {
+          "req": "4.320"
+        },
+        {
+          "req": "4.322"
+        },
+        {
+          "req": "4.341"
+        },
+        {
+          "req": "4.354"
+        }
+      ],
+      "title": "Tier II"
+    },
+    {
+      "threshold": {
+        "cutoff": 1,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "4.312"
+        },
+        {
+          "req": "4.314"
+        },
+        {
+          "req": "4.344"
+        },
+        {
+          "req": "4.352"
+        },
+        {
+          "req": "4.356"
+        },
+        {
+          "req": "4.361"
+        },
+        {
+          "req": "4.368"
+        },
+        {
+          "req": "4.373"
+        }
+      ],
+      "title": "Tier III"
+    }
+  ],
+  "short-title": "4",
+  "desc": "The HASS Minor in Art, Culture and Technology is designed to explore the conjunction of art with culture, science, technology, and design, and to develop critical and production practices."
+}

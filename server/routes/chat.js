@@ -24,6 +24,33 @@ function writeSse(res, event, data) {
   res.write(`data: ${JSON.stringify(data)}\n\n`);
 }
 
+function writeAgentStreamEvent(res, event) {
+  if (!event || !event.type) return;
+  const { type, ...payload } = event;
+
+  // Chat stream event contract:
+  // - progress_text/progress_text_delta: ephemeral assistant framing shown only while working.
+  // - tool_activity_*: safe tool input/result summaries for the pending progress/trace UI.
+  // - final_text_delta: ordinary Markdown final answer text.
+  // - trace_summary/proposal/final/done: compact final metadata and completion.
+  if (type === 'final_text_delta') {
+    writeSse(res, 'final_text_delta', payload);
+    writeSse(res, 'delta', payload); // Backward-compatible alias for older clients.
+    return;
+  }
+  if (type === 'progress_text_delta' || type === 'progress_text') {
+    writeSse(res, type, payload);
+    return;
+  }
+  if (type.startsWith('tool_activity_')) {
+    writeSse(res, type, payload);
+    return;
+  }
+  if (type === 'status' || type === 'trace_summary' || type === 'proposal') {
+    writeSse(res, type, payload);
+  }
+}
+
 router.post('/', async (req, res) => {
   const id = requestId();
   const log = createLogger(id);
@@ -113,6 +140,8 @@ router.post('/stream', async (req, res) => {
       suggestions: result.message && result.message.suggestions,
       uiActions: result.uiActions,
     });
+    if (result.traceSummary) writeSse(res, 'trace_summary', result.traceSummary);
+    if (result.proposal) writeSse(res, 'proposal', result.proposal);
     writeSse(res, 'final', result);
     writeSse(res, 'done', { ok: true });
     ended = true;
@@ -138,11 +167,18 @@ router.post('/stream', async (req, res) => {
 
   try {
     const result = await runAgentChatStream({ ...(req.body || {}), log }, (event) => {
-      if (event.type === 'delta') writeSse(res, 'delta', { text: event.text });
       if (event.type === 'status') {
         log('sse:status', { text: event.text });
-        writeSse(res, 'status', { text: event.text });
       }
+      if (event.type && event.type.startsWith('tool_activity_')) {
+        log('sse:tool_activity', {
+          type: event.type,
+          toolCallId: event.toolCallId,
+          toolName: event.toolName,
+          state: event.state,
+        });
+      }
+      writeAgentStreamEvent(res, event);
     });
     if (result.debug.toolCalls.length) {
       log('tools:summary', { names: result.debug.toolCalls.map((call) => call.name) });

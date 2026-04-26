@@ -1,0 +1,136 @@
+{
+  "title-no-degree": "Archaeology and Materials",
+  "list-id": "major3c.reql",
+  "title": "Bachelor of Science in Archaeology and Materials",
+  "medium-title": "3-C Major",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "3.010"
+        },
+        {
+          "req": "3.019"
+        },
+        {
+          "req": "3.020"
+        },
+        {
+          "req": "3.030"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "3.013"
+            },
+            {
+              "req": "3.044"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "req": "3.985"
+        },
+        {
+          "req": "3.986"
+        },
+        {
+          "req": "3.987"
+        },
+        {
+          "req": "3.990"
+        },
+        {
+          "req": "12.001"
+        },
+        {
+          "req": "12.108"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "18.03"
+            },
+            {
+              "req": "18.032"
+            },
+            {
+              "req": "CC.1803"
+            },
+            {
+              "req": "ES.1803"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "req": "21A.00"
+        },
+        {
+          "req": "3.THU"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "1.00"
+            },
+            {
+              "req": "2.086"
+            },
+            {
+              "req": "3.021"
+            },
+            {
+              "req": "3.029"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "Substitution of similar subjects may be permitted by petition.",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "3.982"
+            },
+            {
+              "req": "3.983"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "3.052"
+            },
+            {
+              "req": "3.07"
+            },
+            {
+              "req": "3.14"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Restricted Electives"
+    }
+  ],
+  "short-title": "3",
+  "desc": "Students who have a specific interest in archaeology and archaeological science may choose Course 3-C. The 3-C program is designed to afford students broad exposure to fields that contribute fundamental theoretical and methodological approaches to the study of ancient and historic societies. The primary fields include anthropological archaeology, geology, and materials science and engineering. The program enriches knowledge of past and present-day nonindustrial societies by making the natural and engineering sciences part of the archaeological tool kit.\n\nChoose at least two subjects in the major that are designated as communication-intensive (CI-M) to fulfill the Communication Requirement."
+}

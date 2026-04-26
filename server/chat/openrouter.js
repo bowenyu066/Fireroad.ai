@@ -77,6 +77,18 @@ function applyToolCallDelta(toolCalls, deltaToolCalls = []) {
   });
 }
 
+function contentPartToText(part) {
+  if (part === null || part === undefined) return '';
+  if (typeof part === 'string') return part;
+  if (Array.isArray(part)) return part.map(contentPartToText).join('');
+  if (typeof part === 'object') {
+    if (typeof part.text === 'string') return part.text;
+    if (typeof part.content === 'string') return part.content;
+    if (Array.isArray(part.content)) return part.content.map(contentPartToText).join('');
+  }
+  return '';
+}
+
 async function callOpenRouterStream(body, onContentDelta = () => {}) {
   const { controller, timeout } = createAbortController();
   let response;
@@ -137,8 +149,11 @@ async function callOpenRouterStream(body, onContentDelta = () => {}) {
       const delta = payload.choices && payload.choices[0] && payload.choices[0].delta;
       if (!delta) return false;
       if (delta.content) {
-        content += delta.content;
-        onContentDelta(delta.content);
+        const textDelta = contentPartToText(delta.content);
+        if (textDelta) {
+          content += textDelta;
+          onContentDelta(textDelta);
+        }
       }
       if (delta.tool_calls) applyToolCallDelta(toolCalls, delta.tool_calls);
       return false;

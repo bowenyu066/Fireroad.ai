@@ -1,0 +1,106 @@
+{
+  "title-no-degree": "Chemistry",
+  "list-id": "minor5.reql",
+  "title": "Minor in Chemistry",
+  "medium-title": "5 Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "5.03"
+            },
+            {
+              "req": "5.12"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "5.310"
+                },
+                {
+                  "connection-type": "all",
+                  "reqs": [
+                    {
+                      "req": "5.351"
+                    },
+                    {
+                      "req": "5.352"
+                    },
+                    {
+                      "req": "5.353"
+                    }
+                  ],
+                  "threshold-desc": "select all"
+                }
+              ],
+              "threshold-desc": "select either"
+            },
+            {
+              "req": "5.60"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "threshold": {
+            "cutoff": 24,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "5.04"
+            },
+            {
+              "req": "5.07"
+            },
+            {
+              "req": "5.08"
+            },
+            {
+              "req": "5.13"
+            },
+            {
+              "req": "5.361"
+            },
+            {
+              "req": "5.362"
+            },
+            {
+              "req": "5.363"
+            },
+            {
+              "req": "5.371"
+            },
+            {
+              "req": "5.372"
+            },
+            {
+              "req": "5.373"
+            },
+            {
+              "req": "5.43"
+            },
+            {
+              "req": "5.61"
+            },
+            {
+              "req": "5.62"
+            }
+          ],
+          "threshold-desc": "select any 24 units"
+        }
+      ],
+      "title": "Required Subjects"
+    }
+  ],
+  "short-title": "5",
+  "desc": ""
+}

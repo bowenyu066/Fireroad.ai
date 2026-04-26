@@ -1,0 +1,168 @@
+{
+  "title-no-degree": "Science, Technology, and Society",
+  "list-id": "minorSTS.reql",
+  "title": "Minor in Science, Technology, and Society",
+  "medium-title": "STS Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "STS.004"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "STS.001"
+            },
+            {
+              "req": "STS.002"
+            },
+            {
+              "req": "STS.003"
+            },
+            {
+              "req": "STS.006"
+            },
+            {
+              "req": "STS.007"
+            },
+            {
+              "req": "STS.008"
+            },
+            {
+              "req": "STS.009"
+            },
+            {
+              "req": "STS.011"
+            },
+            {
+              "req": "STS.012"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Tier I"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "STS.022"
+        },
+        {
+          "req": "STS.023"
+        },
+        {
+          "req": "STS.025"
+        },
+        {
+          "req": "STS.026"
+        },
+        {
+          "req": "STS.027"
+        },
+        {
+          "req": "STS.028"
+        },
+        {
+          "req": "STS.032"
+        },
+        {
+          "req": "STS.034"
+        },
+        {
+          "req": "STS.035"
+        },
+        {
+          "req": "STS.042"
+        },
+        {
+          "req": "STS.043"
+        },
+        {
+          "req": "STS.044"
+        },
+        {
+          "req": "STS.046"
+        },
+        {
+          "req": "STS.047"
+        },
+        {
+          "req": "STS.048"
+        },
+        {
+          "req": "STS.049"
+        },
+        {
+          "req": "STS.050"
+        },
+        {
+          "req": "STS.056"
+        },
+        {
+          "req": "STS.058"
+        },
+        {
+          "req": "STS.060"
+        },
+        {
+          "req": "STS.062"
+        },
+        {
+          "req": "STS.064"
+        },
+        {
+          "req": "STS.065"
+        },
+        {
+          "req": "STS.068"
+        },
+        {
+          "req": "STS.070"
+        },
+        {
+          "req": "STS.071"
+        },
+        {
+          "req": "STS.074"
+        },
+        {
+          "req": "STS.075"
+        },
+        {
+          "req": "STS.080"
+        },
+        {
+          "req": "STS.081"
+        },
+        {
+          "req": "STS.082"
+        },
+        {
+          "req": "STS.084"
+        },
+        {
+          "req": "STS.085"
+        },
+        {
+          "req": "STS.086"
+        },
+        {
+          "req": "STS.087"
+        },
+        {
+          "req": "STS.088"
+        }
+      ],
+      "title": "Tier II"
+    }
+  ],
+  "short-title": "STS",
+  "desc": "The goal of the minor program is to give students a broad social perspective on the fields of engineering and science: how they have evolved and how they fit into the wider context of society, culture, politics, and values.\n\nAfter satisfying both Tiers I and II, choose three additional subjects from either tier."
+}

@@ -1,0 +1,98 @@
+{
+  "title-no-degree": "Economics",
+  "list-id": "minor14.reql",
+  "title": "Minor in Economics",
+  "medium-title": "14 Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "14.01"
+        },
+        {
+          "req": "14.02"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "14.30"
+            },
+            {
+              "req": "18.05"
+            },
+            {
+              "req": "1.010"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "connection-type": "any",
+                  "reqs": [
+                    {
+                      "req": "6.041"
+                    },
+                    {
+                      "req": "18.600"
+                    }
+                  ],
+                  "threshold-desc": "select either"
+                },
+                {
+                  "connection-type": "any",
+                  "reqs": [
+                    {
+                      "req": "14.32"
+                    },
+                    {
+                      "req": "15.075"
+                    },
+                    {
+                      "req": "18.650"
+                    }
+                  ],
+                  "threshold-desc": "select any"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "title": "Tier I"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "14.03"
+        },
+        {
+          "req": "14.04"
+        },
+        {
+          "req": "14.05"
+        }
+      ],
+      "title": "Tier II"
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "threshold-desc": "select any 2",
+      "req": "2 applied economics electives",
+      "plain-string": true,
+      "title": "Tier III"
+    }
+  ],
+  "short-title": "14",
+  "desc": "The objective of the minor is to extend the understanding of economic issues beyond the level of the concentration. This is done through specialized analytical subjects and elective subjects that provide an extensive treatment of economic issues in particular areas.\n\nUnder no circumstances may a student complete a minor with fewer than six subjects. Any student who receives permission from the Economics Department to skip 14.01 and/or 14.02 in order to take a higher-level subject must take a replacement subject for each subject that is skipped."
+}

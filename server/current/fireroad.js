@@ -7,6 +7,7 @@ const { findMockCourse, normalizeCourseId, normalizeCurrentCourse } = require('.
 const DEFAULT_CATALOG_PATH = path.join(__dirname, '..', '..', 'data', 'courses.json');
 const CURRENT_CATALOG_PATH = process.env.CURRENT_CATALOG_PATH || DEFAULT_CATALOG_PATH;
 const CATALOG_TTL_MS = Number(process.env.CURRENT_CATALOG_TTL_MS) || 5 * 60 * 1000;
+const DEMO_MODE = String(process.env.DEMO_MODE || '').toLowerCase() === 'true';
 
 let catalogCache = null;
 let catalogInflight = null;
@@ -80,8 +81,12 @@ async function getCurrentCatalog() {
         return catalogCache;
       })
       .catch((error) => {
-        console.warn('[current catalog] falling back to mock data:', error.message);
-        catalogCache = { ...fallbackCatalog(), error: error.message };
+        if (!DEMO_MODE) {
+          catalogCache = null;
+          throw error;
+        }
+        console.warn('[current catalog] DEMO_MODE=true; falling back to mock data:', error.message);
+        catalogCache = { ...fallbackCatalog(), error: error.message, demoMode: true };
         return catalogCache;
       })
       .finally(() => {
@@ -175,6 +180,7 @@ async function searchCurrentCourses(options = {}) {
 }
 
 module.exports = {
+  DEMO_MODE,
   fetchCurrentCourse,
   getCurrentCatalog,
   searchCurrentCourses,

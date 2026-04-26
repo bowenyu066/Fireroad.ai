@@ -36,8 +36,9 @@ router.get('/course/:courseId', asyncHandler(async (req, res) => {
       documents,
       repo.getLatestAttendancePolicy(offering.id),
       repo.getLatestGradingPolicy(offering.id),
+      { aliases },
     );
-  });
+  }).filter((offering) => offering.includeInPastOfferings !== false);
 
   res.json({
     course,
@@ -52,12 +53,14 @@ router.get('/course/:courseId/offerings', asyncHandler(async (req, res) => {
   const course = repo.getCourseById(req.params.courseId);
   if (!course) return res.status(404).json({ error: `Course ${req.params.courseId} not found in history database.` });
 
+  const aliases = repo.getCourseAliases(course.id);
   const offerings = repo.listCourseOfferings(course.id).map((offering) => buildOfferingSummary(
     offering,
     repo.listOfferingDocuments(offering.id),
     repo.getLatestAttendancePolicy(offering.id),
     repo.getLatestGradingPolicy(offering.id),
-  ));
+    { aliases },
+  )).filter((offering) => offering.includeInPastOfferings !== false);
 
   res.json({
     course,
@@ -73,11 +76,17 @@ router.get('/offering/:offeringId', asyncHandler(async (req, res) => {
   const documents = repo.listOfferingDocuments(offering.id);
   const attendancePolicy = repo.getLatestAttendancePolicy(offering.id);
   const gradingPolicy = repo.getLatestGradingPolicy(offering.id);
+  const aliases = repo.getCourseAliases(offering.courseId);
 
   res.json({
     offering,
-    summary: buildOfferingDetailSummary(offering, documents, attendancePolicy, gradingPolicy),
-    sources: documents.map((document) => buildSourceSummary(document, attendancePolicy, gradingPolicy)),
+    summary: buildOfferingDetailSummary(offering, documents, attendancePolicy, gradingPolicy, { aliases }),
+    sources: documents.map((document) => buildSourceSummary(
+      document,
+      attendancePolicy,
+      gradingPolicy,
+      repo.getLatestExtractionRun(document.id),
+    )),
     attendancePolicy,
     gradingPolicy,
   });

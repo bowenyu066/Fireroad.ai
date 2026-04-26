@@ -1,0 +1,259 @@
+{
+  "title-no-degree": "Computer Science",
+  "list-id": "minor6.reql",
+  "title": "Minor in Computer Science",
+  "url": "https://www.eecs.mit.edu/csminor",
+  "medium-title": "6 Minor",
+  "reqs": [
+    {
+      "threshold": {
+        "cutoff": 12,
+        "criterion": "units",
+        "type": "LTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select at most 12 units",
+      "reqs": [
+        {
+          "req": "6.100A"
+        },
+        {
+          "req": "6.100B"
+        },
+        {
+          "req": "6.100L"
+        },
+        {
+          "req": "16.C20"
+        },
+        {
+          "req": "6.1903"
+        },
+        {
+          "req": "6.1904"
+        },
+        {
+          "req": "6.9080"
+        }
+      ],
+      "title": "Introductory Level"
+    },
+    {
+      "threshold": {
+        "cutoff": 63,
+        "criterion": "units",
+        "type": "LTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select at most 63 units",
+      "reqs": [
+        {
+          "req": "6.1010"
+        },
+        {
+          "req": "6.1200"
+        },
+        {
+          "req": "6.1210"
+        },
+        {
+          "req": "6.1910"
+        },
+        {
+          "req": "6.3700"
+        },
+        {
+          "req": "6.3800"
+        },
+        {
+          "req": "18.200"
+        },
+        {
+          "req": "18.200A"
+        },
+        {
+          "req": "18.211"
+        }
+      ],
+      "title": "Basic Level"
+    },
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "6.1020"
+        },
+        {
+          "req": "6.1040"
+        },
+        {
+          "req": "6.1060"
+        },
+        {
+          "req": "6.1100"
+        },
+        {
+          "req": "6.1120"
+        },
+        {
+          "req": "6.1220"
+        },
+        {
+          "req": "6.1400"
+        },
+        {
+          "req": "6.1420"
+        },
+        {
+          "req": "6.1600"
+        },
+        {
+          "req": "6.1800"
+        },
+        {
+          "req": "6.1810"
+        },
+        {
+          "req": "6.1820"
+        },
+        {
+          "req": "6.1920"
+        },
+        {
+          "req": "6.3730"
+        },
+        {
+          "req": "6.3900"
+        },
+        {
+          "req": "6.4200"
+        },
+        {
+          "req": "6.4110"
+        },
+        {
+          "req": "6.4120"
+        },
+        {
+          "req": "6.4140"
+        },
+        {
+          "req": "6.4210"
+        },
+        {
+          "req": "6.4300"
+        },
+        {
+          "req": "6.4400"
+        },
+        {
+          "req": "6.4450"
+        },
+        {
+          "req": "6.4500"
+        },
+        {
+          "req": "6.5081"
+        },
+        {
+          "req": "6.5151"
+        },
+        {
+          "req": "6.5831"
+        },
+        {
+          "req": "6.8391"
+        },
+        {
+          "req": "6.8611"
+        },
+        {
+          "req": "6.8701"
+        },
+        {
+          "req": "6.8711"
+        },
+        {
+          "req": "6.8731"
+        },
+        {
+          "req": "6.C01"
+        },
+        {
+          "req": "6.C011"
+        },
+        {
+          "req": "18.404"
+        }
+      ],
+      "title": "Advanced Level"
+    },
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "6.1010"
+            },
+            {
+              "req": "6.1020"
+            },
+            {
+              "req": "6.1100"
+            },
+            {
+              "req": "6.4200"
+            },
+            {
+              "req": "6.1040"
+            },
+            {
+              "req": "6.1060"
+            },
+            {
+              "req": "6.1920"
+            },
+            {
+              "req": "6.809"
+            },
+            {
+              "req": "6.5081"
+            }
+          ],
+          "title": "Software-Intensive"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "req": "6.1210"
+            },
+            {
+              "req": "6.1220"
+            }
+          ],
+          "title": "Algorithms-Intensive"
+        }
+      ],
+      "title": "Additional Requirements"
+    }
+  ],
+  "short-title": "6",
+  "desc": "Computational thinking is an essential skill in all engineering and scientific disciplines. The Minor in Computer Science provides both depth and breadth in the field, as well as the opportunity to explore areas of your interest.\n\nThe Minor in Computer Science requires taking at least 6 subjects totaling 72 units. 6-unit subjects count as half-subjects."
+}

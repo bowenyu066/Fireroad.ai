@@ -134,46 +134,6 @@ window.FRDATA = (function (source) {
     return courses;
   };
 
-  const fallbackSearch = (query = '', maxResults = 20) => {
-    const normalized = String(query || '').trim().toLowerCase();
-    const tokens = normalized.split(/\s+/).filter(Boolean);
-    const expandedTokens = [...new Set(tokens.flatMap((token) => {
-      if (token === 'ml') return [token, 'machine', 'learning'];
-      if (token === 'ai') return [token, 'artificial', 'intelligence'];
-      if (token === 'hass') return [token, 'hass-a', 'hass-h', 'hass-s'];
-      return [token];
-    }))];
-    const scored = source.catalog
-      .filter((course) => !course._stub)
-      .map((course) => {
-        const haystack = [
-          course.id,
-          course.name,
-          course.desc,
-          course.instructor,
-          course.satisfies.join(' '),
-          course.area,
-        ].join(' ').toLowerCase();
-        const matchScore = source.matchScores[course.id]?.total || 0;
-        let score = 0;
-        if (!normalized) score += matchScore || 1;
-        if (course.id.toLowerCase() === normalized) score += 120;
-        if (course.id.toLowerCase().includes(normalized)) score += 60;
-        if (course.name.toLowerCase().includes(normalized)) score += 40;
-        if (course.desc.toLowerCase().includes(normalized)) score += 14;
-        expandedTokens.forEach((token) => {
-          if (haystack.includes(token)) score += 6;
-        });
-        if (normalized && score > 0) score += Math.min(matchScore, 10);
-        return { course, score };
-      })
-      .filter((entry) => !normalized || entry.score > 0)
-      .sort((a, b) => b.score - a.score || a.course.id.localeCompare(b.course.id))
-      .slice(0, Math.max(1, Number(maxResults) || 20))
-      .map((entry) => entry.course);
-    return cacheCourses(scored);
-  };
-
   const fetchCurrentCourse = async (id) => {
     const normalized = String(id || '').trim().toUpperCase();
     if (!normalized) return null;
@@ -187,29 +147,21 @@ window.FRDATA = (function (source) {
       }
       return course;
     } catch (error) {
-      return getCourse(normalized);
+      console.warn('[current course] API unavailable; not using mock fallback outside DEMO_MODE', error);
+      return null;
     }
   };
 
   const fetchCurrentSearch = async (query = '', maxResults = 20) => {
-    try {
-      const payload = await fetchJson(`/api/current/search?q=${encodeURIComponent(query)}&max_results=${encodeURIComponent(maxResults)}`);
-      return cacheCourses((payload.results || []).map(toPlannerCourse).filter(Boolean));
-    } catch (error) {
-      return fallbackSearch(query, maxResults);
-    }
+    const payload = await fetchJson(`/api/current/search?q=${encodeURIComponent(query)}&max_results=${encodeURIComponent(maxResults)}`);
+    return cacheCourses((payload.results || []).map(toPlannerCourse).filter(Boolean));
   };
 
   const fetchCurrentCatalog = async () => {
     if (catalogCache) return catalogCache;
-    try {
-      const payload = await fetchJson('/api/current/catalog?max_results=500');
-      catalogCache = (payload.courses || []).map(toPlannerCourse).filter(Boolean);
-      cacheCourses(catalogCache);
-    } catch (error) {
-      catalogCache = source.catalog.filter((course) => !course._stub);
-      cacheCourses(catalogCache);
-    }
+    const payload = await fetchJson('/api/current/catalog?max_results=500');
+    catalogCache = (payload.courses || []).map(toPlannerCourse).filter(Boolean);
+    cacheCourses(catalogCache);
     return catalogCache;
   };
 

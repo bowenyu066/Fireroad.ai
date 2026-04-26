@@ -1,0 +1,190 @@
+{
+  "title-no-degree": "Global Studies and Languages",
+  "list-id": "minorChinese.reql",
+  "title": "Minor in Chinese",
+  "medium-title": "21G Minor (Chinese)",
+  "reqs": [
+    {
+      "connection-type": "any",
+      "desc": "Two language subjects at the intermediate level.",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "21G.103"
+            },
+            {
+              "req": "21G.104"
+            }
+          ],
+          "title": "Option 1"
+        },
+        {
+          "connection-type": "all",
+          "threshold-desc": "select all",
+          "reqs": [
+            {
+              "req": "21G.109"
+            },
+            {
+              "req": "21G.110"
+            }
+          ],
+          "title": "Option 2"
+        }
+      ],
+      "threshold-desc": "select either",
+      "title": "Tier I"
+    },
+    {
+      "connection-type": "any",
+      "desc": "Two language subjects at the advanced level. Students in the Streamlined track should consult with their minor advisor about the special options available to fulfill the Tier II requirement.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 2",
+          "reqs": [
+            {
+              "req": "21G.105"
+            },
+            {
+              "req": "21G.106"
+            },
+            {
+              "req": "21G.112"
+            },
+            {
+              "req": "21G.118"
+            },
+            {
+              "req": "21G.120"
+            }
+          ],
+          "title": "Option 1"
+        },
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 2",
+          "reqs": [
+            {
+              "req": "21G.113"
+            },
+            {
+              "req": "21G.112"
+            },
+            {
+              "req": "21G.118"
+            },
+            {
+              "req": "21G.120"
+            }
+          ],
+          "title": "Option 2"
+        }
+      ],
+      "threshold-desc": "select either",
+      "title": "Tier II"
+    },
+    {
+      "threshold-desc": "select any 2 subjects",
+      "title": "Tier III",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "21G.041"
+            },
+            {
+              "req": "21G.042"
+            },
+            {
+              "req": "21G.043"
+            },
+            {
+              "req": "21G.045"
+            },
+            {
+              "req": "21G.909"
+            },
+            {
+              "req": "21H.151"
+            },
+            {
+              "req": "21H.152"
+            },
+            {
+              "req": "21H.186"
+            },
+            {
+              "req": "21H.351"
+            },
+            {
+              "req": "21T.241"
+            }
+          ],
+          "threshold-desc": "optional - select any"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "21G.190"
+            },
+            {
+              "req": "21G.192"
+            },
+            {
+              "req": "21G.193"
+            },
+            {
+              "req": "21G.194"
+            },
+            {
+              "req": "21G.195"
+            },
+            {
+              "req": "21G.196"
+            },
+            {
+              "req": "21G.199"
+            }
+          ],
+          "title": "Chinese Language Option (CLO) Subjects"
+        }
+      ],
+      "connection-type": "all",
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Select two of the following subjects in Chinese literature, history, or culture, at least one of which must be a Chinese Language Option subject. The six 13-unit Chinese Language Option subjects—21G.190, 21G.192, 21G.193, 21G.194, 21G.195, and 21G.196—include some assignments that require reading and writing in Chinese, and they meet with the following 12-unit subjects, respectively: 21G.036[J], 21G.046, 21G.030[J], 21G.038, 21G.044[J], and 21G.075[J]. The 12-unit subjects may be substituted for the 13-unit subjects. Students taking the Streamlined track may use 21G.199 instead of the regular Chinese Language Option subjects."
+    }
+  ],
+  "short-title": "21G",
+  "desc": ""
+}

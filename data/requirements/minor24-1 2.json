@@ -1,0 +1,94 @@
+{
+  "title-no-degree": "Philosophy",
+  "list-id": "minor24-1.reql",
+  "title": "Minor in Philosophy",
+  "medium-title": "24 Minor (Philosophy)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "Students may substitute an appropriate philosophy concourse subject with the permission of the minor advisor.",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "24.00"
+            },
+            {
+              "req": "24.01"
+            },
+            {
+              "req": "24.02"
+            },
+            {
+              "req": "24.03"
+            },
+            {
+              "req": "24.04"
+            },
+            {
+              "req": "24.05"
+            },
+            {
+              "req": "24.06"
+            },
+            {
+              "req": "24.07"
+            },
+            {
+              "req": "24.08"
+            },
+            {
+              "req": "24.09"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "24.118"
+            },
+            {
+              "req": "24.241"
+            },
+            {
+              "req": "24.242"
+            },
+            {
+              "req": "24.243"
+            },
+            {
+              "req": "24.244"
+            },
+            {
+              "req": "24.245"
+            }
+          ],
+          "threshold-desc": "select any"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Tier I"
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 3",
+      "req": "3 subjects",
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "title": "Tier II",
+      "desc": "Select three non-introductory philosophy subjects, approved by the minor advisor. Students may take a logic subject offered by another department (e.g., Mathematics) with the permission of the minor advisor."
+    },
+    {
+      "req": "24.260",
+      "title": "Tier III"
+    }
+  ],
+  "short-title": "24-1",
+  "desc": "The goal of the Minor in Philosophy is to introduce students to the methods of analytic philosophy and then to have them study a broad range of philosophers and philosophical issues at a more sophisticated level, culminating in an advanced seminar."
+}
