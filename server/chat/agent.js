@@ -10,6 +10,7 @@ const {
   toolSchemas,
   validateUiAction,
 } = require('./tools');
+const { checkMajorRequirements } = require('../requirements');
 
 const MAX_TOOL_ROUNDS = 5;
 
@@ -85,8 +86,27 @@ function latestAssistantBeforeLastUser(messages) {
   return [...beforeLastUser].reverse().find((message) => message && message.role !== 'user') || null;
 }
 
+function buildRequirementContext(profile, schedule) {
+  try {
+    const allCourses = [...new Set([...asArray(profile.taken), ...schedule])];
+    const result = checkMajorRequirements(profile.major, allCourses);
+    if (!result) return null;
+    return {
+      major: result.title,
+      satisfiedGroups: result.satisfiedCount,
+      totalGroups: result.totalCount,
+      unmetGroups: result.groups
+        .filter((g) => !g.satisfied)
+        .map((g) => ({ label: g.label, progress: g.progress, unmet: g.unmet.slice(0, 4) })),
+    };
+  } catch {
+    return null;
+  }
+}
+
 function buildModelMessages(messages, profile, schedule, activeSem, planningTermLabel, studentName, personalCourseMarkdown) {
   const effectiveStudentName = String(studentName || profile.name || '').trim();
+  const reqContext = buildRequirementContext(profile, schedule);
   const state = {
     studentName: effectiveStudentName || null,
     profile: {
@@ -103,6 +123,7 @@ function buildModelMessages(messages, profile, schedule, activeSem, planningTerm
     planningTermLabel,
     activeSemesterSchedule: schedule,
     planningScope: 'active_semester_only',
+    requirementProgress: reqContext || 'unavailable — call check_requirements tool',
   };
 
   const conversation = asArray(messages)

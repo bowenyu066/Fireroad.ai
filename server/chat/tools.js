@@ -2,9 +2,28 @@ const mockData = require('../../shared/mock-data.js');
 const { fetchCurrentCourse, searchCurrentCourses } = require('../current/fireroad');
 const { normalizeCourseId } = require('../current/normalize');
 const { createHistoryRepo } = require('../history/repo');
+const { checkMajorRequirements } = require('../requirements');
+const mostTaken = require('../../data/most_taken.json');
 
 const asArray = (value) => (Array.isArray(value) ? value : []);
 const unique = (items) => [...new Set(items)];
+
+function yearKey(year) {
+  const map = { freshman: 'Y1', sophomore: 'Y2', junior: 'Y3', senior: 'Y4' };
+  return map[String(year || '').toLowerCase()] || null;
+}
+
+function mostTakenScore(courseId, profile) {
+  const majorRaw = String(profile.major || '').replace(/^course\s+/i, '').trim();
+  const majorCode = majorRaw.split(/[:\s]/)[0].toLowerCase();
+  const yk = yearKey(profile.year);
+  const majorData = mostTaken[majorCode];
+  if (!majorData || !yk) return 0;
+  const yearData = majorData[yk] || [];
+  const idx = yearData.findIndex(([id]) => normalizeCourseId(id) === normalizeCourseId(courseId));
+  if (idx < 0) return 0;
+  return Math.max(0, 20 - idx * 4);
+}
 
 const getCourse = (id) => {
   const normalized = normalizeCourseId(id);
@@ -338,6 +357,12 @@ async function recommendCourses(args = {}, context = {}) {
         reasons.push(`check prereqs: ${unique(missingPrereqs).join(', ')}`);
       }
 
+      const mtScore = mostTakenScore(course.id, profile);
+      if (mtScore > 0) {
+        rankScore += mtScore;
+        reasons.push('popular among similar students');
+      }
+
       rankScore = applyPersonalizationSignals(course, rankScore, reasons, profile, schedule);
 
       return {
@@ -354,6 +379,49 @@ async function recommendCourses(args = {}, context = {}) {
     semesterPlan: schedule,
     targetRequirements,
     recommendations,
+  };
+}
+
+function checkRequirementsTool(args = {}, context = {}) {
+  const profile = profileForTool(args, context);
+  const schedule = scheduleForTool(args, context);
+  const allCourses = unique([...asArray(profile.taken).map(normalizeCourseId), ...schedule]);
+  const result = checkMajorRequirements(args.major || profile.major, allCourses);
+  if (!result) {
+    return { found: false, reason: `No requirement data for major: ${args.major || profile.major || 'unknown'}` };
+  }
+  return { found: true, ...result };
+}
+
+async function checkScheduleConflictsTool(args = {}, context = {}) {
+  const courseIds = asArray(args.course_ids).length ? asArray(args.course_ids) : scheduleForTool(args, context);
+  const courses = (await Promise.all(courseIds.map(fetchCurrentCourse))).filter(Boolean);
+  const conflicts = [];
+  for (let i = 0; i < courses.length; i += 1) {
+    for (let j = i + 1; j < courses.length; j += 1) {
+      const a = courses[i];
+      const b = courses[j];
+      if (!hasTime(a) || !hasTime(b)) continue;
+      const sharedDays = a.days.filter((d) => b.days.includes(d));
+      if (!sharedDays.length) continue;
+      const start = Math.max(a.time.start, b.time.start);
+      const end = Math.min(a.time.end, b.time.end);
+      if (start < end) {
+        conflicts.push({
+          courses: [a.id, b.id],
+          courseNames: [a.name, b.name],
+          days: sharedDays,
+          overlap: { start, end },
+          schedules: [a.scheduleDisplay, b.scheduleDisplay],
+        });
+      }
+    }
+  }
+  return {
+    checkedCourses: courses.map((c) => ({ id: c.id, name: c.name, days: c.days, time: c.time, schedule: c.scheduleDisplay })),
+    conflictCount: conflicts.length,
+    conflicts,
+    hasConflicts: conflicts.length > 0,
   };
 }
 
@@ -539,6 +607,36 @@ const toolSchemas = [
   {
     type: 'function',
     function: {
+      name: 'check_requirements',
+      description: 'Check major requirement progress for the student. Returns satisfied/unsatisfied groups with course gaps. Call this at the start of any planning or recommendation conversation to understand what requirements remain.',
+      parameters: {
+        type: 'object',
+        properties: {
+          major: { type: 'string', description: 'Override major, e.g. "Course 6-3". Defaults to profile major.' },
+          schedule: { type: 'array', items: { type: 'string' } },
+          profile: { type: 'object' },
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'check_schedule_conflicts',
+      description: 'Check for time conflicts among a list of courses using real current catalog schedule data.',
+      parameters: {
+        type: 'object',
+        properties: {
+          course_ids: { type: 'array', items: { type: 'string' }, description: 'Course IDs to check. Defaults to active semester schedule.' },
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name: 'get_course_history_summary',
       description: 'Get read-only historical offering and policy coverage summary for one course. Use as context or risk signal; do not use it to mutate a plan.',
       parameters: {
@@ -575,6 +673,8 @@ const toolHandlers = {
   summarize_semester_plan: summarizeSemesterPlan,
   recommend_courses: recommendCourses,
   validate_ui_action: validateUiActionTool,
+  check_requirements: checkRequirementsTool,
+  check_schedule_conflicts: checkScheduleConflictsTool,
   get_course_history_summary: getCourseHistorySummary,
   get_offering_history: getOfferingHistory,
 };
