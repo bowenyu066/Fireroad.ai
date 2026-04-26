@@ -379,6 +379,8 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
 
 const App = () => {
   const PLAN_DRAFT_KEY = 'fr-fouryear-plan-draft-v1';
+  const CHAT_HISTORY_KEY = 'fr-agent-chat-history-v1';
+  const MAX_CHAT_HISTORY_MESSAGES = 40;
   const freshProfile = () => ({
     name: '',
     kerberos: '',
@@ -524,6 +526,50 @@ const App = () => {
     const savedMs = Date.parse(saved?.updatedAtClient || '');
     return Number.isFinite(draftMs) && (!Number.isFinite(savedMs) || draftMs > savedMs);
   };
+  const chatHistoryUserKey = (user = authState.user) => `${CHAT_HISTORY_KEY}:${user?.uid || user?.email || 'anonymous'}`;
+  const sanitizeChatHistory = (items = []) => items
+    .filter((message) => message && !message.streaming)
+    .map((message) => ({
+      id: message.id,
+      role: message.role === 'user' ? 'user' : 'agent',
+      text: String(message.text || ''),
+      suggestions: Array.isArray(message.suggestions) ? message.suggestions.slice(0, 6) : [],
+      traceSummary: message.traceSummary || null,
+      proposal: message.proposal || null,
+      uiActions: Array.isArray(message.uiActions) ? message.uiActions : [],
+    }))
+    .filter((message) => message.text.trim() || message.suggestions.length || message.proposal)
+    .slice(-MAX_CHAT_HISTORY_MESSAGES);
+  const readChatHistory = (fallbackProfile, user = authState.user) => {
+    if (!user) return personalizeAgentMessages(fallbackProfile);
+    try {
+      const parsed = JSON.parse(localStorage.getItem(chatHistoryUserKey(user)) || 'null');
+      const messages = sanitizeChatHistory(Array.isArray(parsed?.messages) ? parsed.messages : []);
+      return messages.length ? messages : personalizeAgentMessages(fallbackProfile);
+    } catch (error) {
+      console.warn('[chat history] failed to read local history', error);
+      return personalizeAgentMessages(fallbackProfile);
+    }
+  };
+  const writeChatHistory = (items, user = authState.user) => {
+    if (!user) return;
+    try {
+      localStorage.setItem(chatHistoryUserKey(user), JSON.stringify({
+        messages: sanitizeChatHistory(items),
+        updatedAtClient: new Date().toISOString(),
+      }));
+    } catch (error) {
+      console.warn('[chat history] failed to write local history', error);
+    }
+  };
+  const clearChatHistory = (user = authState.user) => {
+    if (!user) return;
+    try {
+      localStorage.removeItem(chatHistoryUserKey(user));
+    } catch (error) {
+      console.warn('[chat history] failed to clear local history', error);
+    }
+  };
 
   const [theme, setTheme] = useState(() => localStorage.getItem('fr-theme') || 'light');
   const [route, setRoute] = useState({ name: 'onboarding' });
@@ -597,7 +643,7 @@ const App = () => {
         setProfile(nextProfile);
         setPersonalCourseMarkdown(nextPersonalCourseMarkdown);
         if (nextPersonalCourseMarkdown) localStorage.setItem('fr-personalcourse-draft', nextPersonalCourseMarkdown);
-        setMessages(personalizeAgentMessages(nextProfile));
+        setMessages(readChatHistory(nextProfile, authState.user));
         setActiveSem(nextActiveSem);
         setFourYearPlan(normalizeSavedFourYearPlan(effectiveSaved, nextActiveSem, nextPersonalCourseMarkdown));
         setOnboardingCompleted(completed);
@@ -616,7 +662,7 @@ const App = () => {
         const recoveredLocalPlan = Boolean(localDraft);
         setProfile(deriveProfileFromMarkdown(nextProfile, nextPersonalCourseMarkdown));
         setPersonalCourseMarkdown(nextPersonalCourseMarkdown);
-        setMessages(personalizeAgentMessages(nextProfile));
+        setMessages(readChatHistory(nextProfile, authState.user));
         setActiveSem(nextActiveSem);
         setFourYearPlan(nextPlan);
         setOnboardingCompleted(recoveredLocalPlan);
@@ -686,6 +732,12 @@ const App = () => {
     };
   }, [authState.status, dataReady, fourYearPlan, activeSem]);
 
+  useEffect(() => {
+    if (authState.status !== 'signedIn' || !dataReady) return undefined;
+    writeChatHistory(messages);
+    return undefined;
+  }, [authState.status, dataReady, messages]);
+
 
   const addCourse = async (id) => {
     const courseId = String(id || '').trim().toUpperCase();
@@ -744,6 +796,7 @@ const App = () => {
     setProfile(nextProfile);
     setPersonalCourseMarkdown('');
     localStorage.removeItem('fr-personalcourse-draft');
+    clearChatHistory();
     setMessages(personalizeAgentMessages(nextProfile));
     setActiveSem(defaultActiveSem);
     const nextPlan = emptyFourYearPlan();
