@@ -1287,8 +1287,7 @@ window.RequirementsPanel = RequirementsPanel;
 
 // ============== 4-Year Plan page ==============
 const FourYearPlanPage = () => {
-  const { fourYearPlan, activeSem, setActiveSem, setRoute, profile, personalCourseMarkdown } = useApp();
-  const semOrder  = FRDATA.semesterOrder || [];
+  const { fourYearPlan, setFourYearPlan, activeSem, setActiveSem, setRoute, profile, personalCourseMarkdown } = useApp();
   const semLabels = FRDATA.semesterLabels || {};
   const personalSummary = PersonalCourse.summarize(personalCourseMarkdown || '');
   const priorCredits = personalSummary.priorCreditCourses || [];
@@ -1299,6 +1298,10 @@ const FourYearPlanPage = () => {
   const [courseMap, setCourseMap] = useState(() =>
     Object.fromEntries(FRDATA.catalog.map((c) => [c.id, c]))
   );
+  const [pickerSem, setPickerSem] = useState(null);
+  const [pickerQuery, setPickerQuery] = useState('');
+  const [pickerResults, setPickerResults] = useState([]);
+  const [pickerStatus, setPickerStatus] = useState('idle');
 
   useEffect(() => {
     const allIds = [...new Set(Object.values(fourYearPlan).flat())];
@@ -1312,6 +1315,62 @@ const FourYearPlanPage = () => {
 
   const goPlanning = (sem) => { setActiveSem(sem); setRoute({ name: 'planner' }); };
   const openCourse = (id) => setRoute({ name: 'course', id });
+  const addCourseToTerm = (sem, course) => {
+    const courseId = String(course?.id || course || '').trim().toUpperCase();
+    if (!courseId) return;
+    setFourYearPlan((currentPlan) => {
+      const existing = Array.isArray(currentPlan[sem]) ? currentPlan[sem].map((id) => String(id).toUpperCase()) : [];
+      if (existing.includes(courseId)) return currentPlan;
+      return { ...currentPlan, [sem]: [...existing, courseId] };
+    });
+    if (course && typeof course === 'object') setCourseMap((current) => ({ ...current, [courseId]: course }));
+    setPickerSem(null);
+    setPickerQuery('');
+    setPickerResults([]);
+  };
+  useEffect(() => {
+    if (!pickerSem) return undefined;
+    const requestQuery = pickerQuery.trim();
+    setPickerStatus('loading');
+    const timer = setTimeout(() => {
+      FRDATA.fetchCurrentSearch(requestQuery, requestQuery ? 30 : 20)
+        .then((courses) => {
+          setPickerResults(courses.filter(Boolean));
+          setCourseMap((current) => ({
+            ...current,
+            ...Object.fromEntries(courses.filter(Boolean).map((course) => [course.id, course])),
+          }));
+          setPickerStatus('ready');
+        })
+        .catch(() => {
+          setPickerResults([]);
+          setPickerStatus('error');
+        });
+    }, 180);
+    return () => clearTimeout(timer);
+  }, [pickerSem, pickerQuery]);
+  const termInfo = (termId) => {
+    const match = String(termId || '').match(/^(IAP|SU|S|F)(\d{2})$/);
+    return match ? { code: match[1], year: Number(match[2]) } : null;
+  };
+  const academicFallYearForTerm = (termId) => {
+    const info = termInfo(termId);
+    if (!info) return null;
+    if (info.code === 'S' || info.code === 'IAP' || info.code === 'SU') return (info.year + 99) % 100;
+    return info.year;
+  };
+  const estimatedStartYear = () => {
+    const active = termInfo(activeSem) || { code: 'F', year: 23 };
+    const academicFallYear = active.code === 'S' || active.code === 'IAP' ? active.year - 1 : active.year;
+    const yearOffset = {
+      freshman: 0,
+      sophomore: 1,
+      junior: 2,
+      senior: 3,
+      meng: 4,
+    }[String(profile?.year || '').toLowerCase()] ?? 0;
+    return (academicFallYear - yearOffset + 100) % 100;
+  };
 
   // Build year rows anchored to matriculation year when available, otherwise first 4 falls
   const matricYear = profile.matriculationYear ? parseInt(profile.matriculationYear, 10) : null;
@@ -1319,7 +1378,15 @@ const FourYearPlanPage = () => {
     if (matricYear) {
       return [0, 1, 2, 3].map((n) => `F${String((matricYear + n) % 100).padStart(2, '0')}`);
     }
-    return semOrder.filter((s) => s.startsWith('F')).slice(0, 4);
+    const termsWithCourses = Object.entries(fourYearPlan || {})
+      .filter(([, courseIds]) => Array.isArray(courseIds) && courseIds.length)
+      .map(([term]) => term);
+    const years = termsWithCourses
+      .map(academicFallYearForTerm)
+      .filter((year) => Number.isFinite(year));
+    const earliestYear = years.length ? Math.min(...years) : null;
+    const startYear = Number.isFinite(earliestYear) ? earliestYear % 100 : estimatedStartYear();
+    return [0, 1, 2, 3].map((n) => `F${String((startYear + n) % 100).padStart(2, '0')}`);
   })();
   const yearRows = falls.map((fall) => {
     const yy = parseInt(fall.slice(1), 10);
@@ -1329,7 +1396,12 @@ const FourYearPlanPage = () => {
 
   const SemCol = ({ sem, isIAP = false }) => {
     const courseIds = fourYearPlan[sem] || [];
-    const courses   = courseIds.map((id) => courseMap[id] || FRDATA.getCourse(id)).filter(Boolean);
+    const scheduledSet = new Set(courseIds.map((id) => String(id).toUpperCase()));
+    const pickerOpen = pickerSem === sem;
+    const courses   = courseIds.map((id) => {
+      const courseId = String(id || '').trim().toUpperCase();
+      return courseMap[courseId] || FRDATA.getCourse(courseId) || fallbackScheduleCourse(courseId);
+    }).filter((course) => course.id);
     const units     = courses.reduce((s, c) => s + (c.units || 0), 0);
     const isActive  = sem === activeSem;
 
@@ -1340,7 +1412,7 @@ const FourYearPlanPage = () => {
         borderRadius: 'var(--r-md)', padding: isIAP ? '12px 10px' : 16,
         display: 'flex', flexDirection: 'column',
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
           <div>
             <div className="mono" style={{ fontSize: isIAP ? 10 : 11, fontWeight: isActive ? 600 : 400, color: isActive ? 'var(--accent)' : 'var(--text-secondary)' }}>
               {semLabels[sem] || sem}
@@ -1351,7 +1423,31 @@ const FourYearPlanPage = () => {
               </div>
             )}
           </div>
-          <span className="mono" style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>{units}u</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="mono" style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>{units}u</span>
+            <button
+              type="button"
+              onClick={() => {
+                setPickerSem((current) => current === sem ? null : sem);
+                setPickerQuery('');
+                setPickerResults([]);
+              }}
+              title={`Add course to ${semLabels[sem] || sem}`}
+              style={{
+                width: 22,
+                height: 22,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 6,
+                border: '1px solid var(--border)',
+                background: pickerOpen ? 'var(--accent-soft)' : 'var(--surface-2)',
+                color: pickerOpen ? 'var(--accent)' : 'var(--text-secondary)',
+              }}
+            >
+              <Icon name={pickerOpen ? 'x' : 'plus'} size={12} />
+            </button>
+          </div>
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, minHeight: isIAP ? 60 : 80 }}>
@@ -1375,6 +1471,58 @@ const FourYearPlanPage = () => {
             </div>
           )}
         </div>
+
+        {pickerOpen && (
+          <div style={{ marginTop: 10, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
+            <input
+              autoFocus
+              className="mono"
+              value={pickerQuery}
+              onChange={(event) => setPickerQuery(event.target.value)}
+              placeholder="Search course"
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                padding: '7px 9px',
+                borderRadius: 7,
+                border: '1px solid var(--border)',
+                background: 'var(--bg)',
+                fontSize: 11,
+              }}
+            />
+            <div style={{ marginTop: 8, maxHeight: 150, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {pickerStatus === 'loading' && (
+                <div style={{ padding: 8, fontSize: 11, color: 'var(--text-tertiary)', textAlign: 'center' }}>Searching...</div>
+              )}
+              {pickerStatus === 'error' && (
+                <div style={{ padding: 8, fontSize: 11, color: 'var(--accent)', textAlign: 'center' }}>Search failed</div>
+              )}
+              {pickerStatus === 'ready' && pickerResults.filter((course) => !scheduledSet.has(course.id)).slice(0, 8).map((course) => (
+                <button
+                  key={course.id}
+                  type="button"
+                  onClick={() => addCourseToTerm(sem, course)}
+                  style={{
+                    textAlign: 'left',
+                    padding: '6px 8px',
+                    borderRadius: 6,
+                    background: 'var(--surface-2)',
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: 7,
+                    minWidth: 0,
+                  }}
+                >
+                  <span className="mono" style={{ fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{course.id}</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{course.name}</span>
+                </button>
+              ))}
+              {pickerStatus === 'ready' && !pickerResults.filter((course) => !scheduledSet.has(course.id)).length && (
+                <div style={{ padding: 8, fontSize: 11, color: 'var(--text-tertiary)', textAlign: 'center' }}>No courses found</div>
+              )}
+            </div>
+          </div>
+        )}
 
         <button
           onClick={() => goPlanning(sem)}

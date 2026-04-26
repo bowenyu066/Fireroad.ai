@@ -92,7 +92,7 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onR
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
   const scrollRef = useRef(null);
-  const { activeSem, planningTermLabel, authState, personalCourseMarkdown } = useApp();
+  const { activeSem, planningTermLabel, authState, personalCourseMarkdown, fourYearPlan } = useApp();
   const personalization = profile?.preferences?.personalization || null;
   const calibratedToUser = hasPersonalizationEvidence(personalization, personalCourseMarkdown);
   const studentName = String(profile?.name || '').trim()
@@ -178,6 +178,7 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onR
         schedule,
         activeSem,
         planningTermLabel,
+        fourYearPlan,
         studentName,
       };
       console.debug('[agent stream] start', {
@@ -599,8 +600,13 @@ const uiActionLabel = (action) => {
   const removeCourseId = String(action.removeCourseId || '').toUpperCase();
   const courseLabel = courseId ? `[${courseId}](catalog/${courseId})` : 'course';
   const removeCourseLabel = removeCourseId ? `[${removeCourseId}](catalog/${removeCourseId})` : 'course';
+  const termId = String(action.termId || action.term_id || '').toUpperCase();
   if (action.type === 'remove_course') return `Remove ${courseLabel}`;
   if (action.type === 'replace_course') return `Replace ${removeCourseLabel} with ${courseLabel}`;
+  if (action.type === 'add_completed_course') return `Add ${courseLabel} to completed courses`;
+  if (action.type === 'remove_completed_course') return `Remove ${courseLabel} from completed courses`;
+  if (action.type === 'add_historical_course') return `Add ${courseLabel} to ${termId || 'a previous semester'} and completed courses`;
+  if (action.type === 'remove_historical_course') return `Remove ${courseLabel} from ${termId || 'a previous semester'}`;
   return `Add ${courseLabel}`;
 };
 

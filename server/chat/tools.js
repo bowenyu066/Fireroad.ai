@@ -62,6 +62,22 @@ function semesterSeason(semId) {
   return null;
 }
 
+function normalizeTermId(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const compact = raw.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const direct = compact.match(/^(IAP|SU|S|F)(\d{2})$/);
+  if (direct) return `${direct[1]}${direct[2]}`;
+  const year = (compact.match(/(20\d{2}|19\d{2})/) || [])[1];
+  const yy = year ? year.slice(-2) : ((compact.match(/\b(\d{2})\b/) || [])[1] || '');
+  if (!yy) return '';
+  if (/IAP|JAN/.test(compact)) return `IAP${yy}`;
+  if (/SUMMER|SUM|SU/.test(compact)) return `SU${yy}`;
+  if (/SPRING|SPR|SP/.test(compact)) return `S${yy}`;
+  if (/FALL|FA/.test(compact)) return `F${yy}`;
+  return '';
+}
+
 function isOfferedInSemester(course, semId) {
   const season = semesterSeason(semId);
   return !season || !course || !course.offered || course.offered[season] !== false;
@@ -991,8 +1007,24 @@ async function validateUiAction(action, schedule, context = {}) {
   const course = await fetchCurrentCourse(courseId);
   const currentSchedule = normalizeSchedule(schedule);
 
-  if (!['add_course', 'remove_course', 'replace_course'].includes(type)) {
-    return { ok: false, reason: `Unsupported action type: ${type || 'missing'}. Only current-semester add/remove/replace is allowed.` };
+  const allowedTypes = ['add_course', 'remove_course', 'replace_course', 'add_completed_course', 'remove_completed_course', 'add_historical_course', 'remove_historical_course'];
+  if (!allowedTypes.includes(type)) {
+    return { ok: false, reason: `Unsupported action type: ${type || 'missing'}.` };
+  }
+
+  if (type === 'add_completed_course' || type === 'remove_completed_course') {
+    if (!courseId) return { ok: false, reason: `${type} requires courseId.` };
+    return { ok: true, action: { type, courseId: course ? course.id : courseId }, course: course ? currentCourseSummary(course) : null };
+  }
+
+  if (type === 'add_historical_course' || type === 'remove_historical_course') {
+    if (!courseId) return { ok: false, reason: `${type} requires courseId.` };
+    const termId = normalizeTermId(action.termId || action.term_id || action.term || action.semester);
+    if (!termId) return { ok: false, reason: `${type} requires a recognizable previous term, such as F24 or Fall 2024.` };
+    if (termId === context.activeSem && type === 'add_historical_course') {
+      return { ok: false, reason: `Use add_course for the active semester ${termId}.` };
+    }
+    return { ok: true, action: { type, courseId: course ? course.id : courseId, termId }, course: course ? currentCourseSummary(course) : null };
   }
 
   if (!course) {
@@ -1174,9 +1206,10 @@ const toolSchemas = [
           action: {
             type: 'object',
             properties: {
-              type: { type: 'string', enum: ['add_course', 'remove_course', 'replace_course'] },
+              type: { type: 'string', enum: ['add_course', 'remove_course', 'replace_course', 'add_completed_course', 'remove_completed_course', 'add_historical_course', 'remove_historical_course'] },
               courseId: { type: 'string' },
               removeCourseId: { type: 'string' },
+              termId: { type: 'string', description: 'Required for historical semester edits, e.g. F24, S25, IAP25, or SU25.' },
             },
             required: ['type', 'courseId'],
           },

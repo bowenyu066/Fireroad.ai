@@ -145,7 +145,7 @@ const isOfferedInSemester = (course, semId) => {
 };
 
 const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLabel }) => {
-  const { setRoute, profile, activeSem } = React.useContext(AppCtx);
+  const { setRoute, profile, setProfile, fourYearPlan, setFourYearPlan, activeSem } = React.useContext(AppCtx);
   const [justAddedId, setJustAddedId] = useState(null);
   const [viewMode, setViewMode] = useState('list');
   const courseCatalogLink = (id) => {
@@ -245,6 +245,8 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
     if (!Array.isArray(actions) || actions.length === 0) return null;
 
     const previousSchedule = [...schedule];
+    const previousProfile = profile;
+    const previousFourYearPlan = fourYearPlan;
     const addCourseIds = [...new Set(actions
       .filter((action) => action.type === 'add_course' || action.type === 'replace_course')
       .map((action) => String(action.courseId || '').trim().toUpperCase())
@@ -258,6 +260,37 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
     const lastAdded = addActions.map((action) => String(action.courseId || '').trim().toUpperCase()).filter((courseId) => !blockedCourseIds.has(courseId)).pop() || null;
 
     setSchedule((current) => nextScheduleForUiActions(current, actions, blockedCourseIds));
+    setProfile((currentProfile) => {
+      let nextTaken = [...(currentProfile.taken || [])].map((id) => String(id).toUpperCase());
+      actions.forEach((action) => {
+        const courseId = String(action.courseId || '').trim().toUpperCase();
+        if (!courseId) return;
+        if ((action.type === 'add_completed_course' || action.type === 'add_historical_course') && !nextTaken.includes(courseId)) {
+          nextTaken = [...nextTaken, courseId];
+        }
+        if (action.type === 'remove_completed_course') {
+          nextTaken = nextTaken.filter((id) => id !== courseId);
+        }
+      });
+      return { ...currentProfile, taken: nextTaken };
+    });
+    setFourYearPlan((currentPlan) => {
+      let nextPlan = { ...currentPlan };
+      actions.forEach((action) => {
+        const type = String(action.type || '');
+        const courseId = String(action.courseId || '').trim().toUpperCase();
+        const termId = String(action.termId || action.term_id || '').trim().toUpperCase();
+        if (!courseId || !termId || termId === activeSem) return;
+        const termCourses = Array.isArray(nextPlan[termId]) ? [...nextPlan[termId]] : [];
+        if (type === 'add_historical_course' && !termCourses.includes(courseId)) {
+          nextPlan = { ...nextPlan, [termId]: [...termCourses, courseId] };
+        }
+        if (type === 'remove_historical_course') {
+          nextPlan = { ...nextPlan, [termId]: termCourses.filter((id) => String(id).toUpperCase() !== courseId) };
+        }
+      });
+      return nextPlan;
+    });
 
     if (lastAdded) {
       setJustAddedId(lastAdded);
@@ -273,6 +306,8 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
 
     return () => {
       setSchedule((current) => undoScheduleForUiActions(current, actions, previousSchedule));
+      setProfile(previousProfile);
+      setFourYearPlan(previousFourYearPlan);
       setJustAddedId(null);
     };
   };

@@ -338,7 +338,7 @@ function summarizeMessage(content) {
   };
 }
 
-function buildContext({ profile, personalization, personalCourseMarkdown, schedule, activeSem, planningTermLabel, studentName } = {}) {
+function buildContext({ profile, personalization, personalCourseMarkdown, schedule, fourYearPlan, activeSem, planningTermLabel, studentName } = {}) {
   const effectiveStudentName = String(studentName || '').trim();
   const nextProfile = profile && typeof profile === 'object' ? { ...profile } : {};
   const nextPreferences = {
@@ -349,6 +349,7 @@ function buildContext({ profile, personalization, personalCourseMarkdown, schedu
     profile: normalizeProfile({ ...nextProfile, preferences: nextPreferences, ...(effectiveStudentName ? { name: effectiveStudentName } : {}) }),
     personalCourseMarkdown: String(personalCourseMarkdown || '').trim(),
     schedule: normalizeSchedule(schedule),
+    fourYearPlan: fourYearPlan && typeof fourYearPlan === 'object' ? fourYearPlan : {},
     activeSem: activeSem || null,
     planningTermLabel: planningTermLabel || null,
     studentName: effectiveStudentName,
@@ -398,7 +399,7 @@ function buildRequirementContextSecond(profile, schedule) {
 }
 
 function buildModelMessages(messages, context) {
-  const { profile, schedule, activeSem, planningTermLabel, studentName, personalCourseMarkdown, studentPlanningContext } = context;
+  const { profile, schedule, fourYearPlan, activeSem, planningTermLabel, studentName, personalCourseMarkdown, studentPlanningContext } = context;
   const effectiveStudentName = String(studentName || profile.name || '').trim();
   const reqContext = buildRequirementContext(profile, schedule);
   const reqContextSecond = buildRequirementContextSecond(profile, schedule);
@@ -421,7 +422,8 @@ function buildModelMessages(messages, context) {
     activeSem,
     planningTermLabel,
     activeSemesterSchedule: schedule,
-    planningScope: 'active_semester_only',
+    fourYearPlan,
+    planningScope: 'active_semester_and_completed_history',
     requirementProgress: reqContext || 'unavailable — call check_requirements tool',
     requirementProgressSecondMajor: reqContextSecond || (profile.major2 ? 'unavailable — call check_requirements tool with major arg' : null),
     relevantDepartments,
@@ -599,16 +601,17 @@ function explicitScheduleChangeRequested(text, messages = []) {
   if (isAffirmativeScheduleConfirmation(text, messages)) return true;
 
   const lower = String(text || '').toLowerCase();
-  if (/\b(junior|senior|sophomore|freshman)\s+(fall|spring)|\b(fall|spring)\s+\d{4}|\bnext\s+year\b|\b4[- ]?year\b|\bfour[- ]?year\b|\broadmap\b/.test(lower)) {
+  const hasMutationVerb = /\b(add|put|include|enroll|register|remove|drop|delete|swap|replace|mark)\b/.test(lower);
+  const asksForSpecificTermEdit = /\b(fall|spring|summer|iap|january)\s+\d{4}|\b\d{4}\s+(fall|spring|summer|iap|january)|\b(F|S|SU|IAP)\d{2}\b/i.test(text);
+  if (!hasMutationVerb && /\b(junior|senior|sophomore|freshman)\s+(fall|spring)|\b(fall|spring)\s+\d{4}|\bnext\s+year\b|\b4[- ]?year\b|\bfour[- ]?year\b|\broadmap\b/.test(lower)) {
     return false;
   }
   if (/\b(should|could|would|can)\s+i\s+(add|put|include|enroll|register|remove|drop|delete|swap|replace)\b/.test(lower)) {
     return false;
   }
-  const hasMutationVerb = /\b(add|put|include|enroll|register|remove|drop|delete|swap|replace)\b/.test(lower);
   const hasCourseOrScheduleContext = /\b(schedules?|plans?|semesters?|courses?|class(?:es)?)\b/.test(lower) || extractCourseIdsFromText(lower).length > 0;
   const hasMutationObject = /\b(add|put|include|enroll|register|remove|drop|delete|swap|replace)\s+(?:the\s+|my\s+|this\s+|that\s+)?[a-z0-9][a-z0-9 .&-]*/i.test(lower);
-  return hasMutationVerb && (hasCourseOrScheduleContext || hasMutationObject);
+  return hasMutationVerb && (hasCourseOrScheduleContext || hasMutationObject || asksForSpecificTermEdit);
 }
 
 function normalizeMentionText(value) {
@@ -687,6 +690,14 @@ async function extractRequestedUiActions(text, schedule, messages = []) {
 
   if (!mentionedIds.length) return [];
 
+  const requestedTermId = extractTermIdFromText(text);
+  if (requestedTermId && /\b(add|put|include|mark)\b/.test(lower)) {
+    return mentionedIds.map((courseId) => ({ type: 'add_historical_course', courseId, termId: requestedTermId }));
+  }
+  if (requestedTermId && /\b(remove|drop|delete)\b/.test(lower)) {
+    return mentionedIds.map((courseId) => ({ type: 'remove_historical_course', courseId, termId: requestedTermId }));
+  }
+
   if (/\b(swap|replace)\b/.test(lower)) {
     return mentionedIds.map((courseId) => ({
       type: schedule.includes(courseId) ? 'remove_course' : 'add_course',
@@ -699,6 +710,31 @@ async function extractRequestedUiActions(text, schedule, messages = []) {
   }
 
   return [];
+}
+
+function extractTermIdFromText(text) {
+  const value = String(text || '');
+  const direct = value.match(/\b(IAP|SU|S|F)(\d{2})\b/i);
+  if (direct) return `${direct[1].toUpperCase()}${direct[2]}`;
+  const termYear = value.match(/\b(fall|spring|summer|iap|january)\s+(20\d{2}|19\d{2})\b/i);
+  if (termYear) {
+    const term = termYear[1].toLowerCase();
+    const yy = termYear[2].slice(-2);
+    if (term === 'fall') return `F${yy}`;
+    if (term === 'spring') return `S${yy}`;
+    if (term === 'summer') return `SU${yy}`;
+    return `IAP${yy}`;
+  }
+  const yearTerm = value.match(/\b(20\d{2}|19\d{2})\s+(fall|spring|summer|iap|january)\b/i);
+  if (yearTerm) {
+    const yy = yearTerm[1].slice(-2);
+    const term = yearTerm[2].toLowerCase();
+    if (term === 'fall') return `F${yy}`;
+    if (term === 'spring') return `S${yy}`;
+    if (term === 'summer') return `SU${yy}`;
+    return `IAP${yy}`;
+  }
+  return '';
 }
 
 function extractCourseIdsFromText(text) {
@@ -736,6 +772,7 @@ async function validateFinalActions(actions, context, debug, allowActions) {
 async function describeUiAction(action) {
   const course = action.courseId ? await resolveCurrentCourseSummary(action.courseId) : null;
   const courseLabel = `${courseCatalogLink(action.courseId)}${course && course.name ? ` (${course.name})` : ''}`;
+  const termId = action.termId || action.term_id || '';
 
   if (action.type === 'remove_course') {
     return `Remove ${courseLabel}`;
@@ -746,6 +783,11 @@ async function describeUiAction(action) {
     const removedLabel = `${courseCatalogLink(action.removeCourseId)}${removed && removed.name ? ` (${removed.name})` : ''}`;
     return `Replace ${removedLabel} with ${courseLabel}`;
   }
+
+  if (action.type === 'add_completed_course') return `Add ${courseLabel} to completed courses`;
+  if (action.type === 'remove_completed_course') return `Remove ${courseLabel} from completed courses`;
+  if (action.type === 'add_historical_course') return `Add ${courseLabel} to ${termId || 'a previous semester'} and completed courses`;
+  if (action.type === 'remove_historical_course') return `Remove ${courseLabel} from ${termId || 'a previous semester'}`;
 
   return `Add ${courseLabel}`;
 }
@@ -787,6 +829,10 @@ async function buildActionResponseText(actions, context) {
       const removedLabel = `${courseCatalogLink(action.removeCourseId)}${removed && removed.name ? ` (${removed.name})` : ''}`;
       return `replaced ${removedLabel} with ${courseLabel}`;
     }
+    if (action.type === 'add_completed_course') return `marked ${courseLabel} completed`;
+    if (action.type === 'remove_completed_course') return `removed ${courseLabel} from completed courses`;
+    if (action.type === 'add_historical_course') return `added ${courseLabel} to ${action.termId || 'a previous semester'} and completed courses`;
+    if (action.type === 'remove_historical_course') return `removed ${courseLabel} from ${action.termId || 'a previous semester'}`;
     return `added ${courseLabel}`;
   }));
   const termLabel = context.planningTermLabel || context.activeSem || 'the active semester';
@@ -938,8 +984,8 @@ async function buildLocalActionFallback(body = {}, reason) {
   };
 }
 
-async function runAgentChat({ messages, profile, personalization, personalCourseMarkdown, schedule, activeSem, planningTermLabel, studentName, log }) {
-  const context = buildContext({ profile, personalization, personalCourseMarkdown, schedule, activeSem, planningTermLabel, studentName });
+async function runAgentChat({ messages, profile, personalization, personalCourseMarkdown, schedule, fourYearPlan, activeSem, planningTermLabel, studentName, log }) {
+  const context = buildContext({ profile, personalization, personalCourseMarkdown, schedule, fourYearPlan, activeSem, planningTermLabel, studentName });
   context.latestUserText = latestUserText(messages);
   context.log = log || (() => {});
   const debug = {
