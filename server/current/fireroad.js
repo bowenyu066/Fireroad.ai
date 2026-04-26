@@ -123,8 +123,9 @@ function scoreCourse(course, query, tokens) {
   ].join(' ').toLowerCase();
 
   if (course.id.toLowerCase() === query) score += 120;
+  if (course.id.toLowerCase().startsWith(query)) score += 80;
   if (course.id.toLowerCase().includes(query)) score += 60;
-  if (String(course.oldId || '').toLowerCase() === query) score += 70;
+  if (String(course.oldId || '').toLowerCase() === query) score += 55;
   if (course.name.toLowerCase().includes(query)) score += 40;
   if (course.desc.toLowerCase().includes(query)) score += 18;
   if (course.requirements.some((req) => req.toLowerCase().includes(query))) score += 12;
