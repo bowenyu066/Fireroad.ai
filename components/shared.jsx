@@ -307,7 +307,7 @@ const TopBar = ({ planningTermLabel }) => {
 
       <div style={{ flex: '1 1 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
         <ThemeToggle />
-        {isLocalDev && resetOnboarding && (
+        {resetOnboarding && (
           <button
             onClick={() => setConfirmResetOpen(true)}
             title="Reset onboarding (destructive)"
