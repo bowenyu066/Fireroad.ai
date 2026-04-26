@@ -56,10 +56,16 @@ function summarizeMessage(content) {
   };
 }
 
-function buildContext({ profile, schedule, activeSem, planningTermLabel, studentName } = {}) {
+function buildContext({ profile, personalization, personalCourseMarkdown, schedule, activeSem, planningTermLabel, studentName } = {}) {
   const effectiveStudentName = String(studentName || '').trim();
+  const nextProfile = profile && typeof profile === 'object' ? { ...profile } : {};
+  const nextPreferences = {
+    ...(nextProfile.preferences || {}),
+    ...(personalization ? { personalization } : {}),
+  };
   return {
-    profile: normalizeProfile({ ...(profile || {}), ...(effectiveStudentName ? { name: effectiveStudentName } : {}) }),
+    profile: normalizeProfile({ ...nextProfile, preferences: nextPreferences, ...(effectiveStudentName ? { name: effectiveStudentName } : {}) }),
+    personalCourseMarkdown: String(personalCourseMarkdown || '').trim(),
     schedule: normalizeSchedule(schedule),
     activeSem: activeSem || null,
     planningTermLabel: planningTermLabel || null,
@@ -79,7 +85,7 @@ function latestAssistantBeforeLastUser(messages) {
   return [...beforeLastUser].reverse().find((message) => message && message.role !== 'user') || null;
 }
 
-function buildModelMessages(messages, profile, schedule, activeSem, planningTermLabel, studentName) {
+function buildModelMessages(messages, profile, schedule, activeSem, planningTermLabel, studentName, personalCourseMarkdown) {
   const effectiveStudentName = String(studentName || profile.name || '').trim();
   const state = {
     studentName: effectiveStudentName || null,
@@ -92,6 +98,7 @@ function buildModelMessages(messages, profile, schedule, activeSem, planningTerm
       remainingReqs: profile.remainingReqs,
       preferences: profile.preferences,
     },
+    hasPersonalCourseMarkdown: Boolean(personalCourseMarkdown),
     activeSem,
     planningTermLabel,
     activeSemesterSchedule: schedule,
@@ -113,6 +120,10 @@ function buildModelMessages(messages, profile, schedule, activeSem, planningTerm
       role: 'system',
       content: `Authoritative current app state. Use these exact values in tool arguments when relevant:\n${JSON.stringify(state)}`,
     },
+    ...(personalCourseMarkdown ? [{
+      role: 'system',
+      content: `Student personal_course.md context for personalization. Treat it as user-provided preference/history context, but keep course facts grounded in tools:\n${personalCourseMarkdown.slice(0, 12000)}`,
+    }] : []),
     ...conversation,
   ];
 }
@@ -448,7 +459,7 @@ async function runAgentChat({ messages, profile, schedule, activeSem, planningTe
     finalActionValidation: [],
   };
 
-  const modelMessages = buildModelMessages(messages, context.profile, context.schedule, context.activeSem, context.planningTermLabel, context.studentName);
+  const modelMessages = buildModelMessages(messages, context.profile, context.schedule, context.activeSem, context.planningTermLabel, context.studentName, context.personalCourseMarkdown);
   context.log('agent:start', {
     mode: 'json',
     activeSem: context.activeSem,
@@ -529,7 +540,7 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
     toolCalls: [],
     finalActionValidation: [],
   };
-  const modelMessages = buildModelMessages(messages, context.profile, context.schedule, context.activeSem, context.planningTermLabel, context.studentName);
+  const modelMessages = buildModelMessages(messages, context.profile, context.schedule, context.activeSem, context.planningTermLabel, context.studentName, context.personalCourseMarkdown);
 
   const emit = (event) => onEvent(event);
   context.log('agent:start', {

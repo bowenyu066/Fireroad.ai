@@ -88,17 +88,26 @@ The `QUESTIONNAIRE_JSON` may include fields such as:
   },
   "challenge_preference": "High",
   "topic_skill_self_ratings": {
-    "coding": 4,
-    "proofs": 3,
-    "algorithms": 4,
-    "probability": 3,
-    "linear_algebra": 4,
+    "coding": 8,
+    "proofs": 6,
+    "algorithms": 7,
+    "probability": 5,
+    "linear_algebra": 7,
     "machine_learning": 4,
-    "systems": 1,
-    "software_engineering": 3,
-    "math": 4
+    "systems": 3,
+    "software_engineering": 6,
+    "math": 7
   },
-  "rating_scale": "0-4, where 0 = no experience and 4 = very strong",
+  "topic_interest_self_ratings": {
+    "coding": 9,
+    "proofs": 7,
+    "algorithms": 8,
+    "probability": 8,
+    "linear_algebra": 7,
+    "machine_learning": 10,
+    "systems": 2
+  },
+  "rating_scale": "0-10, where 0 = no interest/experience and 10 = very strong",
   "additional_notes": "I want challenging AI/math classes but do not want an exam-heavy semester."
 }
 
@@ -128,7 +137,7 @@ Instructions:
     - explicit questionnaire answers.
 15. Keep the section concise and machine-readable.
 16. Preserve the exact user-provided scale for numeric ratings whenever available.
-17. For front-end ratings such as 0-4 or 1-5, preserve the original number. Do not convert scales unless explicitly instructed.
+17. For front-end ratings such as 0-10, 0-4, or 1-5, preserve the original number. Do not convert scales unless explicitly instructed.
 18. For boolean values, write `Yes`, `No`, or `Unknown`.
 19. For list values, use comma-separated text in tables.
 20. Use the exact section structure below.

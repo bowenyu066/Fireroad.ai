@@ -143,6 +143,7 @@ const App = () => {
   const [theme, setTheme] = useState(() => localStorage.getItem('fr-theme') || 'light');
   const [route, setRoute] = useState({ name: 'onboarding' });
   const [profile, setProfile] = useState(freshProfile);
+  const [personalCourseMarkdown, setPersonalCourseMarkdown] = useState(() => localStorage.getItem('fr-personalcourse-draft') || '');
   const [fourYearPlan, setFourYearPlan] = useState(freshFourYearPlan);
   const [activeSem, setActiveSem] = useState(defaultActiveSem);
   const [messages, setMessages] = useState(FRDATA.agentMessages);
@@ -185,7 +186,13 @@ const App = () => {
         };
 
         const nextActiveSem = resolveSavedActiveSem(saved);
+        const nextPersonalCourseMarkdown = saved?.personalCourseMarkdown
+          || saved?.onboarding?.personalCourseMarkdown
+          || localStorage.getItem('fr-personalcourse-draft')
+          || '';
         setProfile(nextProfile);
+        setPersonalCourseMarkdown(nextPersonalCourseMarkdown);
+        if (nextPersonalCourseMarkdown) localStorage.setItem('fr-personalcourse-draft', nextPersonalCourseMarkdown);
         setMessages(personalizeAgentMessages(nextProfile));
         setActiveSem(nextActiveSem);
         setFourYearPlan(normalizeSavedFourYearPlan(saved, nextActiveSem));
@@ -198,6 +205,7 @@ const App = () => {
         console.error(err);
         const nextProfile = { ...freshProfile(), name: authState.user.email.split('@')[0] };
         setProfile(nextProfile);
+        setPersonalCourseMarkdown(localStorage.getItem('fr-personalcourse-draft') || '');
         setMessages(personalizeAgentMessages(nextProfile));
         setActiveSem(defaultActiveSem);
         setFourYearPlan(freshFourYearPlan());
@@ -229,6 +237,7 @@ const App = () => {
       FRAuth.saveUserData({
         onboardingCompleted,
         profile,
+        personalCourseMarkdown,
         fourYearPlan,
         activeSem,
       }).then(() => {
@@ -241,7 +250,7 @@ const App = () => {
     }, 450);
 
     return () => clearTimeout(timer);
-  }, [authState.status, dataReady, onboardingCompleted, profile, fourYearPlan, activeSem]);
+  }, [authState.status, dataReady, onboardingCompleted, profile, personalCourseMarkdown, fourYearPlan, activeSem]);
 
   const addCourse = (id) => {
     if (schedule.includes(id)) return;
@@ -251,6 +260,8 @@ const App = () => {
   const completeOnboarding = async ({ profile: nextProfile, onboarding, personalCourseMarkdown }) => {
     setOnboardingCompleted(true);
     setProfile(nextProfile);
+    setPersonalCourseMarkdown(personalCourseMarkdown || '');
+    if (personalCourseMarkdown) localStorage.setItem('fr-personalcourse-draft', personalCourseMarkdown);
     setMessages(personalizeAgentMessages(nextProfile));
     setRoute({ name: 'planner' });
     setSaveState('saving');
@@ -275,6 +286,8 @@ const App = () => {
     await FRAuth.resetUserData();
     const nextProfile = { ...freshProfile(), name: authState.user?.email?.split('@')[0] || '' };
     setProfile(nextProfile);
+    setPersonalCourseMarkdown('');
+    localStorage.removeItem('fr-personalcourse-draft');
     setMessages(personalizeAgentMessages(nextProfile));
     setActiveSem(defaultActiveSem);
     setFourYearPlan(freshFourYearPlan());
@@ -283,7 +296,7 @@ const App = () => {
   };
 
   const ctx = {
-    theme, setTheme, route, setRoute, profile, setProfile, fourYearPlan, setFourYearPlan, activeSem, setActiveSem, termOptions, planningTermLabel,
+    theme, setTheme, route, setRoute, profile, setProfile, personalCourseMarkdown, setPersonalCourseMarkdown, fourYearPlan, setFourYearPlan, activeSem, setActiveSem, termOptions, planningTermLabel,
     authState, dataReady, onboardingCompleted, saveState,
     completeOnboarding, resetOnboarding, signOut: FRAuth.signOut,
   };
