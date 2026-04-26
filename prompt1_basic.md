@@ -46,6 +46,14 @@ Classification rules:
    - MIT-style transfer credit marked `S` belongs here, not in a semester course plan.
    - Any grade/status ending in `&` belongs here, such as `A&`, `B&`, `P&`, or `X&`.
    - Preserve the exact grade/status text from the transcript.
+   - **CRITICAL — DO NOT DROP THE `&` SUFFIX.** The trailing `&` on grades like
+     `A&`, `B+&`, `P&`, `X&` is an MIT-specific marker that distinguishes ASE /
+     advanced-standing credit from a normal letter grade. It is NOT a
+     formatting artifact, an HTML escape, or noise. **Always copy the `&` into
+     the markdown output verbatim.** Output `A&`, never `A`. Output `B+&`,
+     never `B+`. If you cannot tell whether a `&` was present, prefer to
+     keep it; a missed `&` reclassifies the course as a regular grade and
+     breaks requirement counting.
 
 3. Listener Courses:
    - Include rows explicitly marked as listener/listening/audit.

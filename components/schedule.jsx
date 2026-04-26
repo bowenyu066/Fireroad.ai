@@ -91,9 +91,9 @@ const ScheduleCard = ({ course, onRemove, onOpen, justAdded }) => {
       style={{
         position: 'relative', background: hover ? 'var(--surface-2)' : 'var(--surface)',
         border: `1px solid ${hover ? 'var(--border-strong)' : 'var(--border)'}`,
-        borderRadius: 8,
-        padding: '8px 10px 8px 12px', cursor: 'pointer',
-        display: 'flex', alignItems: 'center', gap: 10,
+        borderRadius: 10,
+        padding: '12px 14px 12px 14px', cursor: 'pointer',
+        display: 'flex', alignItems: 'center', gap: 12,
         opacity: removing ? 0 : 1,
         transform: removing ? 'translateX(-8px)' : 'translateX(0)',
         transition: 'opacity 220ms, transform 220ms, border-color 140ms, background 140ms',
@@ -101,25 +101,25 @@ const ScheduleCard = ({ course, onRemove, onOpen, justAdded }) => {
       title={course.name}
     >
       <span style={{
-        width: 3, height: 22, flexShrink: 0,
+        width: 4, height: 26, flexShrink: 0,
         background: `var(--course-${course.area || 'other'})`,
         borderRadius: 2,
       }} />
-      <span className="mono" style={{ fontSize: 12.5, fontWeight: 600, flexShrink: 0 }}>{course.id}</span>
+      <span className="mono" style={{ fontSize: 14, fontWeight: 600, flexShrink: 0 }}>{course.id}</span>
       <span style={{
-        flex: 1, minWidth: 0, fontSize: 12.5, color: 'var(--text-secondary)',
+        flex: 1, minWidth: 0, fontSize: 14, color: 'var(--text)',
         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>
         {course.name}
       </span>
-      <span className="mono" style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>
+      <span className="mono" style={{ fontSize: 12, color: 'var(--text-tertiary)', flexShrink: 0 }}>
         {course.units}u
       </span>
       <button
         onClick={(e) => { e.stopPropagation(); requestRemove(); }}
         title="Remove from schedule"
         style={{
-          width: 22, height: 22, padding: 0, borderRadius: 6,
+          width: 26, height: 26, padding: 0, borderRadius: 7,
           background: 'transparent', color: 'var(--text-tertiary)',
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
           opacity: hover ? 1 : 0,
@@ -129,7 +129,7 @@ const ScheduleCard = ({ course, onRemove, onOpen, justAdded }) => {
         onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--accent)'; }}
         onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-tertiary)'; }}
       >
-        <Icon name="x" size={13} />
+        <Icon name="x" size={15} />
       </button>
     </div>
   );
@@ -660,16 +660,16 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-          <div style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 8, overflow: 'hidden' }}>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+          <div style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 10, overflow: 'hidden' }}>
             <span className="display" style={{
-              fontSize: 15, fontWeight: 600, color: 'var(--text)',
+              fontSize: 18, fontWeight: 600, color: 'var(--text)',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
               {planningTermLabel}
             </span>
-            <span className="mono" style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>
+            <span className="mono" style={{ fontSize: 12, color: 'var(--text-tertiary)', flexShrink: 0 }}>
               {courses.length} {courses.length === 1 ? 'course' : 'courses'}
             </span>
           </div>
@@ -706,7 +706,7 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
       </div>
 
       {/* Body */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px' }}>
         {courses.length === 0 ? (
           <div style={{
             border: '1.5px dashed var(--border-strong)', borderRadius: 'var(--r-md)',

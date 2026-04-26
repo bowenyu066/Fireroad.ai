@@ -77,9 +77,9 @@ const ColumnResizer = ({ onDrag }) => {
 // Section panel header, also resizable for requirements column
 const SectionHeader = ({ label, right }) => (
   <div style={{
-    padding: '12px 16px', borderBottom: '1px solid var(--border)',
+    padding: '16px 20px', borderBottom: '1px solid var(--border)',
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    minHeight: 44, boxSizing: 'border-box',
+    minHeight: 56, boxSizing: 'border-box', flexShrink: 0,
   }}>
     <div className="eyebrow">{label}</div>
     {right || null}
@@ -236,17 +236,18 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
   const gridTemplate = `${paneWidths.leftPx}px ${RESIZER_PX}px ${paneWidths.middlePx}px ${RESIZER_PX}px minmax(${MIN_PX}px, 1fr)`;
 
   return (
-    <div className="fade-in" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="fade-in" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <TopBar planningTermLabel={planningTermLabel} />
 
       <div
         ref={containerRef}
         style={{
-          flex: 1,
+          flex: '1 1 0',
+          minHeight: 0,
           display: 'grid',
           gridTemplateColumns: gridTemplate,
+          gridTemplateRows: 'minmax(0, 1fr)',
           overflow: 'hidden',
-          minHeight: 'calc(100vh - 65px)',
         }}
       >
         {/* LEFT — schedule (course cards only) */}

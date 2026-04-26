@@ -63,6 +63,23 @@
     return sectionStatus;
   }
 
+  // MIT ASE/advanced-standing grades end in `&` (e.g. `A&`, `B&`, `P&`).
+  // The LLM that parses the transcript sometimes strips the `&` even though
+  // the prompt says to keep it. When a row lands in Prior Credits and its
+  // grade is a bare letter grade, restore the `&` so downstream classification
+  // and display stay correct.
+  function restoreAseAmpersand(sectionStatus, grade, auditInfo) {
+    if (sectionStatus !== 'prior_credit') return grade;
+    const code = normalizeGradeCode(grade);
+    if (!code) return grade;
+    if (/&$/.test(code)) return grade;
+    if (code === 'S') return grade; // MIT transfer credit
+    const auditCode = normalizeGradeCode(auditInfo);
+    if (/TRANSFERCREDIT/.test(auditCode)) return grade;
+    if (/^[A-FPX][+\-]?$/.test(code)) return `${String(grade).trim()}&`;
+    return grade;
+  }
+
   function normalizePriorCreditCourseId(id, status) {
     const courseId = normalizeCourseId(id);
     if (status !== 'prior_credit') return courseId;
@@ -97,9 +114,10 @@
         const rawId = normalizeCourseId(cells[1]);
         if (!rawId || rawId === 'UNKNOWN') return;
 
-        const grade = /^unknown$/i.test(cells[5]) ? '' : cells[5];
+        const rawGrade = /^unknown$/i.test(cells[5]) ? '' : cells[5];
         const auditInfo = /^unknown$/i.test(cells[6]) ? '' : cells[6];
         const notes = /^unknown$/i.test(cells[7]) ? '' : cells[7];
+        const grade = restoreAseAmpersand(status, rawGrade, auditInfo);
         const nextStatus = classifyCourseStatus(status, grade, auditInfo, notes);
         const id = normalizePriorCreditCourseId(rawId, nextStatus);
 

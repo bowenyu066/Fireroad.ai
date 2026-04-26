@@ -117,6 +117,62 @@ const ThemeToggle = () => {
   );
 };
 
+const ConfirmResetOnboardingModal = ({ onCancel, onConfirm }) => (
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="reset-onboarding-title"
+    style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 200,
+      background: 'rgba(15, 23, 42, 0.42)',
+      display: 'grid',
+      placeItems: 'center',
+      padding: 24,
+    }}
+  >
+    <div style={{
+      width: '100%',
+      maxWidth: 460,
+      borderRadius: 8,
+      border: '1px solid var(--accent)',
+      background: 'var(--surface)',
+      boxShadow: '0 24px 70px rgba(15, 23, 42, 0.24)',
+      padding: 24,
+    }}>
+      <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 10 }}>Destructive action</div>
+      <h2 id="reset-onboarding-title" className="display" style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>
+        Reset onboarding for this account?
+      </h2>
+      <p style={{ margin: '12px 0 0', color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.55 }}>
+        This deletes your saved transcript markdown, course history, semester plans, and personalization. You'll be sent back to onboarding and need to upload your transcript again.
+      </p>
+      <p style={{ margin: '10px 0 0', color: 'var(--accent)', fontSize: 13, lineHeight: 1.55 }}>
+        This cannot be undone.
+      </p>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 22 }}>
+        <button className="btn btn-ghost" onClick={onCancel} style={{ padding: '9px 16px' }}>
+          Cancel
+        </button>
+        <button
+          onClick={onConfirm}
+          style={{
+            padding: '9px 16px',
+            borderRadius: 8,
+            background: 'var(--accent)',
+            color: '#fff',
+            fontWeight: 500,
+            border: '1px solid var(--accent)',
+          }}
+        >
+          Reset everything
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 const ConfirmTranscriptReparseModal = ({ onCancel, onConfirm }) => (
   <div
     role="dialog"
@@ -166,6 +222,7 @@ const ConfirmTranscriptReparseModal = ({ onCancel, onConfirm }) => (
 const TopBar = ({ planningTermLabel }) => {
   const { route, setRoute, profile, authState, signOut, resetOnboarding, reparseTranscript, activeSem, setActiveSem, termOptions, planningTermLabel: activePlanningTermLabel } = useApp();
   const [confirmReparseOpen, setConfirmReparseOpen] = useState(false);
+  const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const isLocalDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
   const displayName = profile?.name || authState?.user?.email?.split('@')[0] || 'User';
   const initials = displayName.split(' ').map((s) => s[0]).join('');
@@ -200,27 +257,27 @@ const TopBar = ({ planningTermLabel }) => {
         <button
           onClick={() => setRoute({ name: 'fouryear' })}
           className="btn-ghost"
-          style={{ fontSize: 12, padding: '5px 10px', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-secondary)' }}
+          style={{ fontSize: 13, padding: '6px 12px', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-secondary)' }}
         >
-          <Icon name="grid" size={13} />
+          <Icon name="grid" size={14} />
           4-Year Plan
         </button>
         <button
           onClick={() => setRoute({ name: 'priorcredit' })}
           className="btn-ghost"
-          style={{ fontSize: 12, padding: '5px 10px', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-secondary)' }}
+          style={{ fontSize: 13, padding: '6px 12px', borderRadius: 7, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-secondary)' }}
         >
-          <Icon name="file" size={13} />
+          <Icon name="file" size={14} />
           Prior Credit
         </button>
       </div>
 
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px',
+        display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px',
         borderRadius: 10, background: 'var(--surface-2)', border: '1px solid var(--border)',
-        color: 'var(--text-secondary)', fontSize: 12, position: 'relative',
+        color: 'var(--text-secondary)', fontSize: 13, position: 'relative',
       }}>
-        <Icon name="calendar" size={14} />
+        <Icon name="calendar" size={15} />
         {setActiveSem ? (
           <select
             value={selectedTerm}
@@ -232,7 +289,7 @@ const TopBar = ({ planningTermLabel }) => {
               background: 'transparent',
               border: 0,
               color: 'var(--text)',
-              fontSize: 12,
+              fontSize: 13,
               padding: '0 18px 0 0',
               outline: 'none',
               cursor: 'pointer',
@@ -252,12 +309,21 @@ const TopBar = ({ planningTermLabel }) => {
         <ThemeToggle />
         {isLocalDev && resetOnboarding && (
           <button
-            className="btn-ghost"
-            onClick={resetOnboarding}
-            title="Reset onboarding for this account"
+            onClick={() => setConfirmResetOpen(true)}
+            title="Reset onboarding (destructive)"
             style={{
               width: 32, height: 32, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              borderRadius: 8, color: 'var(--text-secondary)',
+              borderRadius: 8, color: 'var(--accent)',
+              background: 'var(--accent-soft)',
+              border: '1px solid rgba(163, 31, 52, 0.35)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--accent)';
+              e.currentTarget.style.color = '#fff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'var(--accent-soft)';
+              e.currentTarget.style.color = 'var(--accent)';
             }}
           >
             <Icon name="rotateCcw" size={15} />
@@ -274,12 +340,12 @@ const TopBar = ({ planningTermLabel }) => {
               alignItems: 'center',
               justifyContent: 'center',
               gap: 6,
-              padding: '0 10px',
+              padding: '0 12px',
               borderRadius: 8,
               color: 'var(--accent)',
               borderColor: 'rgba(163, 31, 52, 0.35)',
               background: 'var(--accent-soft)',
-              fontSize: 12,
+              fontSize: 13,
             }}
           >
             <Icon name="upload" size={15} />
@@ -326,6 +392,15 @@ const TopBar = ({ planningTermLabel }) => {
           onConfirm={() => {
             setConfirmReparseOpen(false);
             reparseTranscript();
+          }}
+        />
+      )}
+      {confirmResetOpen && (
+        <ConfirmResetOnboardingModal
+          onCancel={() => setConfirmResetOpen(false)}
+          onConfirm={() => {
+            setConfirmResetOpen(false);
+            resetOnboarding();
           }}
         />
       )}
