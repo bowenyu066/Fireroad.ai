@@ -1,4 +1,4 @@
-/* global React, FRDATA, Icon, AreaDot */
+/* global React, FRDATA, Icon, AreaDot, useApp */
 const { useEffect, useState } = React;
 
 const CourseDetail = (props) => <CourseDetailShell {...props} />;
@@ -82,10 +82,13 @@ const CourseDetailShell = ({ courseId, onBack, onAdd, onRemove, inSchedule }) =>
 };
 
 const CourseHero = ({ course, summary, tab, setTab, onBack, onAdd, onRemove, inSchedule }) => {
+  const { activeSem } = useApp();
   const offeringCount = summary.offeringCount || 0;
   const enrollment = course.enrollmentNumber ? Math.round(course.enrollmentNumber) : null;
-  const canAct = inSchedule ? Boolean(onRemove) : Boolean(onAdd);
-  const buttonLabel = inSchedule ? '- Remove from schedule' : '+ Add to schedule';
+  const season = semesterSeasonForDetail(activeSem);
+  const notOffered = !inSchedule && season && course?.offered && course.offered[season] === false;
+  const canAct = inSchedule ? Boolean(onRemove) : Boolean(onAdd) && !notOffered;
+  const buttonLabel = inSchedule ? '- Remove from schedule' : (notOffered ? 'Not offered this semester' : '+ Add to schedule');
   return (
     <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
       <div style={{ maxWidth: 1220, margin: '0 auto', padding: '18px 32px 30px' }}>
@@ -115,6 +118,7 @@ const CourseHero = ({ course, summary, tab, setTab, onBack, onAdd, onRemove, inS
           <button
             onClick={() => inSchedule ? onRemove(course.id) : onAdd(course.id)}
             disabled={!canAct}
+            title={notOffered ? `Not offered in ${activeSem}` : undefined}
             className={inSchedule ? 'btn' : 'btn btn-primary'}
             style={{
               minWidth: 220,
@@ -122,6 +126,8 @@ const CourseHero = ({ course, summary, tab, setTab, onBack, onAdd, onRemove, inS
               fontSize: 14,
               borderColor: inSchedule ? 'var(--accent)' : undefined,
               color: inSchedule ? 'var(--accent)' : undefined,
+              opacity: !canAct ? 0.65 : 1,
+              cursor: !canAct ? 'not-allowed' : 'pointer',
             }}
           >
             {buttonLabel}
@@ -156,6 +162,15 @@ const CourseHero = ({ course, summary, tab, setTab, onBack, onAdd, onRemove, inS
       </div>
     </div>
   );
+};
+
+const semesterSeasonForDetail = (semId) => {
+  const value = String(semId || '').toUpperCase();
+  if (value.startsWith('IAP')) return 'iap';
+  if (value.startsWith('SU')) return 'summer';
+  if (value.startsWith('F')) return 'fall';
+  if (value.startsWith('S')) return 'spring';
+  return null;
 };
 
 const PrimaryTabButton = ({ active, onClick, label, description }) => (
