@@ -32,7 +32,6 @@ if (require.main === module) {
   listen(PORT);
 }
 
-module.exports = {
-  app,
-  listen,
-};
+module.exports = app;
+module.exports.app = app;
+module.exports.listen = listen;
