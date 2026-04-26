@@ -1058,9 +1058,11 @@ const CourseTag = ({ id, satisfied }) => (
 const ReqRow = ({ group, depth = 0, expanded, toggle }) => {
   const isOpen = !!expanded[depth + ':' + group.id];
   const hasChildren = group.subGroups && group.subGroups.length > 0;
-  const hasDetail = group.satisfied
+  // Single required course (label is just a course ID): obvious from the label, suppress detail pills.
+  const isSingleCourse = !hasChildren && /^[A-Z0-9]+\.[A-Z0-9]/i.test(group.label || '');
+  const hasDetail = !isSingleCourse && (group.satisfied
     ? (group.matched && group.matched.length > 0)
-    : (!hasChildren);
+    : (!hasChildren));
   const statusColor = group.satisfied ? 'var(--success)' : group.isManual ? 'var(--warning)' : 'var(--border-strong)';
   const indent = depth * 14;
   const fontSize = depth === 0 ? 12 : depth === 1 ? 11 : 10;

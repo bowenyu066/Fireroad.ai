@@ -118,14 +118,17 @@ function syntheticLabel(node) {
 
 function buildGroupInfo(node, takenSet, countMap = {}) {
   const result = evaluate(node, takenSet, countMap);
+  const connectionType = node['connection-type'] || 'all';
 
   const namedChildren = (node.reqs || [])
     .filter((child) => {
       if (child['plain-string']) return Boolean(child.title || child.req);
-      // Leaf node: only surface categorical codes (HASS-A, GIR:PHY1, CI-H …),
-      // not specific MIT course IDs (6.1010, CC.1803, 21G.594 …).
-      // Course IDs always contain a dot separating alphanumeric parts.
-      if (child.req && !child.reqs) return !/^[A-Z0-9]+\.[A-Z0-9]/i.test(String(child.req));
+      if (child.req && !child.reqs) {
+        const isCourseId = /^[A-Z0-9]+\.[A-Z0-9]/i.test(String(child.req));
+        // Show individual required course IDs only when all children are required (not pick-lists).
+        if (isCourseId) return connectionType === 'all';
+        return true;
+      }
       if (!child.reqs) return false;
       return Boolean(syntheticLabel(child));
     })
