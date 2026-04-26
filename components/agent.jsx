@@ -335,25 +335,26 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onR
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       {/* Header */}
       <div style={{
-        padding: '14px 18px', borderBottom: '1px solid var(--border)',
+        padding: '16px 20px', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        flexShrink: 0, minHeight: 56, boxSizing: 'border-box',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{
-            width: 22, height: 22, borderRadius: 6,
+            width: 28, height: 28, borderRadius: 8,
             background: 'var(--accent-soft)',
             border: '1px solid var(--accent)',
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--accent)',
           }}>
-            <Icon name="sparkle" size={12} />
+            <Icon name="sparkle" size={15} />
           </span>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 500 }}>Agent</div>
-            <div style={{ fontSize: 11, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ fontSize: 15, fontWeight: 600 }}>Agent</div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)' }} />
               {calibratedToUser ? 'Online · Calibrated to you' : 'Online'}
             </div>
@@ -363,7 +364,7 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onR
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div ref={scrollRef} style={{ flex: '1 1 0', minHeight: 0, overflowY: 'auto', padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
         {messages.map((m, i) => (
           <MessageBubble
             key={m.id || i}
@@ -379,28 +380,28 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onR
       </div>
 
       {/* Input */}
-      <div style={{ padding: 12, borderTop: '1px solid var(--border)' }}>
+      <div style={{ padding: 14, borderTop: '1px solid var(--border)', flexShrink: 0 }}>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          padding: '6px 6px 6px 12px', borderRadius: 'var(--r-md)',
+          padding: '8px 8px 8px 14px', borderRadius: 'var(--r-md)',
           background: 'var(--surface)', border: '1px solid var(--border)',
         }}>
           <button className="btn-ghost" style={{ color: 'var(--text-tertiary)', padding: 4 }} title="Attach">
-            <Icon name="paperclip" size={15} />
+            <Icon name="paperclip" size={16} />
           </button>
           <input
             placeholder="Ask the agent…"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && send()}
-            style={{ flex: 1, fontSize: 13, padding: '6px 0' }}
+            style={{ flex: 1, fontSize: 15, padding: '8px 0' }}
           />
           <button onClick={send} className="btn-primary" style={{
-            width: 28, height: 28, borderRadius: 7, padding: 0,
+            width: 32, height: 32, borderRadius: 8, padding: 0,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             opacity: input.trim() ? 1 : 0.5,
           }}>
-            <Icon name="send" size={13} />
+            <Icon name="send" size={15} />
           </button>
         </div>
       </div>
@@ -910,11 +911,11 @@ const MessageBubble = ({ msg, schedule, onAddCourse, onRemoveCourse, onOpenCours
     }}>
       <div style={{
         maxWidth: '88%',
-        padding: '10px 14px', borderRadius: 'var(--r-md)',
+        padding: '12px 16px', borderRadius: 'var(--r-md)',
         background: isUser ? 'var(--accent)' : 'var(--surface)',
         color: isUser ? '#fff' : 'var(--text)',
         border: isUser ? 'none' : '1px solid var(--border)',
-        fontSize: 13, lineHeight: 1.55,
+        fontSize: 15, lineHeight: 1.6,
       }}>
         {isUser ? displayText : showProgressOnly ? (
           <ProgressBlock progress={msg.progress} fallback={msg.status} />
