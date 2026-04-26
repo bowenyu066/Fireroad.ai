@@ -6,9 +6,10 @@ const { OPENROUTER_MODEL } = require('./server/chat/openrouter');
 const PORT = Number(process.env.PORT || 3000);
 const MAX_PORT_ATTEMPTS = 10;
 const app = createApp();
+const expressListen = app.listen.bind(app);
 
 function listen(port, attemptsLeft = MAX_PORT_ATTEMPTS) {
-  const server = app.listen(port, () => {
+  const server = expressListen(port, () => {
     console.log(`Fireroad.ai prototype running at http://localhost:${port}`);
     console.log(`OpenRouter model: ${OPENROUTER_MODEL}`);
   });

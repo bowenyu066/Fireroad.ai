@@ -44,8 +44,6 @@ const getCourse = (id) => {
   return mockData.catalog.find((course) => normalizeCourseId(course.id) === normalized);
 };
 
-const getMatch = (id) => mockData.matchScores[normalizeCourseId(id)] || { total: 0, interest: 0, workload: 0, reqValue: 0 };
-
 function normalizeSchedule(schedule) {
   const ids = [];
   asArray(schedule).forEach((id) => {
@@ -370,7 +368,6 @@ function profileForTool(args = {}, context = {}) {
 
 function currentCourseSummary(course) {
   if (!course) return null;
-  const match = getMatch(course.id);
   return {
     id: course.id,
     name: course.name,
@@ -382,7 +379,6 @@ function currentCourseSummary(course) {
     workload_hours_per_week: course.totalHours,
     rating: course.rating,
     enrollmentNumber: course.enrollmentNumber,
-    match_score: match.total,
     desc: course.desc,
   };
 }
@@ -396,13 +392,16 @@ function hasTime(course) {
   return course && Array.isArray(course.days) && course.days.length && course.time && course.time.end > course.time.start;
 }
 
-function detectConflicts(courseIds) {
-  const mockCourses = courseIds.map(getCourse).filter(Boolean);
+function conflictScheduleLabel(course) {
+  return course.scheduleDisplay || course.scheduleRaw || course.schedule || 'Schedule TBD';
+}
+
+function detectConflicts(courses = []) {
   const conflicts = [];
-  for (let i = 0; i < mockCourses.length; i += 1) {
-    for (let j = i + 1; j < mockCourses.length; j += 1) {
-      const a = mockCourses[i];
-      const b = mockCourses[j];
+  for (let i = 0; i < courses.length; i += 1) {
+    for (let j = i + 1; j < courses.length; j += 1) {
+      const a = courses[i];
+      const b = courses[j];
       if (!hasTime(a) || !hasTime(b)) continue;
 
       const sharedDays = a.days.filter((day) => b.days.includes(day));
@@ -415,7 +414,7 @@ function detectConflicts(courseIds) {
           courses: [a.id, b.id],
           days: sharedDays,
           overlap: { start, end },
-          schedules: [a.schedule, b.schedule],
+          schedules: [conflictScheduleLabel(a), conflictScheduleLabel(b)],
         });
       }
     }
@@ -463,7 +462,7 @@ async function summarizeSemesterPlan(args = {}, context = {}) {
       unsatisfiedGroups: requirementStatus.unsatisfiedGroups,
       unmetCourseIds: requirementStatus.unmetCourseIds,
     },
-    conflicts: detectConflicts(schedule),
+    conflicts: detectConflicts(courses),
   };
 }
 
@@ -694,9 +693,9 @@ async function recommendCourses(args = {}, context = {}) {
   const scored = [...poolById.values()]
     .filter((course) => !scheduledSet.has(course.id) && !takenSet.has(course.id))
     .map((course) => {
-      const match = getMatch(course.id);
       const reasons = [];
-      let rankScore = course.matchScore || course.searchScore || match.total || 20;
+      const searchScore = Number(course.searchScore);
+      let rankScore = Number.isFinite(searchScore) && searchScore > 0 ? searchScore : 20;
 
       const exactRequirementHit = unmetCourseIds.includes(course.id);
       if (exactRequirementHit) {
@@ -767,7 +766,7 @@ async function recommendCourses(args = {}, context = {}) {
         missingPrereqs: unique(missingPrereqs),
       };
     })
-    .sort((a, b) => b.rank_score - a.rank_score || b.match_score - a.match_score || a.id.localeCompare(b.id));
+    .sort((a, b) => b.rank_score - a.rank_score || a.id.localeCompare(b.id));
 
   const recommendations = [];
   let plannedHours = scheduledHours;
@@ -1281,7 +1280,6 @@ module.exports = {
   currentCourseSummary,
   getCourse,
   getCurrentCourseTool,
-  getMatch,
   majorToDepartments,
   mockData,
   normalizeProfile,

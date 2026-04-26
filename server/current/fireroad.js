@@ -25,7 +25,7 @@ function indexCourses(courses) {
   return coursesById;
 }
 
-function getMatchScore(courseId) {
+function getLegacyMockMatchScore(courseId) {
   const match = mockData.matchScores[normalizeCourseId(courseId)] || mockData.matchScores[courseId] || {};
   return match.total || 0;
 }
@@ -108,9 +108,8 @@ async function fetchCurrentCourse(courseId) {
 }
 
 function scoreCourse(course, query, tokens) {
-  const matchScore = getMatchScore(course.id);
   let score = 0;
-  if (!query) return matchScore || 1;
+  if (!query) return 1;
 
   const haystack = [
     course.id,
@@ -132,7 +131,7 @@ function scoreCourse(course, query, tokens) {
   tokens.forEach((token) => {
     if (haystack.includes(token)) score += 6;
   });
-  return score > 0 ? score + Math.min(matchScore, 10) : 0;
+  return score;
 }
 
 function expandSearchTokens(tokens) {
@@ -184,7 +183,11 @@ async function searchCurrentCourses(options = {}) {
     .filter((result) => result.searchScore > 0 || !query)
     .sort((a, b) => b.searchScore - a.searchScore || a.course.id.localeCompare(b.course.id))
     .slice(0, maxResults)
-    .map(({ course, searchScore }) => ({ ...course, searchScore, matchScore: getMatchScore(course.id) }));
+    .map(({ course, searchScore }) => ({
+      ...course,
+      searchScore,
+      legacyMockMatchScore: getLegacyMockMatchScore(course.id),
+    }));
 
   return {
     query,

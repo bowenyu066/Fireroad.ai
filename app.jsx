@@ -134,6 +134,10 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
   const { setRoute, profile } = React.useContext(AppCtx);
   const [justAddedId, setJustAddedId] = useState(null);
   const [viewMode, setViewMode] = useState('list');
+  const courseCatalogLink = (id) => {
+    const courseId = String(id || '').trim().toUpperCase();
+    return courseId ? `[${courseId}](catalog/${courseId})` : 'course';
+  };
 
   const onAddCourse = async (id) => {
     const courseId = String(id || '').trim().toUpperCase();
@@ -147,7 +151,7 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
     setTimeout(() => setJustAddedId(null), 800);
     setMessages((m) => [...m, {
       role: 'agent',
-      text: `Added ${c.id} (${c.name}) to ${planningTermLabel}. You're at about ${newUnits} units. Want me to suggest something to balance the workload?`,
+      text: `Added ${courseCatalogLink(c.id)} (${c.name}) to ${planningTermLabel}. You're at about ${newUnits} units. Want me to suggest something to balance the workload?`,
     }]);
   };
 
@@ -158,7 +162,7 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
     setSchedule((s) => s.filter((x) => x !== courseId));
     setMessages((m) => [...m, {
       role: 'agent',
-      text: `Removed ${c.id} (${c.name}) from ${planningTermLabel}.`,
+      text: `Removed ${courseCatalogLink(c.id)} (${c.name}) from ${planningTermLabel}.`,
     }]);
   };
 
