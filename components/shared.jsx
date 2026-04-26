@@ -204,7 +204,7 @@ const TopBar = ({ planningTermLabel }) => {
             <Icon name="rotateCcw" size={15} />
           </button>
         )}
-        {isLocalDev && reparseTranscript && (
+        {reparseTranscript && (
           <button
             className="btn-ghost"
             onClick={reparseTranscript}
