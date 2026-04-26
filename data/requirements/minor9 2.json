@@ -1,0 +1,111 @@
+{
+  "title-no-degree": "Brain and Cognitive Sciences",
+  "list-id": "minor9.reql",
+  "title": "Minor in Brain and Cognitive Sciences",
+  "medium-title": "9 Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "9.00"
+        },
+        {
+          "req": "9.01"
+        },
+        {
+          "req": "9.40"
+        }
+      ],
+      "title": "Core Subjects"
+    },
+    {
+      "threshold-desc": "select any 3",
+      "title": "Specialized Subjects",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "9.09"
+            },
+            {
+              "req": "9.13"
+            },
+            {
+              "req": "9.18"
+            },
+            {
+              "req": "9.19"
+            },
+            {
+              "req": "9.21"
+            },
+            {
+              "req": "9.26"
+            },
+            {
+              "req": "9.35"
+            },
+            {
+              "req": "9.49"
+            },
+            {
+              "req": "9.53"
+            },
+            {
+              "req": "9.66"
+            },
+            {
+              "req": "9.85"
+            }
+          ],
+          "title": "Tier 2 Subjects"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "9.24"
+            },
+            {
+              "req": "9.28"
+            },
+            {
+              "req": "9.32"
+            },
+            {
+              "req": "9.42"
+            },
+            {
+              "req": "9.46"
+            }
+          ],
+          "title": "Tier 3 Subjects"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Select any combination of three subjects from Tier 2 and/or Tier 3 of the undergraduate degree program."
+    }
+  ],
+  "short-title": "9",
+  "desc": "The Minor in Brain and Cognitive Sciences consists of six subjects arranged in two levels of study, intended to provide students breadth in the field as a whole and some depth in an area of specialization."
+}

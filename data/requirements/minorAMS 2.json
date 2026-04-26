@@ -1,0 +1,313 @@
+{
+  "title-no-degree": "Ancient and Medieval Studies",
+  "list-id": "minorAMS.reql",
+  "title": "Minor in Ancient and Medieval Studies",
+  "medium-title": "21 Minor (AMS)",
+  "reqs": [
+    {
+      "connection-type": "any",
+      "desc": "Students are required to take at least 12 units in a pre-modern language. Two six-unit subjects in a pre-modern language may be combined to satisfy this requirement (e.g., Latin I and II or, for students who enter with strong Latin from high school, two different iterations of 21L.6xx Latin Readings). Greek, Latin, and Old English are currently offered at MIT, but students may substitute another pre-modern language taken elsewhere, such as Greek, Latin, Italian, Norse, or Arabic.\n\nStudents with equivalent proficiency in a pre-modern language may substitute the Area I requirement with one more subject from Areas II–IV.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "1 intermediate language subject",
+          "plain-string": true
+        },
+        {
+          "req": "21L.601"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "21L.611"
+            },
+            {
+              "req": "21L.612"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "21L.607"
+            },
+            {
+              "req": "21L.608"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "21L.613"
+            },
+            {
+              "req": "21L.614"
+            }
+          ],
+          "threshold-desc": "select all"
+        }
+      ],
+      "threshold-desc": "select any",
+      "title": "Language"
+    },
+    {
+      "distinct-threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "threshold-desc": "select any 5 from at least 2 categories",
+      "title": "Additional Areas",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "4.605"
+                },
+                {
+                  "req": "21H.237"
+                },
+                {
+                  "req": "21H.239"
+                }
+              ],
+              "title": "Ancient"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "4.614"
+                },
+                {
+                  "req": "4.635"
+                },
+                {
+                  "req": "21M.220"
+                }
+              ],
+              "title": "Medieval"
+            }
+          ],
+          "title": "Area II: Arts and Architecture"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "21L.001"
+                },
+                {
+                  "req": "21L.021"
+                },
+                {
+                  "req": "21L.455"
+                },
+                {
+                  "req": "21L.458"
+                },
+                {
+                  "connection-type": "all",
+                  "reqs": [
+                    {
+                      "req": "21L.613"
+                    },
+                    {
+                      "req": "21L.614"
+                    }
+                  ],
+                  "threshold-desc": "select all"
+                }
+              ],
+              "title": "Ancient"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "21L.460"
+                },
+                {
+                  "req": "21L.601"
+                }
+              ],
+              "title": "Medieval"
+            },
+            {
+              "threshold": {
+                "cutoff": 4,
+                "criterion": "subjects",
+                "type": "LTE"
+              },
+              "req": "Literature seminar",
+              "plain-string": true,
+              "threshold-desc": "select at most 4"
+            }
+          ],
+          "title": "Area III: Literary Studies"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "3.981"
+                },
+                {
+                  "req": "3.982"
+                },
+                {
+                  "req": "3.983"
+                },
+                {
+                  "req": "3.986"
+                },
+                {
+                  "req": "3.987"
+                },
+                {
+                  "req": "3.993"
+                },
+                {
+                  "req": "21H.007"
+                },
+                {
+                  "req": "21H.130"
+                },
+                {
+                  "req": "21H.132"
+                },
+                {
+                  "req": "21H.230"
+                },
+                {
+                  "req": "21H.331"
+                },
+                {
+                  "req": "21H.333"
+                },
+                {
+                  "req": "21H.336"
+                },
+                {
+                  "req": "CC.117"
+                }
+              ],
+              "title": "Ancient"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "21H.133"
+                },
+                {
+                  "req": "21H.134"
+                },
+                {
+                  "req": "21H.160"
+                },
+                {
+                  "req": "21H.238"
+                },
+                {
+                  "req": "21H.240"
+                },
+                {
+                  "req": "21H.383"
+                },
+                {
+                  "req": "CC.116"
+                }
+              ],
+              "title": "Medieval"
+            }
+          ],
+          "title": "Area IV: Material and Historical Studies"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 5,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Select five subjects from at least two of the following areas. At least one subject must be taken in both the Ancient and Medieval periods.\n\nAny seminar-tier subject in Literature with a substantially ancient and/or medieval focus counts toward Area III."
+    }
+  ],
+  "short-title": "21",
+  "desc": "Through a wide variety of subjects drawn from a number of disciplines, this program provides a curricular framework for exploring topics in ancient and medieval studies which range from the history of ideas and institutions to that of material artifacts, literature, and certain of the original languages. The chronological span of the program includes some 6,500 years between 5000 BC and 1500 AD.\n\nThe goal of this program is to develop knowledge and understanding of the more distant past both for itself, in its uniqueness, and as an object of specifically modern questions and methods of inquiry. The program has an interest in the structure of institutions and social systems, and in relationships between the social order and learned traditions, values, ideologies, and ideas. Ancient and medieval studies derive a special claim to our interest from the fact that the record is so full and multiform and that much of it is of exceptionally high quality at once in substance and form.\n\nThe minor is designed for students who, in addition to the focus of their major program of study, are seeking a fuller understanding of the forces which shaped the ancient and medieval world. The geographical and chronological scope of the minor program is broadly conceived and is intended to be comparative. Subjects range in content from Classical Greece and Rome, and the ancient societies of Asia and South America, to medieval Europe and Japan. Students will be required to demonstrate intermediate level language proficiency in either Greek, Latin, or a medieval vernacular, but they need not concentrate their other subjects on the area associated with that language. Students are also expected to have some distribution across the ancient and medieval time periods. Students are expected to consult closely with the minor advisor in order to devise a coherent program of study."
+}

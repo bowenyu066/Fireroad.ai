@@ -93,6 +93,18 @@
     const compact = raw.toUpperCase().replace(/[^A-Z0-9]/g, '');
     const direct = compact.match(/^(IAP|SU|S|F)(\d{2})$/);
     if (direct) return `${direct[1]}${direct[2]}`;
+
+    const academicYear = raw.match(/\b(20\d{2}|19\d{2})\b\D+\b(20\d{2}|19\d{2})\b/)
+      || compact.match(/(20\d{2}|19\d{2})(20\d{2}|19\d{2})/);
+    if (academicYear) {
+      const startYear = academicYear[1].slice(-2);
+      const endYear = academicYear[2].slice(-2);
+      if (/fall|fa/i.test(raw) || /^FA/.test(compact) || /^FALL/.test(compact)) return `F${startYear}`;
+      if (/spring|spr|sp/i.test(raw) || /^SP/.test(compact) || /^SPRING/.test(compact)) return `S${endYear}`;
+      if (/summer|sum|su/i.test(raw) || /^SU/.test(compact) || /^SUMMER/.test(compact)) return `SU${endYear}`;
+      if (/iap|january|jan/i.test(raw) || /^IAP/.test(compact) || /^JAN/.test(compact)) return `IAP${endYear}`;
+    }
+
     const yearThenTerm = compact.match(/^(20\d{2}|19\d{2})(SPRING|SPR|SP|FALL|FA|SUMMER|SUM|SU|IAP|JANUARY|JAN)$/);
     if (yearThenTerm) {
       const year = yearThenTerm[1].slice(-2);

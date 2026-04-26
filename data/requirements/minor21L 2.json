@@ -1,0 +1,234 @@
+{
+  "title-no-degree": "Literature",
+  "list-id": "minor21L.reql",
+  "title": "Minor in Literature",
+  "medium-title": "21L Minor",
+  "reqs": [
+    {
+      "threshold-desc": "select any",
+      "title": "Tier I: Introductory",
+      "reqs": [
+        {
+          "req": "21L.000"
+        },
+        {
+          "req": "21L.001"
+        },
+        {
+          "req": "21L.002"
+        },
+        {
+          "req": "21L.003"
+        },
+        {
+          "req": "21L.004"
+        },
+        {
+          "req": "21L.005"
+        },
+        {
+          "req": "21L.006"
+        },
+        {
+          "req": "21L.007"
+        },
+        {
+          "req": "21L.008"
+        },
+        {
+          "req": "21L.009"
+        },
+        {
+          "req": "21L.010"
+        },
+        {
+          "req": "21L.011"
+        },
+        {
+          "req": "21L.012"
+        },
+        {
+          "req": "21L.013"
+        },
+        {
+          "req": "21L.014"
+        },
+        {
+          "req": "21L.015"
+        },
+        {
+          "req": "21L.017"
+        },
+        {
+          "req": "21L.018"
+        },
+        {
+          "req": "21L.019"
+        },
+        {
+          "req": "21L.020"
+        },
+        {
+          "req": "21L.021"
+        },
+        {
+          "req": "21L.022"
+        },
+        {
+          "req": "21L.023"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 1,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Select at least one and no more than two subjects."
+    },
+    {
+      "threshold-desc": "select any 2",
+      "title": "Tier II: Intermediate",
+      "reqs": [
+        {
+          "req": "21L.430"
+        },
+        {
+          "req": "21L.431"
+        },
+        {
+          "req": "21L.432"
+        },
+        {
+          "req": "21L.433"
+        },
+        {
+          "req": "21L.434"
+        },
+        {
+          "req": "21L.435"
+        },
+        {
+          "req": "21L.449"
+        },
+        {
+          "req": "21L.451"
+        },
+        {
+          "req": "21L.455"
+        },
+        {
+          "req": "21L.458"
+        },
+        {
+          "req": "21L.460"
+        },
+        {
+          "req": "21L.471"
+        },
+        {
+          "req": "21L.473"
+        },
+        {
+          "req": "21L.475"
+        },
+        {
+          "req": "21L.480"
+        },
+        {
+          "req": "21L.481"
+        },
+        {
+          "req": "21L.485"
+        },
+        {
+          "req": "21L.486"
+        },
+        {
+          "req": "21L.487"
+        },
+        {
+          "req": "21L.488"
+        },
+        {
+          "req": "21L.489"
+        },
+        {
+          "req": "21L.490"
+        },
+        {
+          "req": "21L.501"
+        },
+        {
+          "req": "21L.504"
+        },
+        {
+          "req": "21L.512"
+        },
+        {
+          "req": "21L.590"
+        },
+        {
+          "req": "21L.601"
+        },
+        {
+          "req": "21L.638"
+        },
+        {
+          "req": "21L.639"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "In most cases, two 6-unit Samplings subjects may be combined to substitute for an intermediate level subject."
+    },
+    {
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 2",
+      "reqs": [
+        {
+          "req": "21L.640"
+        },
+        {
+          "req": "21L.701"
+        },
+        {
+          "req": "21L.702"
+        },
+        {
+          "req": "21L.703"
+        },
+        {
+          "req": "21L.704"
+        },
+        {
+          "req": "21L.705"
+        },
+        {
+          "req": "21L.706"
+        },
+        {
+          "req": "21L.707"
+        },
+        {
+          "req": "21L.709"
+        },
+        {
+          "req": "21L.715"
+        }
+      ],
+      "title": "Tier III: Seminar"
+    }
+  ],
+  "short-title": "21L",
+  "desc": "The minor aims to lay a foundation for advanced study and to enhance a student's appreciation of major narrative, poetic, and dramatic texts in relation to the cultures that produced them. It consists of six subjects arranged into three levels of study as described below; at least two subjects must focus primarily on material prior to 1900."
+}

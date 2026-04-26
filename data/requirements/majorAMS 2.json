@@ -1,0 +1,256 @@
+{
+  "title-no-degree": "Ancient and Medieval Studies",
+  "list-id": "majorAMS.reql",
+  "title": "Bachelor of Science in Humanities (Ancient and Medieval Studies)",
+  "medium-title": "21 Major (AMS)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "With the consent of the faculty advisor in the chosen field, a student may substitute two subjects for the pre-thesis and thesis requirement.",
+      "reqs": [
+        {
+          "req": "21.THT"
+        },
+        {
+          "req": "21.THU"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "A minimum of nine subjects (108 units) beyond the pre-thesis and thesis, including one language subject in Area I (or equivalent proficiency); the eight remaining subjects must be selected from at least two of the three other disciplinary areas (Areas II-IV), with at least one subject in both Ancient and Medieval periods. The list of restricted electives below is not exhaustive. Additional information can be obtained from the advisor for the program, Professor Anne McCants, E51-263, 617-258-6669, or from the History Office, E51-255, 617-324-5134. Students are required to take at least 12 units in a pre-modern language. Two six-unit subjects in a pre-modern language may be combined to satisfy this requirement (e.g., Latin I and II or, for students who enter with strong Latin from high school, two different iterations of 21L.6xx Latin Readings). Greek, Latin and Old English are currently offered at MIT, but students may substitute another pre-modern language taken elsewhere (e.g. Greek/Latin/Italian/Norse/Arabic). Students with equivalent proficiency in a pre-modern language may substitute the Area I requirement with one more subject from areas II–IV. 21L.601 and 21L.614 count as Area I or III, but not both.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 12,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 12 units",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 12,
+                "criterion": "units",
+                "type": "LTE"
+              },
+              "req": "2 intermediate pre-modern language subjects",
+              "plain-string": true,
+              "threshold-desc": "select at most 12 units"
+            },
+            {
+              "req": "21L.601"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "21L.611"
+                },
+                {
+                  "req": "21L.612"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "21L.607"
+                },
+                {
+                  "req": "21L.608"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "21L.613"
+                },
+                {
+                  "req": "21L.614"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "title": "Area I: Languages"
+        },
+        {
+          "threshold": {
+            "cutoff": 8,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "4.605"
+                },
+                {
+                  "req": "21H.237"
+                },
+                {
+                  "req": "21H.239"
+                },
+                {
+                  "req": "4.614"
+                },
+                {
+                  "req": "4.635"
+                },
+                {
+                  "req": "21M.220"
+                }
+              ],
+              "title": "Area II: Arts and Architecture"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "21L.001"
+                },
+                {
+                  "req": "21L.021"
+                },
+                {
+                  "req": "21L.455"
+                },
+                {
+                  "req": "21L.458"
+                },
+                {
+                  "connection-type": "all",
+                  "reqs": [
+                    {
+                      "req": "21L.613"
+                    },
+                    {
+                      "req": "21L.614"
+                    }
+                  ],
+                  "threshold-desc": "select all"
+                },
+                {
+                  "req": "21L.460"
+                },
+                {
+                  "req": "21L.601"
+                }
+              ],
+              "title": "Area III: Literary Studies"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "3.981"
+                },
+                {
+                  "req": "3.982"
+                },
+                {
+                  "req": "3.983"
+                },
+                {
+                  "req": "3.986"
+                },
+                {
+                  "req": "3.987"
+                },
+                {
+                  "req": "3.993"
+                },
+                {
+                  "req": "21H.007"
+                },
+                {
+                  "req": "21H.130"
+                },
+                {
+                  "req": "21H.132"
+                },
+                {
+                  "req": "21H.230"
+                },
+                {
+                  "req": "21H.331"
+                },
+                {
+                  "req": "21H.333"
+                },
+                {
+                  "req": "21H.336"
+                },
+                {
+                  "req": "CC.117"
+                },
+                {
+                  "req": "21H.133"
+                },
+                {
+                  "req": "21H.134"
+                },
+                {
+                  "req": "21H.160"
+                },
+                {
+                  "req": "21H.238"
+                },
+                {
+                  "req": "21H.240"
+                },
+                {
+                  "req": "21H.383"
+                },
+                {
+                  "req": "CC.116"
+                }
+              ],
+              "title": "Area IV: Material and Historical Studies"
+            }
+          ],
+          "distinct-threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "threshold-desc": "select any 8 from at least 2 categories"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Restricted Electives"
+    }
+  ],
+  "short-title": "21",
+  "desc": "Through a wide variety of subjects drawn from a number of disciplines, this program provides a curricular framework for exploring topics in ancient and medieval studies which range from the history of ideas and institutions to that of material artifacts, literature and certain of the original languages. The chronological span of the program includes some 6,500 years between 5000 BC and 1500 AD. The goal of this program is to develop knowledge and understanding of the more distant past both for itself, in its uniqueness, and as an object of specifically modern questions and methods of inquiry. We are interested in the structure of institutions and social systems, and in relationships between the social order and learned traditions, values, ideologies and ideas. Ancient and medieval studies derive a special claim to our interest from the fact that the record is so full and multiform and that much of it is of exceptionally high quality at once in substance and form. The program in Ancient and Medieval Studies is designed for students who are seeking a fuller understanding of the forces which shaped the ancient and medieval world. The geographical and chronological scope of the program is broadly conceived and is intended to be comparative. Subjects range in content from Classical Greece and Rome, and the ancient societies of Asia and South America, to medieval Europe and Japan. Students will be required to demonstrate intermediate level language proficiency in either Greek, Latin or a medieval vernacular, but they need not concentrate their other subjects on the area associated with that language. Students are also expected to have some distribution across the ancient and medieval time periods. We expect that students will consult closely with the program advisor in order to devise a coherent program of study."
+}

@@ -1,0 +1,139 @@
+{
+  "title-no-degree": "Biology",
+  "list-id": "minor7.reql",
+  "title": "Minor in Biology",
+  "medium-title": "7 Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "all",
+          "reqs": [
+            {
+              "req": "5.12"
+            },
+            {
+              "req": "7.03"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "7.05"
+                },
+                {
+                  "req": "5.07"
+                }
+              ],
+              "threshold-desc": "select either"
+            }
+          ],
+          "threshold-desc": "select all"
+        },
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "7.02"
+            },
+            {
+              "req": "20.109"
+            },
+            {
+              "req": "7.06"
+            },
+            {
+              "req": "7.08"
+            },
+            {
+              "req": "7.09"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "7.093"
+                },
+                {
+                  "req": "7.094"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "7.20"
+            },
+            {
+              "req": "7.21"
+            },
+            {
+              "req": "7.22"
+            },
+            {
+              "req": "7.23"
+            },
+            {
+              "req": "7.26"
+            },
+            {
+              "req": "7.27"
+            },
+            {
+              "req": "7.28"
+            },
+            {
+              "req": "7.29"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "7.30A"
+                },
+                {
+                  "req": "7.30B"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "7.31"
+            },
+            {
+              "req": "7.32"
+            },
+            {
+              "req": "7.33"
+            },
+            {
+              "req": "7.37"
+            },
+            {
+              "req": "7.371"
+            },
+            {
+              "req": "7.41"
+            },
+            {
+              "req": "7.45"
+            },
+            {
+              "req": "7.49"
+            }
+          ],
+          "threshold-desc": "select any 2"
+        }
+      ],
+      "title": "Required Subjects"
+    }
+  ],
+  "short-title": "7",
+  "desc": ""
+}

@@ -2,6 +2,8 @@ const { SYSTEM_PROMPT } = require('./prompt');
 const { OPENROUTER_MODEL, callOpenRouter, callOpenRouterStream, publicErrorMessage } = require('./openrouter');
 const {
   asArray,
+  buildStudentPlanningContext,
+  majorToDepartments,
   normalizeProfile,
   normalizeSchedule,
   resolveCurrentCourseSummary,
@@ -11,7 +13,6 @@ const {
   validateUiAction,
 } = require('./tools');
 const { checkMajorRequirements } = require('../requirements');
-const { majorToDepartments } = require('./tools');
 
 const MAX_TOOL_ROUNDS = 5;
 
@@ -30,6 +31,7 @@ function summarizeToolResult(result) {
       count: result.recommendations.length,
       ids: result.recommendations.slice(0, 8).map((course) => course && course.id).filter(Boolean),
       targetRequirements: result.targetRequirements,
+      semesterPlanSummary: result.semesterPlanSummary,
     };
   }
   if (Array.isArray(result.courses)) {
@@ -65,7 +67,7 @@ function buildContext({ profile, personalization, personalCourseMarkdown, schedu
     ...(nextProfile.preferences || {}),
     ...(personalization ? { personalization } : {}),
   };
-  return {
+  const context = {
     profile: normalizeProfile({ ...nextProfile, preferences: nextPreferences, ...(effectiveStudentName ? { name: effectiveStudentName } : {}) }),
     personalCourseMarkdown: String(personalCourseMarkdown || '').trim(),
     schedule: normalizeSchedule(schedule),
@@ -73,6 +75,8 @@ function buildContext({ profile, personalization, personalCourseMarkdown, schedu
     planningTermLabel: planningTermLabel || null,
     studentName: effectiveStudentName,
   };
+  context.studentPlanningContext = buildStudentPlanningContext(context);
+  return context;
 }
 
 function latestUserText(messages) {
@@ -105,7 +109,8 @@ function buildRequirementContext(profile, schedule) {
   }
 }
 
-function buildModelMessages(messages, profile, schedule, activeSem, planningTermLabel, studentName, personalCourseMarkdown) {
+function buildModelMessages(messages, context) {
+  const { profile, schedule, activeSem, planningTermLabel, studentName, personalCourseMarkdown, studentPlanningContext } = context;
   const effectiveStudentName = String(studentName || profile.name || '').trim();
   const reqContext = buildRequirementContext(profile, schedule);
   const relevantDepartments = majorToDepartments(profile.major);
@@ -130,6 +135,8 @@ function buildModelMessages(messages, profile, schedule, activeSem, planningTerm
     catalogNote: relevantDepartments.length
       ? `Catalog has 5000+ courses. Always pass departments: ${JSON.stringify(relevantDepartments)} to search_current_courses and recommend_courses to avoid irrelevant results.`
       : 'Large catalog — use departments filter in search/recommend tools.',
+    degreeRequirementSummary: studentPlanningContext.requirementStatus,
+    completedCourseIds: studentPlanningContext.courseHistory.completedCourseIds,
   };
 
   const conversation = asArray(messages)
@@ -146,6 +153,15 @@ function buildModelMessages(messages, profile, schedule, activeSem, planningTerm
     {
       role: 'system',
       content: `Authoritative current app state. Use these exact values in tool arguments when relevant:\n${JSON.stringify(state)}`,
+    },
+    {
+      role: 'system',
+      content: [
+        'Authoritative personalized planning context. This is computed from Firestore profile, personal_course.md, further personalization, active semester schedule, and the requirement checker.',
+        'Use it before recommending courses. If requirementStatus.available is true, prioritize unsatisfied requirement groups and unmetCourseIds; if graduation is soon, prioritize requirement progress over exploration.',
+        'Do not recommend completedCourseIds or courses already in activeSemester.schedule.',
+        JSON.stringify(studentPlanningContext),
+      ].join('\n'),
     },
     ...(personalCourseMarkdown ? [{
       role: 'system',
@@ -477,8 +493,8 @@ async function buildLocalActionFallback(body = {}, reason) {
   };
 }
 
-async function runAgentChat({ messages, profile, schedule, activeSem, planningTermLabel, studentName, log }) {
-  const context = buildContext({ profile, schedule, activeSem, planningTermLabel, studentName });
+async function runAgentChat({ messages, profile, personalization, personalCourseMarkdown, schedule, activeSem, planningTermLabel, studentName, log }) {
+  const context = buildContext({ profile, personalization, personalCourseMarkdown, schedule, activeSem, planningTermLabel, studentName });
   context.log = log || (() => {});
   const debug = {
     model: OPENROUTER_MODEL,
@@ -486,12 +502,14 @@ async function runAgentChat({ messages, profile, schedule, activeSem, planningTe
     finalActionValidation: [],
   };
 
-  const modelMessages = buildModelMessages(messages, context.profile, context.schedule, context.activeSem, context.planningTermLabel, context.studentName, context.personalCourseMarkdown);
+  const modelMessages = buildModelMessages(messages, context);
   context.log('agent:start', {
     mode: 'json',
     activeSem: context.activeSem,
     planningTermLabel: context.planningTermLabel,
     schedule: context.schedule,
+    requirementStatus: context.studentPlanningContext.requirementStatus,
+    completedCourseCount: context.studentPlanningContext.courseHistory.completedCourseIds.length,
     messageCount: asArray(messages).length,
     latestUserText: latestUserText(messages),
   });
@@ -567,7 +585,7 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
     toolCalls: [],
     finalActionValidation: [],
   };
-  const modelMessages = buildModelMessages(messages, context.profile, context.schedule, context.activeSem, context.planningTermLabel, context.studentName, context.personalCourseMarkdown);
+  const modelMessages = buildModelMessages(messages, context);
 
   const emit = (event) => onEvent(event);
   context.log('agent:start', {
@@ -575,6 +593,8 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
     activeSem: context.activeSem,
     planningTermLabel: context.planningTermLabel,
     schedule: context.schedule,
+    requirementStatus: context.studentPlanningContext.requirementStatus,
+    completedCourseCount: context.studentPlanningContext.courseHistory.completedCourseIds.length,
     messageCount: asArray(messages).length,
     latestUserText: latestUserText(messages),
   });
