@@ -2,11 +2,23 @@ const mockData = require('../../shared/mock-data.js');
 const { fetchCurrentCourse, searchCurrentCourses } = require('../current/fireroad');
 const { normalizeCourseId } = require('../current/normalize');
 const { createHistoryRepo } = require('../history/repo');
-const { checkMajorRequirements } = require('../requirements');
+const { checkMajorRequirements, getRequirementGroupCourses, getCourseRequirementGroups } = require('../requirements');
 const mostTaken = require('../../data/most_taken.json');
 
 const asArray = (value) => (Array.isArray(value) ? value : []);
 const unique = (items) => [...new Set(items)];
+
+// Return the most relevant course departments for a given major so searches
+// don't scan all 5000+ courses unnecessarily.
+function majorToDepartments(major) {
+  const code = String(major || '').replace(/^course\s+/i, '').trim().split(/[:\s]/)[0].toLowerCase();
+  if (code.startsWith('6')) return ['6', '18', '8'];
+  if (code === '18') return ['18', '6', '8'];
+  if (code === '8') return ['8', '18', '6'];
+  if (code === '16') return ['16', '6', '18'];
+  if (code === '2') return ['2', '6', '18'];
+  return [];
+}
 
 function yearKey(year) {
   const map = { freshman: 'Y1', sophomore: 'Y2', junior: 'Y3', senior: 'Y4' };
@@ -302,17 +314,23 @@ async function recommendCourses(args = {}, context = {}) {
   const scheduledSet = new Set(schedule);
   const takenSet = new Set([...asArray(profile.taken).map(normalizeCourseId), ...schedule]);
 
+  const departments = asArray(args.departments).length
+    ? asArray(args.departments)
+    : majorToDepartments(profile.major);
+
   let pool = await searchCurrentCourses({
     query: '',
     maxResults: Math.max(maxResults * 8, 40),
     maxWorkload,
     requirements: targetRequirements,
+    departments,
   });
   if (!pool.results.length && targetRequirements.length) {
     pool = await searchCurrentCourses({
       query: '',
       maxResults: Math.max(maxResults * 8, 40),
       maxWorkload,
+      departments,
     });
   }
 
@@ -379,6 +397,70 @@ async function recommendCourses(args = {}, context = {}) {
     semesterPlan: schedule,
     targetRequirements,
     recommendations,
+  };
+}
+
+async function getRequirementCoursesTool(args = {}, context = {}) {
+  const profile = profileForTool(args, context);
+  const major = args.major || profile.major;
+  const groupQuery = String(args.group || '').trim();
+  const intersectQuery = String(args.intersect_with || '').trim();
+
+  if (!groupQuery) return { found: false, reason: 'group parameter is required' };
+
+  const matches = getRequirementGroupCourses(major, groupQuery);
+  if (!matches || !matches.length) {
+    return { found: false, reason: `No requirement group matching "${groupQuery}" found in ${major}` };
+  }
+
+  let courseIds = [...new Set(matches.flatMap((m) => m.courses))];
+  let intersectGroups = null;
+
+  if (intersectQuery) {
+    const intersectMatches = getRequirementGroupCourses(major, intersectQuery);
+    if (intersectMatches && intersectMatches.length) {
+      const intersectSet = new Set(intersectMatches.flatMap((m) => m.courses));
+      courseIds = courseIds.filter((id) => intersectSet.has(id));
+      intersectGroups = intersectMatches.map((m) => m.title);
+    }
+  }
+
+  const courses = (await Promise.all(courseIds.map(fetchCurrentCourse))).filter(Boolean);
+  const takenSet = new Set([...asArray(profile.taken).map(normalizeCourseId)]);
+
+  return {
+    found: true,
+    major,
+    matchedGroups: matches.map((m) => m.title),
+    intersectGroup: intersectQuery || null,
+    intersectMatchedGroups: intersectGroups,
+    totalInRequirementJson: courseIds.length,
+    catalogCourses: courses.map((c) => ({
+      ...currentCourseSummary(c),
+      alreadyTaken: takenSet.has(c.id),
+    })),
+    notInCurrentCatalog: courseIds.filter((id) => !courses.some((c) => normalizeCourseId(c.id) === normalizeCourseId(id))),
+  };
+}
+
+async function courseRequirementGroupsTool(args = {}, context = {}) {
+  const profile = profileForTool(args, context);
+  const major = args.major || profile.major;
+  const courseId = normalizeCourseId(args.course_id || '');
+  if (!courseId) return { found: false, reason: 'course_id is required' };
+
+  const groups = getCourseRequirementGroups(major, courseId);
+  if (!groups) return { found: false, reason: `No requirement data for major: ${major}` };
+
+  const course = await fetchCurrentCourse(courseId);
+  return {
+    found: true,
+    courseId,
+    courseName: course ? course.name : null,
+    major,
+    satisfiedGroups: groups,
+    satisfiesCount: groups.length,
+    note: groups.length === 0 ? `${courseId} does not appear in any named requirement group for ${major}` : null,
   };
 }
 
@@ -520,7 +602,7 @@ const toolSchemas = [
     type: 'function',
     function: {
       name: 'search_current_courses',
-      description: 'Search the current MIT course catalog by id, name, description, instructor, requirements, area, and workload. Use for current-semester planning only.',
+      description: 'Search the current MIT course catalog by id, name, description, instructor, requirements, area, and workload. Use departments to limit to relevant course numbers (e.g. ["6","18"] for EECS students) — critical with a large catalog.',
       parameters: {
         type: 'object',
         properties: {
@@ -529,6 +611,7 @@ const toolSchemas = [
           areas: { type: 'array', items: { type: 'string' } },
           requirements: { type: 'array', items: { type: 'string' } },
           max_workload: { type: 'number' },
+          departments: { type: 'array', items: { type: 'string' }, description: 'Filter to courses starting with these prefixes, e.g. ["6","18","8"]. Strongly recommended to avoid irrelevant results from 5000+ course catalog.' },
         },
         required: ['query'],
       },
@@ -567,7 +650,7 @@ const toolSchemas = [
     type: 'function',
     function: {
       name: 'recommend_courses',
-      description: 'Deterministically rank current catalog courses for the active next-semester plan using match scores, requirements, workload, and profile preferences.',
+      description: 'Rank current catalog courses for the active semester. Automatically filters to the student\'s major departments. Pass departments to override.',
       parameters: {
         type: 'object',
         properties: {
@@ -576,6 +659,7 @@ const toolSchemas = [
           max_results: { type: 'number' },
           max_workload: { type: 'number' },
           target_requirements: { type: 'array', items: { type: 'string' } },
+          departments: { type: 'array', items: { type: 'string' }, description: 'Override department filter, e.g. ["6","18"]. Defaults to major-appropriate departments.' },
         },
         required: ['schedule', 'profile'],
       },
@@ -601,6 +685,37 @@ const toolSchemas = [
           schedule: { type: 'array', items: { type: 'string' } },
         },
         required: ['action', 'schedule'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'course_satisfies',
+      description: 'Look up which named requirement groups a specific course satisfies within a major\'s requirement tree. Use when the user asks "what does 6.3900 satisfy?" or "does this course count for anything?"',
+      parameters: {
+        type: 'object',
+        properties: {
+          course_id: { type: 'string', description: 'Course ID, e.g. "6.3900"' },
+          major: { type: 'string', description: 'Override major. Defaults to profile major.' },
+        },
+        required: ['course_id'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_requirement_courses',
+      description: 'Look up which courses satisfy a named requirement group (e.g. "Data Centric", "Human Centric", "Fundamentals") within a major\'s JSON requirement tree. Use intersect_with to find courses that satisfy two groups at once.',
+      parameters: {
+        type: 'object',
+        properties: {
+          group: { type: 'string', description: 'Partial or full name of the requirement group, e.g. "data", "human centric", "CI-M"' },
+          major: { type: 'string', description: 'Override major (e.g. "Course 6-4"). Defaults to profile major.' },
+          intersect_with: { type: 'string', description: 'Second group name — returns only courses that satisfy BOTH groups.' },
+        },
+        required: ['group'],
       },
     },
   },
@@ -673,6 +788,8 @@ const toolHandlers = {
   summarize_semester_plan: summarizeSemesterPlan,
   recommend_courses: recommendCourses,
   validate_ui_action: validateUiActionTool,
+  course_satisfies: courseRequirementGroupsTool,
+  get_requirement_courses: getRequirementCoursesTool,
   check_requirements: checkRequirementsTool,
   check_schedule_conflicts: checkScheduleConflictsTool,
   get_course_history_summary: getCourseHistorySummary,
@@ -685,6 +802,7 @@ module.exports = {
   getCourse,
   getCurrentCourseTool,
   getMatch,
+  majorToDepartments,
   mockData,
   normalizeProfile,
   normalizeSchedule,

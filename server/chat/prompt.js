@@ -9,6 +9,8 @@ Do not generate broad 4-year roadmaps or cross-semester moves unless explicitly 
 ## Tool Usage Guide
 
 - **check_requirements**: Call this first in any planning or recommendation conversation to understand which requirement groups are unsatisfied. This drives targeted recommendations.
+- **get_requirement_courses**: Use when the user asks "what courses satisfy X requirement group?" or "what courses count for data centric?" or "what satisfies both X and Y?". Reads the actual requirement JSON tree and returns the exact course list for a named group. Supports fuzzy group name matching and intersection queries via the intersect_with parameter.
+- **course_satisfies**: Use when the user asks "what does course 6.3900 satisfy?" or "does this course count toward my major?". Returns all named requirement groups that contain that course.
 - **recommend_courses**: Use after check_requirements to surface the best-fit courses. Rankings already factor in requirement gaps, most-taken popularity among similar students, workload, and personal preferences.
 - **search_current_courses**: Use for free-text search or when the user asks about a specific topic or area. Pass requirements array to filter by requirement coverage.
 - **get_current_course**: Use to look up a single course by ID for detailed info.

@@ -584,51 +584,52 @@ const ReqRow = ({ group, depth = 0, expanded, toggle }) => {
   );
 };
 
-const RequirementsPanel = ({ schedule }) => {
-  const { profile } = useApp();
+function useReqCheck(majorKey, courses) {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [expanded, setExpanded] = useState({});
-  const reqRef = useRef(0);
-
-  const major = profile && profile.major;
-  const taken = (profile && profile.taken) || [];
-  const allCourses = [...new Set([...taken, ...schedule])];
-  const cacheKey = major + '|' + [...allCourses].sort().join(',');
+  const ref = useRef(0);
+  const cacheKey = majorKey + '|' + [...courses].sort().join(',');
 
   useEffect(() => {
-    if (!major) return;
-    const id = ++reqRef.current;
+    if (!majorKey) return;
+    const id = ++ref.current;
     setLoading(true);
     fetch('/api/requirements/check', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ major, courses: allCourses }),
+      body: JSON.stringify({ majorKey, courses }),
     })
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(data => { if (reqRef.current === id) setResult(data); })
+      .then(data => { if (ref.current === id) setResult(data); })
       .catch(() => {})
-      .finally(() => { if (reqRef.current === id) setLoading(false); });
+      .finally(() => { if (ref.current === id) setLoading(false); });
   }, [cacheKey]);
 
+  return { result, loading };
+}
+
+const GirPanel = ({ allCourses }) => {
+  const [expanded, setExpanded] = useState({});
+  const { result, loading } = useReqCheck('girs', allCourses);
   const toggle = (id) => setExpanded(e => ({ ...e, [id]: !e[id] }));
 
   if (loading) return (
-    <div style={{ fontSize: 12, color: 'var(--text-tertiary)', padding: '8px 0' }}>Checking requirements…</div>
+    <div style={{ fontSize: 12, color: 'var(--text-tertiary)', padding: '4px 0' }}>Checking GIRs…</div>
   );
   if (!result) return null;
 
   const pct = result.totalCount > 0 ? Math.round(result.satisfiedCount / result.totalCount * 100) : 0;
+  const barCls = pct === 100 ? 'green' : pct >= 50 ? 'orange' : 'red';
 
   return (
-    <div>
+    <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <span className="eyebrow">{result.title || 'Requirements'}</span>
+        <span className="eyebrow">GIRs</span>
         <span className="mono" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
           {result.satisfiedCount}/{result.totalCount}
         </span>
       </div>
-      <div className="match-bar green" style={{ height: 4, marginBottom: 12 }}>
+      <div className={`match-bar ${barCls}`} style={{ height: 4, marginBottom: 10 }}>
         <span style={{ width: `${pct}%`, transition: 'width 600ms cubic-bezier(0.2,0.8,0.2,1)' }} />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -636,6 +637,54 @@ const RequirementsPanel = ({ schedule }) => {
           <ReqRow key={group.id} group={group} depth={0} expanded={expanded} toggle={toggle} />
         ))}
       </div>
+    </div>
+  );
+};
+
+const RequirementsPanel = ({ schedule }) => {
+  const { profile } = useApp();
+  const [expanded, setExpanded] = useState({});
+
+  const major = profile && profile.major;
+  const taken = (profile && profile.taken) || [];
+  const allCourses = [...new Set([...taken, ...schedule])];
+
+  const majorKey = major
+    ? major.replace(/^course\s+/i, '').trim().toLowerCase().replace(/[:\s].*/, '')
+    : null;
+
+  const { result, loading } = useReqCheck(majorKey, allCourses);
+  const toggle = (id) => setExpanded(e => ({ ...e, [id]: !e[id] }));
+
+  if (loading && !result) return (
+    <div style={{ fontSize: 12, color: 'var(--text-tertiary)', padding: '8px 0' }}>Checking requirements…</div>
+  );
+  if (!result && !major) return null;
+
+  const pct = result && result.totalCount > 0 ? Math.round(result.satisfiedCount / result.totalCount * 100) : 0;
+  const barCls = pct === 100 ? 'green' : pct >= 60 ? 'orange' : 'yellow';
+
+  return (
+    <div>
+      {result && (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span className="eyebrow">{result.title || 'Requirements'}</span>
+            <span className="mono" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+              {result.satisfiedCount}/{result.totalCount}
+            </span>
+          </div>
+          <div className={`match-bar ${barCls}`} style={{ height: 4, marginBottom: 12 }}>
+            <span style={{ width: `${pct}%`, transition: 'width 600ms cubic-bezier(0.2,0.8,0.2,1)' }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {result.groups.map(group => (
+              <ReqRow key={group.id} group={group} depth={0} expanded={expanded} toggle={toggle} />
+            ))}
+          </div>
+        </>
+      )}
+      <GirPanel allCourses={allCourses} />
     </div>
   );
 };

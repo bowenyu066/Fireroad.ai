@@ -291,6 +291,21 @@ const renderMarkdown = (value) => {
   return blocks.join('');
 };
 
+const ToolStatusRow = ({ text }) => (
+  <div style={{
+    display: 'flex', alignItems: 'center', gap: 6,
+    marginTop: 8, color: 'var(--text-tertiary)', fontSize: 11,
+    fontFamily: 'var(--font-mono)',
+  }}>
+    <span style={{
+      width: 5, height: 5, borderRadius: '50%',
+      background: 'var(--accent)', flexShrink: 0,
+      animation: 'pulse 1s infinite',
+    }} />
+    {text}
+  </div>
+);
+
 const MessageBubble = ({ msg, onAddCourse, onOpenCourse }) => {
   const isUser = msg.role === 'user';
   const [suggestedCourses, setSuggestedCourses] = useState([]);
@@ -320,7 +335,10 @@ const MessageBubble = ({ msg, onAddCourse, onOpenCourse }) => {
         fontSize: 13, lineHeight: 1.55,
       }}>
         {isUser ? displayText : (
-          <div className="chat-markdown" dangerouslySetInnerHTML={{ __html: messageHtml }} />
+          <>
+            <div className="chat-markdown" dangerouslySetInnerHTML={{ __html: messageHtml }} />
+            {msg.streaming && msg.status && msg.text && <ToolStatusRow text={msg.status} />}
+          </>
         )}
       </div>
 

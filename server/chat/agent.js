@@ -11,6 +11,7 @@ const {
   validateUiAction,
 } = require('./tools');
 const { checkMajorRequirements } = require('../requirements');
+const { majorToDepartments } = require('./tools');
 
 const MAX_TOOL_ROUNDS = 5;
 
@@ -107,6 +108,7 @@ function buildRequirementContext(profile, schedule) {
 function buildModelMessages(messages, profile, schedule, activeSem, planningTermLabel, studentName, personalCourseMarkdown) {
   const effectiveStudentName = String(studentName || profile.name || '').trim();
   const reqContext = buildRequirementContext(profile, schedule);
+  const relevantDepartments = majorToDepartments(profile.major);
   const state = {
     studentName: effectiveStudentName || null,
     profile: {
@@ -124,6 +126,10 @@ function buildModelMessages(messages, profile, schedule, activeSem, planningTerm
     activeSemesterSchedule: schedule,
     planningScope: 'active_semester_only',
     requirementProgress: reqContext || 'unavailable — call check_requirements tool',
+    relevantDepartments,
+    catalogNote: relevantDepartments.length
+      ? `Catalog has 5000+ courses. Always pass departments: ${JSON.stringify(relevantDepartments)} to search_current_courses and recommend_courses to avoid irrelevant results.`
+      : 'Large catalog — use departments filter in search/recommend tools.',
   };
 
   const conversation = asArray(messages)
@@ -605,7 +611,18 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
       return buildApiResponse(responseMessage.content, context, debug, messages);
     }
 
-    emit({ type: 'status', text: 'Checking current catalog...' });
+    const TOOL_STATUS_LABELS = {
+      check_requirements: 'Checking requirements...',
+      recommend_courses: 'Finding recommendations...',
+      search_current_courses: 'Searching catalog...',
+      get_current_course: 'Looking up course...',
+      summarize_semester_plan: 'Summarizing plan...',
+      check_schedule_conflicts: 'Checking schedule conflicts...',
+      validate_ui_action: 'Validating action...',
+      get_course_history_summary: 'Fetching course history...',
+      get_offering_history: 'Fetching offering details...',
+    };
+
     modelMessages.push({
       role: 'assistant',
       content: responseMessage.content || '',
@@ -613,6 +630,8 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
     });
 
     for (const toolCall of toolCalls) {
+      const toolName = toolCall.function && toolCall.function.name;
+      emit({ type: 'status', text: TOOL_STATUS_LABELS[toolName] || `Running ${toolName}...` });
       const executed = await executeToolCall(toolCall, context);
       debug.toolCalls.push(executed);
       modelMessages.push({
