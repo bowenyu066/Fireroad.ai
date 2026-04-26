@@ -95,7 +95,7 @@ const AuthForm = () => {
     }}>
       <div className="eyebrow" style={{ marginBottom: 10 }}>{FRAuth.getState().usingMock ? 'Local test auth' : 'MIT email login'}</div>
       <h1 className="display" style={{ margin: 0, fontSize: 30, fontWeight: 600, letterSpacing: 0 }}>
-        {isSignup ? 'Create your Fireroad account' : 'Welcome back'}
+        {isSignup ? 'Create your Fireroad.ai account' : 'Welcome back'}
       </h1>
       <p style={{ margin: '10px 0 24px', color: 'var(--text-secondary)' }}>
         Use an MIT email and password so your onboarding data can be restored next time.
@@ -209,19 +209,19 @@ const DIFFERENTIATORS = [
   {
     eyebrow: 'Generic AI',
     headline: "ChatGPT doesn't know your degree audit.",
-    body: 'A generic LLM can suggest classes, but it cannot tell you whether 6.4610 finishes your CI-M or whether dropping 8.231 leaves you a HASS short. Fireroad runs the official MIT requirement checker on every recommendation, so each suggestion actually moves your degree forward.',
+    body: 'A generic LLM can suggest classes, but it cannot tell you whether 6.4610 finishes your CI-M or whether dropping 8.231 leaves you a HASS short. Fireroad.ai runs the official MIT requirement checker on every recommendation, so each suggestion actually moves your degree forward.',
     icon: 'sparkle',
   },
   {
     eyebrow: 'Scattered information',
     headline: 'Course information lives in five tabs.',
-    body: 'Subject listings, evaluations, prereqs, the registrar, the calendar — every plan today means tabbing between sites and re-typing your transcript. Fireroad pulls the live catalog, your transcript, and your major into one chat, so the agent already has the full picture.',
+    body: 'Subject listings, evaluations, prereqs, the registrar, the calendar — every plan today means tabbing between sites and re-typing your transcript. Fireroad.ai pulls the live catalog, your transcript, and your major into one chat, so the agent already has the full picture.',
     icon: 'book',
   },
   {
     eyebrow: 'Manual planners',
     headline: 'CourseRoad and Hydrant make you do the work.',
-    body: 'CourseRoad lets you sketch a four-year plan but does not recommend. Hydrant lets you build a calendar but does not plan. Both want you to type every course yourself. Fireroad starts from your real history, recommends, and edits the schedule when you say "swap 8.04 for 8.05."',
+    body: 'CourseRoad lets you sketch a four-year plan but does not recommend. Hydrant lets you build a calendar but does not plan. Both want you to type every course yourself. Fireroad.ai starts from your real history, recommends, and edits the schedule when you say "swap 8.04 for 8.05."',
     icon: 'grid',
   },
 ];
@@ -341,7 +341,7 @@ const Landing = ({ onStart }) => (
       margin: '0 auto',
     }}>
       <div style={{ textAlign: 'center', marginBottom: 36 }}>
-        <div className="eyebrow" style={{ marginBottom: 8 }}>Why Fireroad</div>
+        <div className="eyebrow" style={{ marginBottom: 8 }}>Why Fireroad.ai</div>
         <h2 className="display" style={{ margin: 0, fontSize: 28, fontWeight: 600, letterSpacing: '-0.015em' }}>
           The tools you have today don't work for MIT.
         </h2>
