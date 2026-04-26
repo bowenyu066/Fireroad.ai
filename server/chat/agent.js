@@ -365,8 +365,8 @@ function buildModelMessages(messages, context) {
     requirementProgress: reqContext || 'unavailable — call check_requirements tool',
     relevantDepartments,
     catalogNote: relevantDepartments.length
-      ? `Catalog has 5000+ courses. Always pass departments: ${JSON.stringify(relevantDepartments)} to search_current_courses and recommend_courses to avoid irrelevant results.`
-      : 'Large catalog — use departments filter in search/recommend tools.',
+      ? `Catalog has 5000+ courses. Pass departments: ${JSON.stringify(relevantDepartments)} to search/recommend when searching for major-relevant courses. Omit the departments filter for cross-department queries (HASS, linguistics, biology, specific non-major departments). Common MIT departments: 6=EECS, 18=Math, 8=Physics, 7=Biology, 5=Chemistry, 24=Linguistics&Philosophy, 21=Humanities, 14=Economics, 9=Brain&Cog.`
+      : 'Large catalog — use departments filter in search/recommend tools when searching major-relevant courses.',
     degreeRequirementSummary: studentPlanningContext.requirementStatus,
     completedCourseIds: studentPlanningContext.courseHistory.completedCourseIds,
   };

@@ -115,6 +115,7 @@ window.FRDATA = (function (source) {
       personalMatch: current.personalMatch || current.personal_match || null,
       recommendationReasons: current.reasons || current.recommendationReasons || [],
       rankScore: current.rankScore || current.rank_score || current.personalMatch?.total || current.personal_match?.total || 0,
+      scheduleRaw: current.scheduleRaw || '',
       current,
     };
   };

@@ -3,38 +3,59 @@ const { useState, useEffect, useRef } = React;
 
 // ============== ICS export ==============
 const exportToICS = (courses) => {
-  // Prototype calendar export uses the current demo term dates.
-  const SEM_START = new Date(2025, 1, 3); // Feb 3 is a Monday
-  const SEM_UNTIL = '20250517T035959Z';   // May 16 23:59 EDT in UTC
+  const SEM_START = new Date(2025, 1, 3); // Feb 3 Monday
+  const SEM_UNTIL = '20250517T035959Z';   // May 16 23:59 EDT → UTC
 
   const DAY_OFFSET = { M: 0, T: 1, W: 2, R: 3, F: 4 };
   const DAY_ICS    = { M: 'MO', T: 'TU', W: 'WE', R: 'TH', F: 'FR' };
 
-  const pad = (n) => String(n).padStart(2, '0');
-  const toTime = (dec) => { const h = Math.floor(dec); const m = Math.round((dec - h) * 60); return `${pad(h)}${pad(m)}00`; };
+  const pad     = (n) => String(n).padStart(2, '0');
+  const toTime  = (dec) => { const h = Math.floor(dec); const m = Math.round((dec - h) * 60); return `${pad(h)}${pad(m)}00`; };
   const addDays = (d, n) => { const r = new Date(d); r.setDate(r.getDate() + n); return r; };
   const fmtDate = (d, t) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${t}`;
+  const icsEscape = (s) => String(s || '').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
 
   const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//fireroad.ai//Course Planner//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
 
   courses.forEach((c) => {
-    if (!c.days || c.days.length === 0) return;
-    const firstOffset = Math.min(...c.days.map((d) => DAY_OFFSET[d]));
-    const firstDate   = addDays(SEM_START, firstOffset);
-    const byDay       = c.days.map((d) => DAY_ICS[d]).join(',');
-    const desc        = [`Instructor: ${c.instructor}`, `Units: ${c.units}`, c.satisfies.length ? `Satisfies: ${c.satisfies.join(', ')}` : ''].filter(Boolean).join('\\n');
+    // Parse all meeting segments (lecture, recitation, lab…) from scheduleRaw
+    const segments = c.scheduleRaw ? parseAllMeetings(c.scheduleRaw) : [];
 
-    lines.push(
-      'BEGIN:VEVENT',
-      `DTSTART;TZID=America/New_York:${fmtDate(firstDate, toTime(c.time.start))}`,
-      `DTEND;TZID=America/New_York:${fmtDate(firstDate, toTime(c.time.end))}`,
-      `RRULE:FREQ=WEEKLY;BYDAY=${byDay};UNTIL=${SEM_UNTIL}`,
-      `SUMMARY:${c.id} – ${c.name}`,
-      `DESCRIPTION:${desc}`,
-      'LOCATION:MIT',
-      `UID:${c.id}-next-semester@fireroad.ai`,
-      'END:VEVENT',
+    // Fallback: use pre-parsed days/time as a single unlabeled meeting
+    const meetings = segments.length > 0 ? segments : (
+      c.days && c.days.length && c.time && c.time.end > c.time.start
+        ? [{ shortType: '', room: '', days: c.days, start: c.time.start, end: c.time.end }]
+        : []
     );
+
+    const reqs = (c.requirements || c.satisfies || []);
+    const baseDesc = [
+      c.instructorText ? `Instructor: ${c.instructorText}` : (c.instructor ? `Instructor: ${c.instructor}` : ''),
+      c.units ? `Units: ${c.units}` : '',
+      reqs.length ? `Satisfies: ${reqs.join(', ')}` : '',
+    ].filter(Boolean).join('\\n');
+
+    meetings.forEach((m, mi) => {
+      if (!m.days.length) return;
+      const typeLabel = m.shortType ? ` (${m.shortType.charAt(0).toUpperCase() + m.shortType.slice(1)})` : '';
+      const summary   = `${c.id}${typeLabel} – ${c.name}`;
+      const location  = m.room ? `${m.room}, MIT` : 'MIT';
+      const desc      = m.shortType ? `Type: ${m.shortType}\\n${m.room ? `Room: ${m.room}\\n` : ''}${baseDesc}` : baseDesc;
+      const byDay     = m.days.map((d) => DAY_ICS[d]).join(',');
+      const firstDate = addDays(SEM_START, Math.min(...m.days.map((d) => DAY_OFFSET[d])));
+
+      lines.push(
+        'BEGIN:VEVENT',
+        `DTSTART;TZID=America/New_York:${fmtDate(firstDate, toTime(m.start))}`,
+        `DTEND;TZID=America/New_York:${fmtDate(firstDate, toTime(m.end))}`,
+        `RRULE:FREQ=WEEKLY;BYDAY=${byDay};UNTIL=${SEM_UNTIL}`,
+        `SUMMARY:${icsEscape(summary)}`,
+        `DESCRIPTION:${icsEscape(desc)}`,
+        `LOCATION:${icsEscape(location)}`,
+        `UID:${c.id}-${m.shortType || 'main'}-${mi}@fireroad.ai`,
+        'END:VEVENT',
+      );
+    });
   });
 
   lines.push('END:VCALENDAR');
@@ -140,49 +161,294 @@ const ScheduleCard = ({ course, match, onRemove, onOpen, justAdded }) => {
 // ============== Calendar mini-view ==============
 const CAL_PALETTE = ['#4A8FE8','#E8704A','#7C4AE8','#E84A7A','#14B8A6','#F59E0B','#34D399','#E05252'];
 
+const CAL_START = 8;   // 8 AM
+const CAL_END   = 21;  // 9 PM
+const CAL_PX    = 42;  // pixels per hour — 13h × 42px = 546px, fits without inner scroll
+
+function parseAllMeetings(raw) {
+  const toH24 = (h, m) => {
+    const hour = parseInt(h, 10);
+    const min  = m ? parseInt(m, 10) : 0;
+    return (hour > 0 && hour < 8 ? hour + 12 : hour) + min / 60;
+  };
+  const parseTime = (s) => {
+    // "2.30-4" or "10-11" → {start, end}
+    const range = s.match(/^(\d+)(?:\.(\d+))?-(\d+)(?:\.(\d+))?$/);
+    if (range) return { start: toH24(range[1], range[2]), end: toH24(range[3], range[4]) };
+    // "10" → 10:00–11:00 (single-hour meeting)
+    const single = s.match(/^(\d+)(?:\.(\d+))?$/);
+    if (single) { const s2 = toH24(single[1], single[2]); return { start: s2, end: s2 + 1 }; }
+    return null;
+  };
+
+  const results = [];
+  const seen = new Set(); // deduplicate recitation sections with identical time/days
+
+  String(raw || '').split(';').filter(Boolean).forEach((block) => {
+    const parts = block.trim().split(',');
+    if (parts.length < 2) return;
+    const typeFull = parts[0].trim().toLowerCase();
+    const shortType = typeFull.startsWith('lec') ? 'lec'
+      : typeFull.startsWith('rec') ? 'rec'
+      : typeFull.startsWith('lab') ? 'lab'
+      : typeFull.slice(0, 3);
+
+    parts.slice(1).forEach((seg) => {
+      const segs = seg.trim().split('/');
+      if (segs.length < 4) return;
+      const room = segs[0].trim();
+      const days = [...segs[1].trim()].filter((ch) => 'MTWRF'.includes(ch));
+      if (!days.length) return;
+      const t = parseTime(segs[3].trim());
+      if (!t || t.end <= t.start) return;
+      // Deduplicate per (type, days): students are in ONE section per day-group,
+      // so show only the first recitation/lab section encountered for each day combination.
+      const key = `${shortType}|${[...days].sort().join('')}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      results.push({ shortType, room, days, start: t.start, end: t.end });
+    });
+  });
+  return results;
+}
+
+// Parse all sections grouped by meeting type — returns { lec: [...], rec: [...] }
+// Each entry is one section option; students pick ONE from each type.
+function parseAllSectionsGrouped(raw) {
+  const toH24 = (h, m) => {
+    const hour = parseInt(h, 10), min = m ? parseInt(m, 10) : 0;
+    return (hour > 0 && hour < 8 ? hour + 12 : hour) + min / 60;
+  };
+  const parseTime = (s) => {
+    const r = s.match(/^(\d+)(?:\.(\d+))?-(\d+)(?:\.(\d+))?$/);
+    if (r) return { start: toH24(r[1], r[2]), end: toH24(r[3], r[4]) };
+    const m = s.match(/^(\d+)(?:\.(\d+))?$/);
+    if (m) { const s2 = toH24(m[1], m[2]); return { start: s2, end: s2 + 1 }; }
+    return null;
+  };
+  const grouped = {};
+  String(raw || '').split(';').filter(Boolean).forEach((block) => {
+    const parts = block.trim().split(',');
+    if (parts.length < 2) return;
+    const tf = parts[0].trim().toLowerCase();
+    const type = tf.startsWith('lec') ? 'lec' : tf.startsWith('rec') ? 'rec' : tf.startsWith('lab') ? 'lab' : tf.slice(0, 3);
+    if (!grouped[type]) grouped[type] = [];
+    parts.slice(1).forEach((seg) => {
+      const segs = seg.trim().split('/');
+      if (segs.length < 4) return;
+      const room = segs[0].trim();
+      const days = [...segs[1].trim()].filter((ch) => 'MTWRF'.includes(ch));
+      if (!days.length) return;
+      const t = parseTime(segs[3].trim());
+      if (!t || t.end <= t.start) return;
+      grouped[type].push({ room, days, start: t.start, end: t.end });
+    });
+  });
+  return grouped;
+}
+
+function timesOverlap(a, b) {
+  return a.days.some((d) => b.days.includes(d)) && a.start < b.end - 0.01 && a.end > b.start + 0.01;
+}
+
+// Assign side-by-side column positions to overlapping blocks.
+function layoutBlocks(blocks) {
+  const sorted = [...blocks].sort((a, b) => a.start - b.start || b.end - a.end);
+  const result = sorted.map((b) => ({ ...b, col: 0, numCols: 1 }));
+  const colEnds = []; // colEnds[i] = end time of block currently occupying column i
+
+  result.forEach((b) => {
+    let col = 0;
+    while (colEnds[col] !== undefined && colEnds[col] > b.start + 0.01) col++;
+    b.col = col;
+    colEnds[col] = b.end;
+  });
+
+  // numCols = width of the overlap group this block belongs to
+  result.forEach((b) => {
+    let maxCol = b.col;
+    result.forEach((other) => {
+      if (other !== b && other.start < b.end - 0.01 && other.end > b.start + 0.01) {
+        maxCol = Math.max(maxCol, other.col);
+      }
+    });
+    b.numCols = maxCol + 1;
+  });
+
+  return result;
+}
+
+function hourLabel(h) {
+  if (h === 12) return 'noon';
+  return h < 12 ? `${h} AM` : `${h - 12} PM`;
+}
+
 const CalendarView = ({ courses }) => {
-  const days = ['M', 'T', 'W', 'R', 'F'];
-  const dayLabels = { M: 'Mon', T: 'Tue', W: 'Wed', R: 'Thu', F: 'Fri' };
-  const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+  const days      = ['M', 'T', 'W', 'R', 'F'];
+  const dayLabels = { M: 'MON', T: 'TUE', W: 'WED', R: 'THU', F: 'FRI' };
+  const hours     = Array.from({ length: CAL_END - CAL_START }, (_, i) => CAL_START + i);
+  const totalH    = (CAL_END - CAL_START) * CAL_PX;
+
   const colorOf = {};
   courses.forEach((c, i) => { colorOf[c.id] = CAL_PALETTE[i % CAL_PALETTE.length]; });
 
+  // sectionMap: { courseId: { lec: idx, rec: idx, lab: idx } }
+  const [sectionMap, setSectionMap] = useState({});
+
+  // Auto-select non-conflicting section when courses change
+  useEffect(() => {
+    const map = {};
+    const confirmed = []; // flat list of confirmed {days, start, end} meetings
+    courses.forEach((c) => {
+      if (!c.scheduleRaw) return;
+      const grouped = parseAllSectionsGrouped(c.scheduleRaw);
+      map[c.id] = {};
+      Object.entries(grouped).forEach(([type, options]) => {
+        const prev = sectionMap[c.id]?.[type];
+        // Keep previous selection if course was already in schedule
+        if (prev !== undefined && prev < options.length) {
+          map[c.id][type] = prev;
+        } else {
+          // Auto-pick first option that doesn't conflict with confirmed meetings
+          const idx = options.findIndex((opt) => !confirmed.some((m) => timesOverlap(opt, m)));
+          map[c.id][type] = idx >= 0 ? idx : 0;
+        }
+        const sel = options[map[c.id][type]];
+        if (sel) confirmed.push(sel);
+      });
+    });
+    setSectionMap(map);
+  }, [courses.map((c) => c.id).join('|')]);
+
+  const cycleSection = (courseId, type, delta) => {
+    setSectionMap((prev) => {
+      const grouped = parseAllSectionsGrouped(courses.find((c) => c.id === courseId)?.scheduleRaw || '');
+      const options = grouped[type] || [];
+      const cur = (prev[courseId]?.[type] || 0);
+      const next = (cur + delta + options.length) % options.length;
+      return { ...prev, [courseId]: { ...(prev[courseId] || {}), [type]: next } };
+    });
+  };
+
+  // Build flat block list using selected sections
+  const allBlocks = courses.flatMap((c) => {
+    if (c.scheduleRaw) {
+      const grouped = parseAllSectionsGrouped(c.scheduleRaw);
+      return Object.entries(grouped).flatMap(([type, options]) => {
+        const idx = sectionMap[c.id]?.[type] ?? 0;
+        const sel = options[idx];
+        if (!sel) return [];
+        return sel.days.map((d) => ({ ...sel, day: d, courseId: c.id, type, totalSections: options.length, sectionIdx: idx }));
+      });
+    }
+    // Fallback for mock courses
+    if (c.days && c.days.length && c.time && c.time.end > c.time.start) {
+      return c.days.map((d) => ({ shortType: '', room: '', days: c.days, day: d, start: c.time.start, end: c.time.end, courseId: c.id, type: '', totalSections: 1, sectionIdx: 0 }));
+    }
+    return [];
+  });
+
+  const TIME_COL = 52;
+
   return (
     <div style={{
-      background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
-      padding: 12, display: 'grid', gridTemplateColumns: '32px repeat(5, 1fr)', gap: 0,
-      fontSize: 11, fontFamily: 'var(--font-mono)',
+      border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
+      overflow: 'hidden', fontFamily: 'var(--font-mono)', fontSize: 11,
+      background: 'var(--surface)',
     }}>
-      <div />
-      {days.map((d) => <div key={d} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '6px 0', borderBottom: '1px solid var(--border)' }}>{dayLabels[d]}</div>)}
-
-      {hours.map((h) => (
-        <React.Fragment key={h}>
-          <div style={{ textAlign: 'right', paddingRight: 6, color: 'var(--text-tertiary)', fontSize: 10, borderTop: '1px dotted var(--border)', height: 28 }}>
-            {h > 12 ? h - 12 : h}{h >= 12 ? 'p' : 'a'}
+      {/* Day header */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: `${TIME_COL}px repeat(5, 1fr)`,
+        borderBottom: '2px solid var(--border)', background: 'var(--bg)',
+      }}>
+        <div />
+        {days.map((d) => (
+          <div key={d} style={{
+            textAlign: 'center', padding: '10px 0', fontSize: 11,
+            fontWeight: 600, letterSpacing: '0.07em', color: 'var(--text-secondary)',
+            borderLeft: '1px solid var(--border)',
+          }}>
+            {dayLabels[d]}
           </div>
-          {days.map((d) => (
-            <div key={d + h} style={{ borderTop: '1px dotted var(--border)', height: 28, position: 'relative' }}>
-              {courses.filter((c) => c.days.includes(d) && c.time.start < h + 1 && c.time.end > h).map((c) => {
-                const isStart = c.time.start >= h && c.time.start < h + 1;
-                if (!isStart) return null;
-                const offsetTop = (c.time.start - h) * 28;
-                const height = (c.time.end - c.time.start) * 28 - 2;
-                return (
-                  <div key={c.id} style={{
-                    position: 'absolute', top: offsetTop, left: 2, right: 2, height,
-                    background: colorOf[c.id], opacity: 0.9,
-                    borderRadius: 4, padding: '3px 5px', color: '#fff',
-                    fontSize: 10, lineHeight: 1.2, overflow: 'hidden',
-                  }}>
-                    {c.id}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-        </React.Fragment>
-      ))}
+        ))}
+      </div>
+
+      {/* Grid body — fixed height, no inner scroll */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: `${TIME_COL}px repeat(5, 1fr)`,
+        height: totalH, position: 'relative',
+      }}>
+          {/* Time label column */}
+          <div style={{ position: 'relative', borderRight: '1px solid var(--border)' }}>
+            {hours.map((h) => (
+              <div key={h} style={{
+                position: 'absolute', top: (h - CAL_START) * CAL_PX,
+                right: 8, fontSize: 10, color: 'var(--text-tertiary)',
+                transform: 'translateY(-50%)', textAlign: 'right', whiteSpace: 'nowrap',
+                paddingTop: 1,
+              }}>
+                {hourLabel(h)}
+              </div>
+            ))}
+          </div>
+
+          {/* Day columns */}
+          {days.map((d) => {
+            const dayBlocks = layoutBlocks(allBlocks.filter((b) => b.day === d));
+            return (
+              <div key={d} style={{ position: 'relative', borderLeft: '1px solid var(--border)' }}>
+                {hours.map((h) => (
+                  <React.Fragment key={h}>
+                    <div style={{ position: 'absolute', top: (h - CAL_START) * CAL_PX, left: 0, right: 0, borderTop: '1px solid var(--border)' }} />
+                    <div style={{ position: 'absolute', top: (h - CAL_START + 0.5) * CAL_PX, left: 0, right: 0, borderTop: '1px dotted var(--border)', opacity: 0.5 }} />
+                  </React.Fragment>
+                ))}
+
+                {dayBlocks.map((b, bi) => {
+                  const top    = (b.start - CAL_START) * CAL_PX;
+                  const height = (b.end - b.start) * CAL_PX - 2;
+                  if (top < 0 || top >= totalH) return null;
+                  const GAP = 2, pct = 100 / b.numCols;
+                  const blockH = Math.max(14, Math.min(height, totalH - Math.max(0, top) - 2));
+                  const hasMultiple = b.totalSections > 1;
+                  return (
+                    <div key={b.courseId + b.type + bi} style={{
+                      position: 'absolute',
+                      top: Math.max(0, top) + 1,
+                      left: `calc(${b.col * pct}% + ${GAP}px)`,
+                      width: `calc(${pct}% - ${GAP * 2}px)`,
+                      height: blockH,
+                      background: colorOf[b.courseId],
+                      borderRadius: 6, padding: '4px 6px',
+                      color: '#fff', fontSize: 11, lineHeight: 1.3,
+                      overflow: 'hidden', zIndex: 1,
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                      display: 'flex', flexDirection: 'column',
+                    }}>
+                      <div style={{ fontWeight: 600, fontSize: 11 }}>
+                        {b.courseId}{b.type ? <span style={{ fontWeight: 400, opacity: 0.85 }}> {b.type}</span> : null}
+                      </div>
+                      {b.room && <div style={{ opacity: 0.8, fontSize: 10 }}>{b.room}</div>}
+                      {hasMultiple && blockH >= 36 && (
+                        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 3, paddingTop: 3 }}>
+                          <button
+                            onMouseDown={(e) => { e.stopPropagation(); cycleSection(b.courseId, b.type, -1); }}
+                            style={{ background: 'rgba(255,255,255,0.25)', border: 'none', borderRadius: 3, color: '#fff', fontSize: 9, padding: '1px 4px', cursor: 'pointer', lineHeight: 1 }}
+                          >◀</button>
+                          <span style={{ fontSize: 9, opacity: 0.85 }}>{b.sectionIdx + 1}/{b.totalSections}</span>
+                          <button
+                            onMouseDown={(e) => { e.stopPropagation(); cycleSection(b.courseId, b.type, 1); }}
+                            style={{ background: 'rgba(255,255,255,0.25)', border: 'none', borderRadius: 3, color: '#fff', fontSize: 9, padding: '1px 4px', cursor: 'pointer', lineHeight: 1 }}
+                          >▶</button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
     </div>
   );
 };
@@ -527,9 +793,21 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
 };
 
 // ============== Requirements panel ==============
+const CourseTag = ({ id, satisfied }) => (
+  <span className="mono" style={{
+    fontSize: 10, padding: '1px 5px', borderRadius: 4,
+    background: satisfied ? 'var(--success-soft, rgba(34,197,94,0.12))' : 'var(--surface-2)',
+    color: satisfied ? 'var(--success)' : 'var(--text-secondary)',
+    border: `1px solid ${satisfied ? 'var(--success)' : 'var(--border)'}`,
+  }}>{id}</span>
+);
+
 const ReqRow = ({ group, depth = 0, expanded, toggle }) => {
   const isOpen = !!expanded[depth + ':' + group.id];
   const hasChildren = group.subGroups && group.subGroups.length > 0;
+  const hasDetail = group.satisfied
+    ? (group.matched && group.matched.length > 0)
+    : (!hasChildren);
   const statusColor = group.satisfied ? 'var(--success)' : group.isManual ? 'var(--warning)' : 'var(--border-strong)';
   const indent = depth * 14;
   const fontSize = depth === 0 ? 12 : depth === 1 ? 11 : 10;
@@ -556,7 +834,7 @@ const ReqRow = ({ group, depth = 0, expanded, toggle }) => {
         {group.progress && !group.satisfied && (
           <span className="mono" style={{ fontSize: fontSize - 1, color: 'var(--text-tertiary)' }}>{group.progress}</span>
         )}
-        {(hasChildren || (!group.satisfied && !hasChildren)) && (
+        {(hasChildren || hasDetail) && (
           <Icon name={isOpen ? 'chevronUp' : 'chevronDown'} size={10} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
         )}
       </button>
@@ -569,17 +847,29 @@ const ReqRow = ({ group, depth = 0, expanded, toggle }) => {
         </div>
       )}
 
-      {isOpen && !hasChildren && !group.satisfied && (
-        <div style={{ paddingLeft: indent + 21, paddingBottom: 5, fontSize: fontSize - 1, color: 'var(--text-tertiary)', lineHeight: 1.7 }}>
-          {group.isManual
-            ? <span style={{ color: 'var(--warning)' }}>Requires advisor verification</span>
-            : group.unmet.length > 0
-              ? <>Still needed: {group.unmet.map((id, i) => (
-                  <span key={id} className="mono" style={{ color: 'var(--text-secondary)' }}>
-                    {i > 0 ? ', ' : ''}{id}
-                  </span>
-                ))}</>
-              : null}
+
+      {isOpen && !hasChildren && (
+        <div style={{ paddingLeft: indent + 21, paddingBottom: 6, paddingTop: 2, display: 'flex', flexDirection: 'column', gap: 5 }}>
+          {group.matched && group.matched.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
+              <span style={{ fontSize: fontSize - 1, color: 'var(--text-tertiary)', marginRight: 2 }}>
+                {group.satisfied ? 'Satisfied by:' : 'Counts toward:'}
+              </span>
+              {group.matched.map(id => <CourseTag key={id} id={id} satisfied />)}
+            </div>
+          )}
+          {!group.satisfied && (
+            <div style={{ fontSize: fontSize - 1, color: 'var(--text-tertiary)' }}>
+              {group.isManual
+                ? <span style={{ color: 'var(--warning)' }}>Requires advisor verification</span>
+                : group.unmet.length > 0
+                  ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
+                      <span style={{ marginRight: 2 }}>Still needed:</span>
+                      {group.unmet.map(id => <CourseTag key={id} id={id} satisfied={false} />)}
+                    </div>
+                  : null}
+            </div>
+          )}
         </div>
       )}
     </div>
