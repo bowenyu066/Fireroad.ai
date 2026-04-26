@@ -11,7 +11,7 @@ npm install
 export OPENROUTER_API_KEY="your_openrouter_key"
 # Optional:
 export OPENROUTER_MODEL="openai/gpt-4.1-mini"
-export OPENROUTER_TIMEOUT_MS=20000
+export OPENROUTER_TIMEOUT_MS=60000
 npm run dev
 ```
 
