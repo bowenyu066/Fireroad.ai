@@ -1,0 +1,11 @@
+node_modules
+uploads
+data/course_history.db
+data/history_manifests
+data/EECSIS*
+*.py
+scripts
+docs
+*.md
+!README.md
+.env*

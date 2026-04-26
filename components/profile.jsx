@@ -90,7 +90,10 @@ const ProfilePage = () => {
           </PField>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <PField label="Major / Program">
-              <MajorSearch value={draft.major} onChange={v => upd('major', v)} />
+              <MajorSearch value={draft.major} onChange={v => {
+                upd('major', v);
+                setProfile(prev => ({ ...prev, major: v }));
+              }} />
             </PField>
             <PField label="Year">
               <PSelect

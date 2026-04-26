@@ -43,7 +43,6 @@ function createApp() {
   const rootDir = path.join(__dirname, '..');
 
   app.use(express.json({ limit: '1mb' }));
-  getDb();
 
   app.get('/firebase-config.js', (req, res) => {
     res.type('application/javascript').send(firebaseConfigScript());

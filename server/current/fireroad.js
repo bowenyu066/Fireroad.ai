@@ -150,7 +150,11 @@ async function searchCurrentCourses(options = {}) {
   const tokens = expandSearchTokens(query.split(/\s+/).filter(Boolean));
   const maxResults = Math.max(1, Math.min(Number(options.maxResults || options.max_results) || 10, 50));
   const maxWorkload = Number(options.maxWorkload || options.max_workload) || null;
-  const areas = Array.isArray(options.areas) ? options.areas.map((area) => String(area).toLowerCase()) : [];
+  // Map department numbers to area names in case the agent passes "18" instead of "math"
+  const DEPT_TO_AREA = { '6': 'cs', '18': 'math', '8': 'physics', '7': 'bio', '5': 'other', '14': 'hass', '21': 'hass', '24': 'hass' };
+  const areas = Array.isArray(options.areas)
+    ? options.areas.map((a) => { const s = String(a).toLowerCase(); return DEPT_TO_AREA[s] || s; })
+    : [];
   const requirements = Array.isArray(options.requirements || options.satisfies)
     ? (options.requirements || options.satisfies).map((req) => String(req).toLowerCase())
     : [];

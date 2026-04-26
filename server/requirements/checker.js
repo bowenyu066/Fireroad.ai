@@ -1,9 +1,35 @@
 'use strict';
 
+// Infer a counting rule from descriptive plain-string req text and count matching courses.
+// Returns { count, matched } if the pattern is recognizable, null otherwise.
+function countFromReqText(reqText, takenSet) {
+  const text = String(reqText || '').toLowerCase();
+
+  // "first decimal ≥ 1" / "first decimal digit one or higher" → 18.1xx, 18.2xx, ..., 18.9xx
+  if (text.includes('first decimal') && (text.includes('≥ 1') || text.includes('>= 1') || text.includes('one or higher'))) {
+    const matched = [...takenSet].filter((id) => /^18\.[1-9]/i.test(id));
+    return { count: matched.length, matched };
+  }
+
+  return null;
+}
+
 // Evaluate one requirement node from the Fireroad JSON format against a set of taken course IDs.
 // countMap: optional { [GIR_CODE]: number } for count-based leaf thresholds (e.g. HASS needs 8 subjects).
 function evaluate(node, takenSet, countMap = {}) {
   if (node['plain-string']) {
+    const cutoff = node.threshold && node.threshold.type === 'GTE' ? node.threshold.cutoff : null;
+    if (cutoff !== null) {
+      // Try to count from req text pattern
+      const inferred = countFromReqText(node.req, takenSet);
+      if (inferred) {
+        const { count, matched } = inferred;
+        const sat = count >= cutoff;
+        return { satisfied: sat, matched, unmet: [], isManual: false, progress: `${count}/${cutoff}` };
+      }
+      // Known threshold but can't auto-count — show ?/N
+      return { satisfied: false, matched: [], unmet: [], isManual: true, progress: `?/${cutoff}` };
+    }
     return { satisfied: false, matched: [], unmet: [], isManual: true, progress: null };
   }
 
@@ -58,7 +84,9 @@ const GENERIC_DESCS = new Set(['select all', 'all of the following', 'all']);
 
 function syntheticLabel(node) {
   if (node.title) return node.title;
-  // Leaf node — use the req value as the label
+  // Plain-string node — use descriptive req text (e.g. "6 subjects (first decimal ≥ 1)")
+  if (node['plain-string'] && node.req) return String(node.req);
+  // Leaf course node — use the req value (course ID) as the label
   if (node.req && !node.reqs) return String(node.req).toUpperCase();
   // Group without title
   const leaves = (node.reqs || []).filter((c) => c.req && !c.reqs && !c.threshold);
@@ -78,7 +106,7 @@ function buildGroupInfo(node, takenSet, countMap = {}) {
 
   const namedChildren = (node.reqs || [])
     .filter((child) => {
-      if (child['plain-string']) return Boolean(child.title);
+      if (child['plain-string']) return Boolean(child.title || child.req);
       // Leaf node: only surface categorical codes (HASS-A, GIR:PHY1, CI-H …),
       // not specific MIT course IDs (6.1010, CC.1803, 21G.594 …).
       // Course IDs always contain a dot separating alphanumeric parts.

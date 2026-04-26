@@ -1064,7 +1064,7 @@ const toolSchemas = [
         properties: {
           query: { type: 'string' },
           max_results: { type: 'number' },
-          areas: { type: 'array', items: { type: 'string' } },
+          areas: { type: 'array', items: { type: 'string' }, description: 'Area names: "cs", "math", "physics", "bio", "hass", "other". NOT department numbers.' },
           requirements: { type: 'array', items: { type: 'string' } },
           max_workload: { type: 'number' },
           departments: { type: 'array', items: { type: 'string' }, description: 'Filter to courses starting with these prefixes, e.g. ["6","18","8"]. Strongly recommended to avoid irrelevant results from 5000+ course catalog.' },

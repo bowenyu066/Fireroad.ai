@@ -1,8 +1,17 @@
 const fs = require('fs');
 const path = require('path');
-const Database = require('better-sqlite3');
 
-const DB_PATH = process.env.HISTORY_DB_PATH || path.join(__dirname, '..', '..', 'data', 'course_history.db');
+let Database;
+try {
+  Database = require('better-sqlite3');
+} catch (e) {
+  console.warn('[history] better-sqlite3 unavailable:', e.message);
+}
+
+const defaultDbPath = process.env.VERCEL
+  ? '/tmp/course_history.db'
+  : path.join(__dirname, '..', '..', 'data', 'course_history.db');
+const DB_PATH = process.env.HISTORY_DB_PATH || defaultDbPath;
 const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
 
 let db;
@@ -15,6 +24,7 @@ function initDb(database = getDb()) {
 }
 
 function getDb() {
+  if (!Database) return null;
   if (!db) {
     fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
     db = new Database(DB_PATH);

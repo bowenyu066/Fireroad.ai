@@ -42,7 +42,7 @@ async function expandWithGirCodes(courseIds) {
   const catalog = await getCurrentCatalog();
   const extra = new Set();
   const countMap = {};
-  const codeToIds = {};   // GIR/HASS code → real course IDs that satisfy it
+  const codeToIds = {};   // GIR/HASS code → real course IDs that satisfy it (taken)
 
   const add = (code, realId) => {
     extra.add(code);
@@ -80,6 +80,7 @@ async function expandWithGirCodes(courseIds) {
     courses: [...new Set([...courseIds, ...extra])],
     countMap,
     codeToIds,
+    catalog,
   };
 }
 
@@ -93,21 +94,60 @@ const GIR_CODE_LABELS = {
   'CI-H': 'CI-H',      'CI-HW': 'CI-HW',
 };
 
-// Replace abstract GIR/HASS codes with real course IDs (matched) or readable names (labels/unmet).
-function resolveMatchedCodes(node, codeToIds) {
+// For each abstract GIR/HASS code, build a short list of catalog course IDs that satisfy it.
+// Used to populate "Still needed" with concrete examples instead of the abstract code name.
+function buildCatalogSamples(catalog) {
+  const samples = {};
+
+  GIR_ATTR_CODES.forEach((key) => {
+    const code = `GIR:${key}`;
+    samples[code] = catalog.courses
+      .filter((c) => c.requirements.includes(key))
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .slice(0, 5)
+      .map((c) => c.id);
+  });
+
+  // The catch-all HASS count (threshold 8) is handled by progress; suppress from "still needed" pills.
+  samples['HASS'] = [];
+
+  // For HASS sub-types, sample concrete course IDs from the catalog.
+  ['HASS-A', 'HASS-H', 'HASS-S', 'CI-H', 'CI-HW'].forEach((key) => {
+    samples[key] = catalog.courses
+      .filter((c) => c.requirements.includes(key))
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .slice(0, 5)
+      .map((c) => c.id);
+  });
+
+  return samples;
+}
+
+// Replace abstract GIR/HASS codes in matched/unmet with real course IDs.
+// For "still needed": use catalog sample courses instead of abstract code names.
+// Count-based leaf nodes (e.g. "HASS 3/8") suppress unmet since progress already says what's needed.
+function resolveMatchedCodes(node, codeToIds, catalogSamples) {
   const label = GIR_CODE_LABELS[node.label] || node.label;
   const matched = [...new Set(node.matched.flatMap((c) => codeToIds[c] || [c]))];
-  // Resolve unmet codes to readable names; suppress any item that just restates the label.
-  const unmet = node.unmet
-    .map((c) => GIR_CODE_LABELS[c] || c)
-    .filter((c) => c !== label);
+
+  let unmet;
+  if (!node.subGroups && node.progress && /^\d+\/\d+$/.test(node.progress)) {
+    // Count-based leaf (e.g. HASS threshold 8): progress already communicates the gap.
+    unmet = [];
+  } else {
+    unmet = node.unmet.flatMap((c) => {
+      if (catalogSamples[c] && catalogSamples[c].length > 0) return catalogSamples[c];
+      return [GIR_CODE_LABELS[c] || c];
+    });
+  }
+
   return {
     ...node,
     label,
     matched,
     unmet,
     subGroups: node.subGroups
-      ? node.subGroups.map((sub) => resolveMatchedCodes(sub, codeToIds))
+      ? node.subGroups.map((sub) => resolveMatchedCodes(sub, codeToIds, catalogSamples))
       : null,
   };
 }
@@ -127,16 +167,15 @@ router.post('/check', async (req, res) => {
       return res.status(404).json({ error: `No requirements found for "${key}"` });
     }
 
-    const { courses: expandedCourses, countMap, codeToIds } = key === 'girs'
-      ? await expandWithGirCodes(courses)
-      : { courses, countMap: {}, codeToIds: {} };
+    // Always expand GIR/HASS codes so that both GIR and major requirement files
+    // use the same evaluation path (courses.json attributes → abstract codes → checker).
+    const { courses: expandedCourses, countMap, codeToIds, catalog } = await expandWithGirCodes(courses);
 
     const result = checkRequirements(reqJson, expandedCourses, countMap);
 
-    // For GIR checks, replace abstract codes (GIR:PHY1, HASS-A …) with real course IDs.
-    if (key === 'girs' && Object.keys(codeToIds).length) {
-      result.groups = result.groups.map((g) => resolveMatchedCodes(g, codeToIds));
-    }
+    // Replace abstract codes (GIR:PHY1, HASS-H …) with real course IDs in matched/unmet.
+    const catalogSamples = buildCatalogSamples(catalog);
+    result.groups = result.groups.map((g) => resolveMatchedCodes(g, codeToIds, catalogSamples));
 
     res.json(result);
   } catch (err) {

@@ -1,4 +1,5 @@
 const express = require('express');
+const { getDb } = require('./db');
 const { createHistoryRepo } = require('./repo');
 const {
   buildCourseHistorySummary,
@@ -8,6 +9,10 @@ const {
 } = require('./summary');
 
 const router = express.Router();
+
+function dbUnavailable(res) {
+  return res.status(503).json({ error: 'History database unavailable in this environment.' });
+}
 
 function asyncHandler(handler) {
   return (req, res) => {
@@ -19,11 +24,13 @@ function asyncHandler(handler) {
 }
 
 router.get('/stats', asyncHandler(async (req, res) => {
+  if (!getDb()) return dbUnavailable(res);
   const repo = createHistoryRepo();
   res.json({ stats: repo.getHistoryStats() });
 }));
 
 router.get('/course/:courseId', asyncHandler(async (req, res) => {
+  if (!getDb()) return dbUnavailable(res);
   const repo = createHistoryRepo();
   const course = repo.getCourseById(req.params.courseId);
   if (!course) return res.status(404).json({ error: `Course ${req.params.courseId} not found in history database.` });
@@ -49,6 +56,7 @@ router.get('/course/:courseId', asyncHandler(async (req, res) => {
 }));
 
 router.get('/course/:courseId/offerings', asyncHandler(async (req, res) => {
+  if (!getDb()) return dbUnavailable(res);
   const repo = createHistoryRepo();
   const course = repo.getCourseById(req.params.courseId);
   if (!course) return res.status(404).json({ error: `Course ${req.params.courseId} not found in history database.` });
@@ -69,6 +77,7 @@ router.get('/course/:courseId/offerings', asyncHandler(async (req, res) => {
 }));
 
 router.get('/offering/:offeringId', asyncHandler(async (req, res) => {
+  if (!getDb()) return dbUnavailable(res);
   const repo = createHistoryRepo();
   const offering = repo.getOfferingById(req.params.offeringId);
   if (!offering) return res.status(404).json({ error: `Offering ${req.params.offeringId} not found in history database.` });
