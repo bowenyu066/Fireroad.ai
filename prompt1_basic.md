@@ -33,6 +33,14 @@ Instructions:
 8. Preserve official subject numbers, subject titles, units, levels, grades/statuses, and audit/requirement info exactly as shown when possible.
 9. Preserve the transcript term labels exactly when possible, such as `Fall Term 2024-2025`.
 10. Sort courses in the same order they appear in the transcript.
+11. **Level and Grade are two separate columns.** MIT transcripts list a course's
+    Level (`U` for undergraduate, `G` for graduate) in its own column, and the
+    Grade (`A+`, `A`, `A-`, `B`, `S`, `LIS`, `URN`, `A&`, `B&`, etc.) in the
+    column after it. Always emit them as two separate cells. NEVER concatenate
+    them. Output `| ... | 12 | U | A+ | ... |`, never `| ... | 12 | UA+ | ... |`.
+    Output `| ... | 12 | U | A& | ... |`, never `| ... | 12 | UA& | ... |`.
+    Output `| ... | 6 | U | LIS | ... |`, never `| ... | 6 | ULIS | ... |`.
+    A row must always have exactly 8 cells between the leading and trailing `|`.
 
 Classification rules:
 
@@ -89,6 +97,11 @@ Required Markdown format:
 | Term | Subject | Title | Units | Level | Course Grade / Status | Audit / Requirement Info | Notes |
 |---|---|---|---|---|---|---|---|
 | <term> | <subject> | <title> | <units> | <level> | <grade/status> | <audit info or None> | <notes or None> |
+
+Concrete example of correctly formatted rows (Level and Grade are SEPARATE cells; 8 cells per row):
+
+| Fall Term 2024-2025 | 6.100A | Intro to CS Prog in Python | 6 | U | A+ | Half REST | None |
+| Spring Term 2024-2025 | 6.1010 | Fundamentals of Programming | 12 | U | A | Institute Lab | None |
 
 If there are no completed / for-credit courses, use exactly this row:
 
