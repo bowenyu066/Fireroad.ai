@@ -343,6 +343,8 @@ const App = () => {
     kerberos: '',
     major: '',
     majorLabel: '',
+    major2: '',
+    major2Label: '',
     year: '',
     gradYear: '',
     taken: [],

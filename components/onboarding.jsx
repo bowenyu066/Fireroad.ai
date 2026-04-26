@@ -44,6 +44,7 @@ const SKILL_LEVELS = [
 const emptyData = {
   name: '',
   major: 'major6-3',
+  major2: '',
   futureProgram: '',
   standing: 'sophomore',
   gpa: '',
@@ -206,6 +207,8 @@ const profileForPrompt = (data) => ({
   name: data.name,
   major: data.major,
   majorLabel: ALL_MAJORS.find(([id]) => id === data.major)?.[1] || data.major,
+  major2: data.major2 || '',
+  major2Label: data.major2 ? (ALL_MAJORS.find(([id]) => id === data.major2)?.[1] || data.major2) : '',
   futureProgram: data.futureProgram,
   academicStanding: data.standing,
   gpa: data.standing === 'prefrosh' ? 'N/A' : data.gpa,
@@ -326,6 +329,7 @@ const toPersonalCourseMarkdown = (data) => {
     '## Basic Info',
     `- name: ${data.name || 'TBD'}`,
     `- major: ${data.major}`,
+    `- major2: ${data.major2 || 'None'}`,
     `- future_program_space: ${data.futureProgram || 'TBD'}`,
     `- standing: ${data.standing}`,
     `- gpa: ${data.standing === 'prefrosh' ? 'N/A' : (data.gpa || 'TBD')}`,
@@ -628,11 +632,14 @@ const Onboarding = () => {
       const summary = PersonalCourse.summarize(personalCourseMarkdown || '');
       const taken = summary.completedCourseIds || courses.map((course) => course.id);
       const majorLabel = ALL_MAJORS.find(([id]) => id === data.major)?.[1] || data.major;
+      const major2Label = data.major2 ? (ALL_MAJORS.find(([id]) => id === data.major2)?.[1] || data.major2) : '';
       const nextProfile = {
         ...profile,
         name: data.name || profile.name,
         major: data.major === 'undecided' ? 'Undecided' : data.major,
         majorLabel,
+        major2: data.major2 || '',
+        major2Label,
         year: STANDINGS.find(([id]) => id === data.standing)?.[1] || data.standing,
         taken,
         preferences: {
@@ -1176,7 +1183,44 @@ const StepProfile = ({ data, upd, goNext }) => (
         <Select value={data.standing} onChange={(value) => upd('standing', value)} options={STANDINGS} />
       </Field>
     </div>
-    <Field label="Future double major / minor / concentration">
+    {data.major2 ? (
+      <Field
+        label="Second major"
+        hint="Requirement progress will be tracked for both majors."
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ flex: 1 }}>
+            <MajorSearch value={data.major2} onChange={(value) => upd('major2', value)} />
+          </div>
+          <button
+            type="button"
+            onClick={() => upd('major2', '')}
+            title="Remove second major"
+            style={{
+              padding: '8px 12px', borderRadius: 8,
+              border: '1px solid var(--border)', background: 'var(--surface)',
+              color: 'var(--text-secondary)', fontSize: 13,
+            }}
+          >
+            Remove
+          </button>
+        </div>
+      </Field>
+    ) : (
+      <button
+        type="button"
+        onClick={() => upd('major2', 'major18')}
+        style={{
+          marginTop: 4, marginBottom: 16, padding: '8px 14px', borderRadius: 8,
+          border: '1px dashed var(--border-strong)', background: 'transparent',
+          color: 'var(--text-secondary)', fontSize: 13,
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+        }}
+      >
+        <Icon name="plus" size={13} /> Add second major
+      </button>
+    )}
+    <Field label="Future minor / concentration">
       <TextInput placeholder="Minor in 18, concentration in linguistics, etc." value={data.futureProgram} onChange={(event) => upd('futureProgram', event.target.value)} />
     </Field>
     {data.standing !== 'prefrosh' && (

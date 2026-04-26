@@ -22,6 +22,7 @@ function makeDraft(profile) {
     ...profile,
     name:        profile.name        || '',
     major:       profile.major       || 'major6-3',
+    major2:      profile.major2      || '',
     year:        profile.year        || 'Sophomore',
     taken:       [...(profile.taken  || [])],
     preferences: { ...(profile.preferences || {}) },
@@ -92,7 +93,8 @@ const ProfilePage = () => {
             <PField label="Major / Program">
               <MajorSearch value={draft.major} onChange={v => {
                 upd('major', v);
-                setProfile(prev => ({ ...prev, major: v }));
+                const label = (ALL_MAJORS.find(([id]) => id === v) || [])[1] || v;
+                setProfile(prev => ({ ...prev, major: v, majorLabel: label }));
               }} />
             </PField>
             <PField label="Year">
@@ -103,6 +105,49 @@ const ProfilePage = () => {
               />
             </PField>
           </div>
+          <PField label="Second major" hint="Optional. Requirement progress will be tracked for both majors.">
+            {draft.major2 ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <MajorSearch value={draft.major2} onChange={v => {
+                    upd('major2', v);
+                    const label = (ALL_MAJORS.find(([id]) => id === v) || [])[1] || v;
+                    setProfile(prev => ({ ...prev, major2: v, major2Label: label }));
+                  }} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    upd('major2', '');
+                    setProfile(prev => ({ ...prev, major2: '', major2Label: '' }));
+                  }}
+                  style={{
+                    padding: '8px 12px', borderRadius: 8,
+                    border: '1px solid var(--border)', background: 'var(--surface)',
+                    color: 'var(--text-secondary)', fontSize: 13,
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  upd('major2', 'major18');
+                  setProfile(prev => ({ ...prev, major2: 'major18', major2Label: '18 Major' }));
+                }}
+                style={{
+                  padding: '8px 14px', borderRadius: 8,
+                  border: '1px dashed var(--border-strong)', background: 'transparent',
+                  color: 'var(--text-secondary)', fontSize: 13,
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                }}
+              >
+                <Icon name="plus" size={13} /> Add second major
+              </button>
+            )}
+          </PField>
         </PSection>
 
         {/* Preferences */}

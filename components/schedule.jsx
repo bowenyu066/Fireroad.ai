@@ -918,48 +918,79 @@ const GirPanel = ({ allCourses }) => {
   );
 };
 
+const toMajorKey = (major) => (major
+  ? major.replace(/^course\s+/i, '').trim().toLowerCase().replace(/[:\s].*/, '')
+  : null);
+
+const MajorRequirementSection = ({ majorKey, allCourses, expanded, toggle }) => {
+  const { result, loading } = useReqCheck(majorKey, allCourses);
+  if (loading && !result) {
+    return <div style={{ fontSize: 12, color: 'var(--text-tertiary)', padding: '8px 0' }}>Checking requirements…</div>;
+  }
+  if (!result) return null;
+  const pct = result.totalCount > 0 ? Math.round(result.satisfiedCount / result.totalCount * 100) : 0;
+  const barCls = pct === 100 ? 'green' : pct >= 60 ? 'orange' : 'yellow';
+  const namespace = `${majorKey}:`;
+  return (
+    <>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <span className="eyebrow">{result.title || 'Requirements'}</span>
+        <span className="mono" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+          {result.satisfiedCount}/{result.totalCount}
+        </span>
+      </div>
+      <div className={`match-bar ${barCls}`} style={{ height: 4, marginBottom: 12 }}>
+        <span style={{ width: `${pct}%`, transition: 'width 600ms cubic-bezier(0.2,0.8,0.2,1)' }} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {result.groups.map((group) => (
+          <ReqRow
+            key={namespace + group.id}
+            group={{ ...group, id: namespace + group.id }}
+            depth={0}
+            expanded={expanded}
+            toggle={toggle}
+          />
+        ))}
+      </div>
+    </>
+  );
+};
+
 const RequirementsPanel = ({ schedule }) => {
   const { profile } = useApp();
   const [expanded, setExpanded] = useState({});
 
-  const major = profile && profile.major;
   const taken = (profile && profile.taken) || [];
   const allCourses = [...new Set([...taken, ...schedule])];
+  const toggle = (id) => setExpanded((e) => ({ ...e, [id]: !e[id] }));
 
-  const majorKey = major
-    ? major.replace(/^course\s+/i, '').trim().toLowerCase().replace(/[:\s].*/, '')
-    : null;
+  const majorKey = toMajorKey(profile && profile.major);
+  const major2Key = toMajorKey(profile && profile.major2);
 
-  const { result, loading } = useReqCheck(majorKey, allCourses);
-  const toggle = (id) => setExpanded(e => ({ ...e, [id]: !e[id] }));
-
-  if (loading && !result) return (
-    <div style={{ fontSize: 12, color: 'var(--text-tertiary)', padding: '8px 0' }}>Checking requirements…</div>
-  );
-  if (!result && !major) return null;
-
-  const pct = result && result.totalCount > 0 ? Math.round(result.satisfiedCount / result.totalCount * 100) : 0;
-  const barCls = pct === 100 ? 'green' : pct >= 60 ? 'orange' : 'yellow';
+  if (!majorKey && !major2Key) {
+    return <GirPanel allCourses={allCourses} />;
+  }
 
   return (
     <div>
-      {result && (
-        <>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <span className="eyebrow">{result.title || 'Requirements'}</span>
-            <span className="mono" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-              {result.satisfiedCount}/{result.totalCount}
-            </span>
-          </div>
-          <div className={`match-bar ${barCls}`} style={{ height: 4, marginBottom: 12 }}>
-            <span style={{ width: `${pct}%`, transition: 'width 600ms cubic-bezier(0.2,0.8,0.2,1)' }} />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {result.groups.map(group => (
-              <ReqRow key={group.id} group={group} depth={0} expanded={expanded} toggle={toggle} />
-            ))}
-          </div>
-        </>
+      {majorKey && (
+        <MajorRequirementSection
+          majorKey={majorKey}
+          allCourses={allCourses}
+          expanded={expanded}
+          toggle={toggle}
+        />
+      )}
+      {major2Key && (
+        <div style={{ marginTop: majorKey ? 18 : 0, paddingTop: majorKey ? 14 : 0, borderTop: majorKey ? '1px solid var(--border)' : 'none' }}>
+          <MajorRequirementSection
+            majorKey={major2Key}
+            allCourses={allCourses}
+            expanded={expanded}
+            toggle={toggle}
+          />
+        </div>
       )}
       <GirPanel allCourses={allCourses} />
     </div>

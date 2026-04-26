@@ -323,10 +323,10 @@ function latestAssistantBeforeLastUser(messages) {
   return [...beforeLastUser].reverse().find((message) => message && message.role !== 'user') || null;
 }
 
-function buildRequirementContext(profile, schedule) {
+function buildRequirementContextForMajor(profile, schedule, majorField) {
   try {
     const allCourses = [...new Set([...asArray(profile.taken), ...schedule])];
-    const result = checkMajorRequirements(profile.major, allCourses);
+    const result = checkMajorRequirements(profile[majorField], allCourses);
     if (!result) return null;
     return {
       major: result.title,
@@ -341,16 +341,29 @@ function buildRequirementContext(profile, schedule) {
   }
 }
 
+function buildRequirementContext(profile, schedule) {
+  return buildRequirementContextForMajor(profile, schedule, 'major');
+}
+
+function buildRequirementContextSecond(profile, schedule) {
+  if (!profile.major2) return null;
+  return buildRequirementContextForMajor(profile, schedule, 'major2');
+}
+
 function buildModelMessages(messages, context) {
   const { profile, schedule, activeSem, planningTermLabel, studentName, personalCourseMarkdown, studentPlanningContext } = context;
   const effectiveStudentName = String(studentName || profile.name || '').trim();
   const reqContext = buildRequirementContext(profile, schedule);
-  const relevantDepartments = majorToDepartments(profile.major);
+  const reqContextSecond = buildRequirementContextSecond(profile, schedule);
+  const dept1 = majorToDepartments(profile.major);
+  const dept2 = profile.major2 ? majorToDepartments(profile.major2) : [];
+  const relevantDepartments = [...new Set([...dept1, ...dept2])];
   const state = {
     studentName: effectiveStudentName || null,
     profile: {
       name: effectiveStudentName || profile.name,
       major: profile.major,
+      major2: profile.major2 || null,
       year: profile.year,
       gradYear: profile.gradYear,
       taken: profile.taken,
@@ -363,6 +376,7 @@ function buildModelMessages(messages, context) {
     activeSemesterSchedule: schedule,
     planningScope: 'active_semester_only',
     requirementProgress: reqContext || 'unavailable — call check_requirements tool',
+    requirementProgressSecondMajor: reqContextSecond || (profile.major2 ? 'unavailable — call check_requirements tool with major arg' : null),
     relevantDepartments,
     catalogNote: relevantDepartments.length
       ? `Catalog has 5000+ courses. Pass departments: ${JSON.stringify(relevantDepartments)} to search/recommend when searching for major-relevant courses. Omit the departments filter for cross-department queries (HASS, linguistics, biology, specific non-major departments). Common MIT departments: 6=EECS, 18=Math, 8=Physics, 7=Biology, 5=Chemistry, 24=Linguistics&Philosophy, 21=Humanities, 14=Economics, 9=Brain&Cog.`
