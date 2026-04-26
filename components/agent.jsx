@@ -393,13 +393,7 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onR
           }}>
             <Icon name="sparkle" size={15} />
           </span>
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 600 }}>Agent</div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)' }} />
-              {calibratedToUser ? 'Online · Calibrated to you' : 'Online'}
-            </div>
-          </div>
+          <div style={{ fontSize: 15, fontWeight: 600 }}>Course Planning Agent</div>
         </div>
         <PersonalizationControl />
       </div>
