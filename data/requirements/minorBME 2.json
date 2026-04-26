@@ -1,0 +1,191 @@
+{
+  "title-no-degree": "Interdisciplinary",
+  "list-id": "minorBME.reql",
+  "title": "Minor in Biomedical Engineering",
+  "medium-title": "Biomedical Engineering Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select either",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "6.0001"
+                },
+                {
+                  "req": "6.0002"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "req": "6.00"
+            }
+          ],
+          "title": "Programming and Computational Modeling Core"
+        },
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 2",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "threshold-desc": "select either",
+              "reqs": [
+                {
+                  "req": "3.016"
+                },
+                {
+                  "req": "18.03"
+                }
+              ],
+              "title": "Option A"
+            },
+            {
+              "req": "18.06",
+              "title": "Option B"
+            },
+            {
+              "connection-type": "any",
+              "threshold-desc": "select any",
+              "reqs": [
+                {
+                  "req": "1.010"
+                },
+                {
+                  "connection-type": "all",
+                  "reqs": [
+                    {
+                      "req": "6.041A"
+                    },
+                    {
+                      "req": "6.041B"
+                    }
+                  ],
+                  "threshold-desc": "select all"
+                },
+                {
+                  "req": "9.07"
+                }
+              ],
+              "title": "Option C"
+            }
+          ],
+          "title": "Mathematics Core"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "6.022"
+            },
+            {
+              "req": "7.20"
+            },
+            {
+              "req": "9.01"
+            }
+          ],
+          "title": "Human Physiology Core"
+        }
+      ],
+      "title": "Core Subjects"
+    },
+    {
+      "threshold-desc": "select any 3",
+      "title": "Biomedical Engineering and Applications",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "UROP",
+          "plain-string": true
+        },
+        {
+          "req": "2.184"
+        },
+        {
+          "req": "2.750"
+        },
+        {
+          "req": "3.052"
+        },
+        {
+          "req": "3.054"
+        },
+        {
+          "req": "3.055"
+        },
+        {
+          "req": "6.021"
+        },
+        {
+          "req": "6.811"
+        },
+        {
+          "req": "7.37"
+        },
+        {
+          "req": "9.17"
+        },
+        {
+          "req": "9.24"
+        },
+        {
+          "req": "9.26"
+        },
+        {
+          "req": "9.35"
+        },
+        {
+          "req": "9.40"
+        },
+        {
+          "req": "10.424"
+        },
+        {
+          "req": "10.443"
+        },
+        {
+          "req": "10.495"
+        },
+        {
+          "req": "20.310"
+        },
+        {
+          "req": "20.345"
+        },
+        {
+          "req": "20.352"
+        },
+        {
+          "req": "20.390"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 3,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "At least one of the subjects must be taken outside the student's major. See the BME Minor website for potential substitutions. Approved biomedical engineering UROPs with sufficient medical focus, carried out by students with junior or senior standing with prior approval, may be substituted for up to 12 units."
+    }
+  ],
+  "short-title": "Biomedical Engineering",
+  "desc": "Students should consult with their departmental BME minor advisor, preferably in sophomore year and no later than the end of the fall term of junior year, to choose a course of study, which must be approved in advance by the BME minor advisor. For the list of BME minor advisors and other information, please visit the Biological Engineering website or contact the BE Academic Office, Room 56-651, 617-253-1712."
+}

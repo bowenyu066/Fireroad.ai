@@ -1,0 +1,132 @@
+{
+  "title-no-degree": "Global Studies and Languages",
+  "list-id": "minorJapanese.reql",
+  "title": "Minor in Japanese",
+  "medium-title": "21G Minor (Japanese)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "Two language subjects at the intermediate level.",
+      "reqs": [
+        {
+          "req": "21G.503"
+        },
+        {
+          "req": "21G.504"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Tier I"
+    },
+    {
+      "connection-type": "all",
+      "desc": "Two language subjects at the advanced level.",
+      "reqs": [
+        {
+          "req": "21G.505"
+        },
+        {
+          "req": "21G.506"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Tier II"
+    },
+    {
+      "threshold-desc": "select any 2",
+      "title": "Tier III",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "17.433"
+            },
+            {
+              "req": "17.53"
+            },
+            {
+              "req": "17.537"
+            },
+            {
+              "req": "21G.030"
+            },
+            {
+              "req": "21H.154"
+            },
+            {
+              "req": "21H.155"
+            },
+            {
+              "req": "21H.354"
+            },
+            {
+              "req": "21G.027"
+            },
+            {
+              "req": "21G.039"
+            },
+            {
+              "req": "21G.064"
+            },
+            {
+              "req": "21G.065"
+            },
+            {
+              "req": "21G.094"
+            },
+            {
+              "req": "21G.063"
+            },
+            {
+              "req": "21G.067"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "21G.590"
+            },
+            {
+              "req": "21G.591"
+            },
+            {
+              "req": "21G.592"
+            },
+            {
+              "req": "21G.593"
+            },
+            {
+              "req": "21G.594"
+            },
+            {
+              "req": "21G.596"
+            },
+            {
+              "req": "21G.597"
+            }
+          ],
+          "title": "Japanese Language Option subjects"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Select two of the following subjects in Japanese literature, history, or culture, at least one of which must be a Japanese Language Option subject."
+    }
+  ],
+  "short-title": "21G",
+  "desc": "The Minor in Japanese consists of six subjects arranged into three levels of study as follows:"
+}

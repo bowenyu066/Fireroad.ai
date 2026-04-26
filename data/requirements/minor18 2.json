@@ -1,0 +1,38 @@
+{
+  "title-no-degree": "Mathematics",
+  "list-id": "minor18.reql",
+  "title": "Minor in Mathematics",
+  "medium-title": "18 Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "Six 12-unit subjects in mathematics, beyond the Institute's Mathematics Requirement, of essentially different content, including at least three advanced subjects (first decimal digit one or higher).",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "3 advanced subjects",
+          "plain-string": true,
+          "threshold-desc": "select any 3"
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "3 additional subjects",
+          "plain-string": true,
+          "threshold-desc": "select any 3"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "General Requirements"
+    }
+  ],
+  "short-title": "18",
+  "desc": ""
+}
