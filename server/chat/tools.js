@@ -1,7 +1,12 @@
+const fs = require('fs');
+const path = require('path');
+
 const mockData = require('../../shared/mock-data.js');
+const { summarize: summarizePersonalCourse } = require('../../shared/personal-course');
 const { fetchCurrentCourse, searchCurrentCourses } = require('../current/fireroad');
 const { normalizeCourseId } = require('../current/normalize');
 const { createHistoryRepo } = require('../history/repo');
+const { checkRequirements } = require('../requirements/checker');
 
 const asArray = (value) => (Array.isArray(value) ? value : []);
 const unique = (items) => [...new Set(items)];
@@ -22,18 +27,181 @@ function normalizeSchedule(schedule) {
   return ids;
 }
 
+const REQS_DIR = path.join(__dirname, '..', '..', 'data', 'requirements');
+const MAJOR_KEY_MAP = {
+  '6-1': 'major6-1',
+  '6-2': 'major6-2',
+  '6-3': 'major6-3',
+  '6-4': 'major6-4',
+  '6-5': 'major6-5',
+  '6-7': 'major6-7',
+  '6-9': 'major6-9',
+  '6-14': 'major6-14',
+  '18': 'major18gm',
+  '18-c': 'major18c',
+  '18-am': 'major18am',
+  '18-pm': 'major18pm',
+  '8': 'major8',
+  '16': 'major16',
+};
+
 function normalizeProfile(profile) {
   const incoming = profile && typeof profile === 'object' ? profile : {};
   return {
-    ...mockData.profile,
     ...incoming,
-    taken: asArray(incoming.taken).length ? asArray(incoming.taken).map(normalizeCourseId) : mockData.profile.taken,
-    remainingReqs: asArray(incoming.remainingReqs).length ? asArray(incoming.remainingReqs).map(String) : mockData.profile.remainingReqs,
+    taken: asArray(incoming.taken).map(normalizeCourseId).filter(Boolean),
+    remainingReqs: asArray(incoming.remainingReqs).map(String).filter(Boolean),
     preferences: {
-      ...mockData.profile.preferences,
       ...(incoming.preferences || {}),
     },
   };
+}
+
+function resolveMajorKey(raw) {
+  if (!raw) return null;
+  const normalized = String(raw).replace(/^course\s+/i, '').trim().toLowerCase();
+  if (MAJOR_KEY_MAP[normalized]) return MAJOR_KEY_MAP[normalized];
+  if (normalized.startsWith('major')) return normalized;
+  return null;
+}
+
+function loadRequirementJson(majorKey) {
+  if (!majorKey) return null;
+  const file = path.join(REQS_DIR, `${majorKey}.json`);
+  if (!fs.existsSync(file)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (error) {
+    return null;
+  }
+}
+
+function personalSummaryFromContext(context = {}) {
+  return summarizePersonalCourse(context.personalCourseMarkdown || '');
+}
+
+function completedCourseIds(profile = {}, personal = { completedCourseIds: [] }) {
+  return unique([
+    ...asArray(profile.taken).map(normalizeCourseId),
+    ...asArray(personal.completedCourseIds).map(normalizeCourseId),
+  ].filter(Boolean));
+}
+
+function requirementStatusForProfile(profile = {}, courseIds = []) {
+  const majorKey = resolveMajorKey(profile.majorKey || profile.major);
+  const reqJson = loadRequirementJson(majorKey);
+  if (!majorKey || !reqJson) {
+    return {
+      available: false,
+      majorKey,
+      title: profile.major || '',
+      satisfiedCount: 0,
+      totalCount: 0,
+      groups: [],
+      unsatisfiedGroups: [],
+      unmetCourseIds: [],
+    };
+  }
+  const checked = checkRequirements(reqJson, courseIds);
+  const unsatisfiedGroups = asArray(checked.groups)
+    .filter((group) => !group.satisfied)
+    .map((group) => ({
+      id: group.id,
+      label: group.label,
+      progress: group.progress,
+      unmet: asArray(group.unmet).slice(0, 8),
+      isManual: Boolean(group.isManual),
+      subGroups: asArray(group.subGroups)
+        .filter((sub) => !sub.satisfied)
+        .map((sub) => ({
+          id: sub.id,
+          label: sub.label,
+          progress: sub.progress,
+          unmet: asArray(sub.unmet).slice(0, 5),
+          isManual: Boolean(sub.isManual),
+        })),
+    }));
+  return {
+    available: true,
+    majorKey,
+    title: checked.title,
+    fullTitle: checked.fullTitle,
+    satisfiedCount: checked.satisfiedCount,
+    totalCount: checked.totalCount,
+    groups: checked.groups,
+    unsatisfiedGroups,
+    unmetCourseIds: unique(unsatisfiedGroups.flatMap((group) => [
+      ...asArray(group.unmet),
+      ...asArray(group.subGroups).flatMap((sub) => asArray(sub.unmet)),
+    ].map(normalizeCourseId)).filter(Boolean)),
+  };
+}
+
+function compactPersonalization(profile = {}) {
+  const personalization = profile.preferences && profile.preferences.personalization;
+  if (!personalization || typeof personalization !== 'object') return null;
+  return {
+    workload: personalization.workload || {},
+    commitments: personalization.commitments || {},
+    topicRatings: personalization.topicRatings || {},
+    formatPreferences: personalization.formatPreferences || {},
+    desiredCoursesPerDirection: personalization.desiredCoursesPerDirection || {},
+    freeformNotes: personalization.freeformNotes || '',
+    progress: personalization.progress || {},
+  };
+}
+
+function buildStudentPlanningContext(context = {}) {
+  const profile = normalizeProfile(context.profile || {});
+  const personal = personalSummaryFromContext(context);
+  const completed = completedCourseIds(profile, personal);
+  const schedule = normalizeSchedule(context.schedule);
+  const allCoursesForRequirements = unique([...completed, ...schedule]);
+  const requirementStatus = requirementStatusForProfile(profile, allCoursesForRequirements);
+
+  return {
+    profile: {
+      name: profile.name || '',
+      major: profile.major || '',
+      majorLabel: profile.majorLabel || '',
+      year: profile.year || '',
+      gradYear: profile.gradYear || '',
+    },
+    activeSemester: {
+      activeSem: context.activeSem || null,
+      label: context.planningTermLabel || null,
+      schedule,
+    },
+    courseHistory: {
+      completedCourseIds: completed,
+      listenerCourseIds: asArray(personal.listenerCourseIds),
+      droppedCourseIds: asArray(personal.droppedCourseIds),
+      completedPlan: personal.completedPlan || {},
+      coursePreferences: personal.coursePreferences || {},
+      counts: {
+        completed: asArray(personal.completedCourses).length,
+        listener: asArray(personal.listenerCourses).length,
+        dropped: asArray(personal.droppedCourses).length,
+      },
+    },
+    personalization: compactPersonalization(profile),
+    requirementStatus: {
+      available: requirementStatus.available,
+      majorKey: requirementStatus.majorKey,
+      title: requirementStatus.title,
+      satisfiedCount: requirementStatus.satisfiedCount,
+      totalCount: requirementStatus.totalCount,
+      unsatisfiedGroups: asArray(requirementStatus.unsatisfiedGroups).slice(0, 12),
+      unmetCourseIds: asArray(requirementStatus.unmetCourseIds).slice(0, 40),
+    },
+  };
+}
+
+function isNearGraduation(profile = {}) {
+  const year = String(profile.year || '').toLowerCase();
+  const gradYear = Number(profile.gradYear);
+  const currentYear = new Date().getFullYear();
+  return year.includes('senior') || year.includes('meng') || (Number.isFinite(gradYear) && gradYear <= currentYear + 1);
 }
 
 function scheduleForTool(args = {}, context = {}) {
@@ -104,6 +272,9 @@ function detectConflicts(courseIds) {
 async function summarizeSemesterPlan(args = {}, context = {}) {
   const schedule = scheduleForTool(args, context);
   const profile = profileForTool(args, context);
+  const personal = personalSummaryFromContext(context);
+  const completed = completedCourseIds(profile, personal);
+  const requirementStatus = requirementStatusForProfile(profile, unique([...completed, ...schedule]));
   const courses = (await Promise.all(schedule.map(fetchCurrentCourse))).filter(Boolean);
   const coveredSet = new Set();
 
@@ -112,8 +283,12 @@ async function summarizeSemesterPlan(args = {}, context = {}) {
   });
 
   const coveredRequirements = [...coveredSet].sort();
-  const completedBeforeSchedule = mockData.allReqs.filter((req) => req.done).map((req) => req.id);
-  const remainingRequirements = profile.remainingReqs.filter((req) => !coveredSet.has(req));
+  const completedBeforeSchedule = requirementStatus.available
+    ? requirementStatus.groups.filter((group) => group.satisfied).map((group) => group.label)
+    : [];
+  const remainingRequirements = requirementStatus.available
+    ? requirementStatus.unsatisfiedGroups.map((group) => group.label)
+    : profile.remainingReqs.filter((req) => !coveredSet.has(req));
   const fulfilledRequirements = unique([...completedBeforeSchedule, ...coveredRequirements]);
 
   return {
@@ -126,6 +301,14 @@ async function summarizeSemesterPlan(args = {}, context = {}) {
     remainingRequirements,
     completedBeforeSchedule,
     fulfilledRequirements,
+    degreeRequirements: {
+      available: requirementStatus.available,
+      title: requirementStatus.title,
+      satisfiedCount: requirementStatus.satisfiedCount,
+      totalCount: requirementStatus.totalCount,
+      unsatisfiedGroups: requirementStatus.unsatisfiedGroups,
+      unmetCourseIds: requirementStatus.unmetCourseIds,
+    },
     conflicts: detectConflicts(schedule),
   };
 }
@@ -272,37 +455,56 @@ function applyPersonalizationSignals(course, rankScore, reasons, profile, schedu
   return score;
 }
 
+function courseLooksLikePreference(course, personalCourseMarkdown) {
+  const userText = String(personalCourseMarkdown || '').toLowerCase();
+  const text = courseText(course);
+  let score = 0;
+  if (/machine learning|deep learning|\bml\b|artificial intelligence|\bai\b/.test(userText) && isMlCourse(course)) score += 8;
+  if (/systems?|operating system|network|database|compiler|architecture/.test(userText) && /system|network|database|compiler|architecture/.test(text)) score += 6;
+  if (/theory|proof|algorithm|complexity/.test(userText) && isTheoryCourse(course)) score += 6;
+  if (/linear algebra|probability|statistics|optimization/.test(userText) && /linear algebra|probability|statistics|optimization/.test(text)) score += 5;
+  return score;
+}
+
 async function recommendCourses(args = {}, context = {}) {
   const schedule = scheduleForTool(args, context);
   const profile = profileForTool(args, context);
   const maxResults = Math.max(1, Math.min(Number(args.max_results) || 5, 10));
   const maxWorkload = Number(args.max_workload) || null;
+  const personal = personalSummaryFromContext(context);
+  const completed = completedCourseIds(profile, personal);
+  const requirementStatus = requirementStatusForProfile(profile, unique([...completed, ...schedule]));
   const targetRequirements = asArray(args.target_requirements).length
     ? asArray(args.target_requirements).map(String)
-    : profile.remainingReqs;
+    : requirementStatus.unsatisfiedGroups.map((group) => group.label);
+  const unmetCourseIds = asArray(requirementStatus.unmetCourseIds).map(normalizeCourseId);
   const scheduledSet = new Set(schedule);
-  const takenSet = new Set([...asArray(profile.taken).map(normalizeCourseId), ...schedule]);
+  const takenSet = new Set([...completed, ...schedule]);
+  const nearGraduation = isNearGraduation(profile);
 
   let pool = await searchCurrentCourses({
     query: '',
-    maxResults: Math.max(maxResults * 8, 40),
+    maxResults: Math.max(maxResults * 10, 50),
     maxWorkload,
-    requirements: targetRequirements,
   });
-  if (!pool.results.length && targetRequirements.length) {
-    pool = await searchCurrentCourses({
-      query: '',
-      maxResults: Math.max(maxResults * 8, 40),
-      maxWorkload,
-    });
-  }
+  const exactUnmetCourses = (await Promise.all(unmetCourseIds.slice(0, 40).map(fetchCurrentCourse))).filter(Boolean);
+  const poolById = new Map();
+  [...exactUnmetCourses, ...pool.results].forEach((course) => {
+    if (course && course.id && !poolById.has(course.id)) poolById.set(course.id, course);
+  });
 
-  const recommendations = pool.results
-    .filter((course) => !scheduledSet.has(course.id))
+  const recommendations = [...poolById.values()]
+    .filter((course) => !scheduledSet.has(course.id) && !takenSet.has(course.id))
     .map((course) => {
       const match = getMatch(course.id);
       const reasons = [];
-      let rankScore = match.total || course.matchScore || course.searchScore || 1;
+      let rankScore = course.matchScore || course.searchScore || match.total || 20;
+
+      const exactRequirementHit = unmetCourseIds.includes(course.id);
+      if (exactRequirementHit) {
+        rankScore += nearGraduation ? 90 : 70;
+        reasons.push('listed as unmet in your degree requirements');
+      }
 
       const reqHits = asArray(course.requirements).filter((req) => targetRequirements.includes(req));
       if (reqHits.length) {
@@ -339,6 +541,11 @@ async function recommendCourses(args = {}, context = {}) {
       }
 
       rankScore = applyPersonalizationSignals(course, rankScore, reasons, profile, schedule);
+      const preferenceScore = courseLooksLikePreference(course, context.personalCourseMarkdown);
+      if (preferenceScore) {
+        rankScore += preferenceScore;
+        reasons.push('matches signals from personal_course.md');
+      }
 
       return {
         ...currentCourseSummary(course),
@@ -353,8 +560,27 @@ async function recommendCourses(args = {}, context = {}) {
   return {
     semesterPlan: schedule,
     targetRequirements,
+    degreeRequirements: {
+      available: requirementStatus.available,
+      title: requirementStatus.title,
+      satisfiedCount: requirementStatus.satisfiedCount,
+      totalCount: requirementStatus.totalCount,
+      unsatisfiedGroups: requirementStatus.unsatisfiedGroups.slice(0, 8),
+      unmetCourseIds: requirementStatus.unmetCourseIds.slice(0, 30),
+    },
+    completedCourseIds: completed,
     recommendations,
   };
+}
+
+function checkDegreeRequirementsTool(args = {}, context = {}) {
+  const profile = profileForTool(args, context);
+  const personal = personalSummaryFromContext(context);
+  const schedule = scheduleForTool(args, context);
+  const courses = asArray(args.courses).length
+    ? asArray(args.courses).map(normalizeCourseId)
+    : unique([...completedCourseIds(profile, personal), ...schedule]);
+  return requirementStatusForProfile(profile, courses);
 }
 
 async function validateUiAction(action, schedule) {
@@ -499,7 +725,7 @@ const toolSchemas = [
     type: 'function',
     function: {
       name: 'recommend_courses',
-      description: 'Deterministically rank current catalog courses for the active next-semester plan using match scores, requirements, workload, and profile preferences.',
+      description: 'Rank current catalog courses for the active semester using the student personal_course.md, further personalization, completed courses, current schedule, and degree requirement status.',
       parameters: {
         type: 'object',
         properties: {
@@ -510,6 +736,20 @@ const toolSchemas = [
           target_requirements: { type: 'array', items: { type: 'string' } },
         },
         required: ['schedule', 'profile'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'check_degree_requirements',
+      description: 'Check the student major requirements against completed personal_course.md courses plus the active semester schedule.',
+      parameters: {
+        type: 'object',
+        properties: {
+          profile: { type: 'object' },
+          courses: { type: 'array', items: { type: 'string' } },
+        },
       },
     },
   },
@@ -574,6 +814,7 @@ const toolHandlers = {
   get_current_course: getCurrentCourseTool,
   summarize_semester_plan: summarizeSemesterPlan,
   recommend_courses: recommendCourses,
+  check_degree_requirements: checkDegreeRequirementsTool,
   validate_ui_action: validateUiActionTool,
   get_course_history_summary: getCourseHistorySummary,
   get_offering_history: getOfferingHistory,
@@ -581,6 +822,8 @@ const toolHandlers = {
 
 module.exports = {
   asArray,
+  buildStudentPlanningContext,
+  checkDegreeRequirementsTool,
   currentCourseSummary,
   getCourse,
   getCurrentCourseTool,
