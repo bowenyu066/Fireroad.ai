@@ -17,6 +17,14 @@
     return String(value || '').trim().toUpperCase();
   }
 
+  function decodeMarkdownCell(value) {
+    return String(value || '')
+      .replace(/&amp;/gi, '&')
+      .replace(/&#38;/gi, '&')
+      .replace(/\\&/g, '&')
+      .replace(/＆/g, '&');
+  }
+
   function splitTableRow(row) {
     return String(row || '')
       .trim()
@@ -41,16 +49,28 @@
   }
 
   function normalizeGradeCode(value) {
-    return String(value || '').trim().toUpperCase().replace(/\s+/g, '');
+    return decodeMarkdownCell(value).trim().toUpperCase().replace(/\s+/g, '');
   }
 
-  function classifyCourseStatus(sectionStatus, grade, auditInfo) {
+  function classifyCourseStatus(sectionStatus, grade, auditInfo, notes) {
     const gradeCode = normalizeGradeCode(grade);
     const auditCode = normalizeGradeCode(auditInfo);
-    if (gradeCode === 'LIS' || auditCode === 'LIS') return 'listener';
-    if (gradeCode === 'DR' || auditCode === 'DR') return 'dropped';
-    if (gradeCode === 'S' || /&$/.test(gradeCode)) return 'prior_credit';
+    const notesCode = normalizeGradeCode(notes);
+    const evidence = [gradeCode, auditCode, notesCode].join(' ');
+    if (/\bLIS\b/.test(evidence)) return 'listener';
+    if (/\bDR\b/.test(evidence)) return 'dropped';
+    if (gradeCode === 'S' || /&$/.test(gradeCode) || /(?:TRANSFER|ADVANCEDSTANDING|ASE|PRIORCREDIT)/.test(evidence)) return 'prior_credit';
     return sectionStatus;
+  }
+
+  function normalizePriorCreditCourseId(id, status) {
+    const courseId = normalizeCourseId(id);
+    if (status !== 'prior_credit') return courseId;
+    const introPhysicsAliases = {
+      '8.01L': '8.01',
+      '8.02L': '8.02',
+    };
+    return introPhysicsAliases[courseId] || courseId;
   }
 
   function countsTowardRequirements(course) {
@@ -74,12 +94,14 @@
 
         const cells = splitTableRow(trimmed);
         if (cells.length < 8 || /^none$/i.test(cells[0]) || cells[1] === '—') return;
-        const id = normalizeCourseId(cells[1]);
-        if (!id || id === 'UNKNOWN') return;
+        const rawId = normalizeCourseId(cells[1]);
+        if (!rawId || rawId === 'UNKNOWN') return;
 
         const grade = /^unknown$/i.test(cells[5]) ? '' : cells[5];
         const auditInfo = /^unknown$/i.test(cells[6]) ? '' : cells[6];
-        const nextStatus = classifyCourseStatus(status, grade, auditInfo);
+        const notes = /^unknown$/i.test(cells[7]) ? '' : cells[7];
+        const nextStatus = classifyCourseStatus(status, grade, auditInfo, notes);
+        const id = normalizePriorCreditCourseId(rawId, nextStatus);
 
         courses.push({
           term: /^unknown$/i.test(cells[0]) ? '' : cells[0],
@@ -89,7 +111,7 @@
           level: /^unknown$/i.test(cells[4]) ? '' : cells[4],
           grade,
           auditInfo,
-          notes: /^unknown$/i.test(cells[7]) ? '' : cells[7],
+          notes,
           status: nextStatus,
           source,
           preference: 'neutral',

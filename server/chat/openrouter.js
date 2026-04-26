@@ -1,6 +1,6 @@
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'openai/gpt-4.1-mini';
-const OPENROUTER_TIMEOUT_MS = Math.max(5000, Number(process.env.OPENROUTER_TIMEOUT_MS) || 60000);
+const OPENROUTER_TIMEOUT_MS = 60000;
 
 function createAbortController() {
   const controller = new AbortController();

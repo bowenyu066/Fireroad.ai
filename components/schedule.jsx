@@ -693,9 +693,12 @@ window.SchedulePanel = SchedulePanel;
 
 // ============== 4-Year Plan page ==============
 const FourYearPlanPage = () => {
-  const { fourYearPlan, activeSem, setActiveSem, setRoute, profile } = useApp();
+  const { fourYearPlan, activeSem, setActiveSem, setRoute, profile, personalCourseMarkdown } = useApp();
   const semOrder  = FRDATA.semesterOrder || [];
   const semLabels = FRDATA.semesterLabels || {};
+  const personalSummary = PersonalCourse.summarize(personalCourseMarkdown || '');
+  const priorCredits = personalSummary.priorCreditCourses || [];
+  const excludedCredits = [...(personalSummary.listenerCourses || []), ...(personalSummary.droppedCourses || [])];
 
   const totalCourses = Object.values(fourYearPlan).flat().length;
 
@@ -792,9 +795,34 @@ const FourYearPlanPage = () => {
           </button>
         </div>
 
+        <button
+          onClick={() => setRoute({ name: 'priorcredit' })}
+          style={{
+            width: '100%',
+            marginBottom: 18,
+            padding: '14px 16px',
+            borderRadius: 'var(--r-md)',
+            border: '1px solid var(--border)',
+            background: 'var(--surface)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            textAlign: 'left',
+          }}
+        >
+          <span>
+            <span className="display" style={{ display: 'block', fontSize: 15, fontWeight: 600 }}>Prior Credit</span>
+            <span style={{ display: 'block', marginTop: 3, fontSize: 12, color: 'var(--text-secondary)' }}>
+              {priorCredits.length} requirement-counting credits outside semester plans
+              {excludedCredits.length ? ` · ${excludedCredits.length} listener/dropped entries excluded` : ''}
+            </span>
+          </span>
+          <span className="mono" style={{ color: 'var(--accent)', fontSize: 12 }}>Open →</span>
+        </button>
+
         {/* Column headers */}
         <div style={{ display: 'grid', gridTemplateColumns: '4fr 2fr 4fr', gap: 12, marginBottom: 8 }}>
-          {['Fall', 'IAP', 'Spring'].map((label) => (
+          {['Fall', 'January Term', 'Spring'].map((label) => (
             <div key={label} className="mono" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', textAlign: 'center' }}>
               {label}
             </div>

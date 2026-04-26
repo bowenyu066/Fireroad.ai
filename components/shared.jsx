@@ -164,7 +164,7 @@ const ConfirmTranscriptReparseModal = ({ onCancel, onConfirm }) => (
 );
 
 const TopBar = ({ planningTermLabel }) => {
-  const { setRoute, profile, authState, signOut, resetOnboarding, reparseTranscript, activeSem, setActiveSem, termOptions, planningTermLabel: activePlanningTermLabel } = useApp();
+  const { route, setRoute, profile, authState, signOut, resetOnboarding, reparseTranscript, activeSem, setActiveSem, termOptions, planningTermLabel: activePlanningTermLabel } = useApp();
   const [confirmReparseOpen, setConfirmReparseOpen] = useState(false);
   const isLocalDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
   const displayName = profile?.name || authState?.user?.email?.split('@')[0] || 'User';
@@ -174,7 +174,19 @@ const TopBar = ({ planningTermLabel }) => {
   const allTerms = activeSem && !generatedTerms.some((term) => term.id === activeSem)
     ? [{ id: activeSem, label: termLabel }, ...generatedTerms]
     : generatedTerms;
-  const terms = allTerms.filter((t) => !/^SU\d+$/i.test(t.id));
+  const terms = [
+    { id: '__priorcredit', label: 'Prior Credit' },
+    ...allTerms.filter((t) => !/^SU\d+$/i.test(t.id)),
+  ];
+  const selectedTerm = route?.name === 'priorcredit' ? '__priorcredit' : activeSem;
+  const handleTermChange = (value) => {
+    if (value === '__priorcredit') {
+      setRoute({ name: 'priorcredit' });
+      return;
+    }
+    setActiveSem(value);
+    if (route?.name === 'priorcredit' || route?.name === 'fouryear') setRoute({ name: 'planner' });
+  };
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -211,8 +223,8 @@ const TopBar = ({ planningTermLabel }) => {
         <Icon name="calendar" size={14} />
         {setActiveSem ? (
           <select
-            value={activeSem}
-            onChange={(event) => setActiveSem(event.target.value)}
+            value={selectedTerm}
+            onChange={(event) => handleTermChange(event.target.value)}
             className="mono"
             title="Planning term"
             style={{

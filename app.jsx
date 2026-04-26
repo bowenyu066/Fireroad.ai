@@ -329,9 +329,17 @@ const App = () => {
     setSchedule((s) => [...s, id]);
   };
 
-  const completeOnboarding = async ({ profile: nextProfile, onboarding, personalCourseMarkdown }) => {
+  const completeOnboarding = async ({ profile: nextProfile, onboarding, personalCourseMarkdown, recommendedCourseIds = [] }) => {
     const hydratedProfile = deriveProfileFromMarkdown(nextProfile, personalCourseMarkdown);
-    const hydratedFourYearPlan = mergePlanWithMarkdown(fourYearPlan, personalCourseMarkdown);
+    let hydratedFourYearPlan = mergePlanWithMarkdown(fourYearPlan, personalCourseMarkdown);
+    const recommendedIds = [...new Set((recommendedCourseIds || []).map((id) => String(id || '').trim().toUpperCase()).filter(Boolean))];
+    if (recommendedIds.length) {
+      const currentPlan = hydratedFourYearPlan[activeSem] || [];
+      hydratedFourYearPlan = {
+        ...hydratedFourYearPlan,
+        [activeSem]: [...new Set([...currentPlan, ...recommendedIds])],
+      };
+    }
     setOnboardingCompleted(true);
     setProfile(hydratedProfile);
     setPersonalCourseMarkdown(personalCourseMarkdown || '');

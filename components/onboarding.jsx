@@ -1,8 +1,17 @@
-/* global React, FRDATA, Icon, ThemeToggle, Logo, useApp */
+/* global React, FRDATA, PersonalCourse, Icon, ThemeToggle, Logo, useApp */
 const { useState, useEffect, useMemo, useRef } = React;
 
 const MIT_GRADES_URL = 'https://registrar.mit.edu/classes-grades-evaluations/grades';
 const MIT_WEBSIS_URL = 'https://student.mit.edu/';
+const ONBOARDING_DRAFT_KEY = 'fr-onboarding-draft-v2';
+const ONBOARDING_FILE_DB = 'fr-onboarding-files-v1';
+const ONBOARDING_FILE_STORE = 'files';
+const BUILD_PHASES = [
+  'Syncing profile',
+  'Parsing uploaded PDFs',
+  'Calibrating preferences',
+  'Building next semester plan',
+];
 
 const MAJORS = [
   ['6-2', 'Course 6-2: Electrical Engineering and Computer Science'],
@@ -71,9 +80,95 @@ const emptyData = {
   courseworkImported: false,
   courseworkText: '',
   courseworkSource: 'paste',
+  futureCourseworkIds: [],
   courses: [],
+  courseFeelReviewed: false,
   skillLevel: 'competition-lite',
   preferencesNote: '',
+  buildStatus: '',
+};
+
+const safeJsonParse = (value) => {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+};
+
+const sanitizeDraftData = (value) => ({
+  ...emptyData,
+  ...(value || {}),
+  transcriptParsing: false,
+  resumeParsing: false,
+  courseworkImporting: false,
+  finishing: false,
+  buildStatus: '',
+  completionError: '',
+});
+
+const readOnboardingDraft = (key) => {
+  const stored = safeJsonParse(localStorage.getItem(key));
+  if (!stored || typeof stored !== 'object') return null;
+  return {
+    data: sanitizeDraftData(stored.data || stored),
+    active: typeof stored.active === 'string' ? stored.active : 'profile',
+  };
+};
+
+const idbRequest = (request) => new Promise((resolve, reject) => {
+  request.onsuccess = () => resolve(request.result);
+  request.onerror = () => reject(request.error);
+});
+
+const idbTransaction = (tx) => new Promise((resolve, reject) => {
+  tx.oncomplete = () => resolve();
+  tx.onerror = () => reject(tx.error);
+  tx.onabort = () => reject(tx.error);
+});
+
+const openOnboardingFileDb = () => new Promise((resolve, reject) => {
+  if (typeof indexedDB === 'undefined') {
+    reject(new Error('IndexedDB is unavailable.'));
+    return;
+  }
+  const request = indexedDB.open(ONBOARDING_FILE_DB, 1);
+  request.onupgradeneeded = () => {
+    request.result.createObjectStore(ONBOARDING_FILE_STORE, { keyPath: 'key' });
+  };
+  request.onsuccess = () => resolve(request.result);
+  request.onerror = () => reject(request.error);
+});
+
+const saveOnboardingFile = async (key, file) => {
+  const db = await openOnboardingFileDb();
+  const tx = db.transaction(ONBOARDING_FILE_STORE, 'readwrite');
+  tx.objectStore(ONBOARDING_FILE_STORE).put({
+    key,
+    file,
+    name: file.name,
+    type: file.type,
+    lastModified: file.lastModified,
+    savedAt: Date.now(),
+  });
+  await idbTransaction(tx);
+  db.close();
+};
+
+const loadOnboardingFile = async (key) => {
+  const db = await openOnboardingFileDb();
+  const tx = db.transaction(ONBOARDING_FILE_STORE, 'readonly');
+  const record = await idbRequest(tx.objectStore(ONBOARDING_FILE_STORE).get(key));
+  db.close();
+  return record?.file || null;
+};
+
+const removeOnboardingFile = async (key) => {
+  const db = await openOnboardingFileDb();
+  const tx = db.transaction(ONBOARDING_FILE_STORE, 'readwrite');
+  tx.objectStore(ONBOARDING_FILE_STORE).delete(key);
+  await idbTransaction(tx);
+  db.close();
 };
 
 const courseName = (id) => {
@@ -146,6 +241,40 @@ const postOnboardingFile = (endpoint, file, fields) => {
   });
 };
 
+const extractActionCourseIds = (actions) => [...new Set((actions || [])
+  .filter((action) => action && (action.type === 'add_course' || action.type === 'replace_course'))
+  .map((action) => String(action.courseId || '').trim().toUpperCase())
+  .filter(Boolean))];
+
+const extractSuggestedCourseIds = (message) => [...new Set((message?.suggestions || [])
+  .map((id) => String(id || '').trim().toUpperCase())
+  .filter(Boolean))];
+
+const fetchAgentPlanCourseIds = async ({ profile, personalCourseMarkdown, schedule, activeSem, maxResults = 4 }) => {
+  const planningTermLabel = FRDATA.semesterLabels?.[activeSem] || activeSem || 'next semester';
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      messages: [{
+        role: 'user',
+        text: `Build my ${planningTermLabel} course plan now. Add/include ${maxResults} courses directly, keep workload reasonable, respect my completed courses and preferences, and avoid courses I have already taken.`,
+      }],
+      profile,
+      personalCourseMarkdown,
+      schedule,
+      activeSem,
+      planningTermLabel,
+      studentName: profile?.name,
+    }),
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.error || payload.message?.text || 'Agent planning failed.');
+  const actionIds = extractActionCourseIds(payload.uiActions);
+  if (actionIds.length) return actionIds.slice(0, maxResults);
+  return extractSuggestedCourseIds(payload.message).slice(0, maxResults);
+};
+
 const parseCourseworkText = (text, source = 'manual') => {
   const matches = text.match(/\b(?:[0-9]{1,2}\.[0-9A-Z]{2,5}|(?:CMS|MAS|STS|WGS|EC|ES|CC|CS|IDS|SP|AS|MS|NS|PE)\.?[0-9A-Z]{2,5})\b/g) || [];
   return dedupeCourses(matches.map((raw) => {
@@ -155,11 +284,51 @@ const parseCourseworkText = (text, source = 'manual') => {
       name: courseName(id),
       grade: '',
       term: '',
-      status: 'completed',
+      status: 'planned',
       source,
       preference: 'neutral',
     };
   }));
+};
+
+const plannedCourseIdsFromText = (text, personalCourseMarkdown = '') => {
+  const parsed = parseCourseworkText(text, 'future plan');
+  const summary = PersonalCourse?.summarize ? PersonalCourse.summarize(personalCourseMarkdown || '') : null;
+  const pastIds = new Set([
+    ...(summary?.completedCourseIds || []),
+    ...(summary?.listenerCourseIds || []),
+    ...(summary?.droppedCourseIds || []),
+  ].map((id) => String(id).toUpperCase()));
+  return parsed.map((course) => course.id).filter((id) => !pastIds.has(id));
+};
+
+const completedCoursesForRating = (courses) => (courses || [])
+  .filter((course) => course.status === 'completed');
+
+const termChronologyKey = (termLabel) => {
+  const termId = PersonalCourse?.termIdFromLabel ? PersonalCourse.termIdFromLabel(termLabel) : '';
+  const match = String(termId || '').match(/^(IAP|SU|S|F)(\d{2})$/);
+  if (!match) return Number.MAX_SAFE_INTEGER;
+  const year = Number(match[2]);
+  const rank = { IAP: 0, S: 1, SU: 2, F: 3 }[match[1]] ?? 9;
+  return year * 10 + rank;
+};
+
+const groupedCoursesByTerm = (courses) => {
+  const groups = new Map();
+  completedCoursesForRating(courses).forEach((course) => {
+    const term = course.term || 'Unknown term';
+    if (!groups.has(term)) groups.set(term, []);
+    groups.get(term).push(course);
+  });
+  return [...groups.entries()]
+    .map(([term, rows]) => ({ term, rows }))
+    .sort((a, b) => {
+      const aKey = termChronologyKey(a.term);
+      const bKey = termChronologyKey(b.term);
+      if (aKey !== bKey) return aKey - bKey;
+      return a.term.localeCompare(b.term);
+    });
 };
 
 const toPersonalCourseMarkdown = (data) => {
@@ -193,31 +362,65 @@ const toPersonalCourseMarkdown = (data) => {
 };
 
 const Onboarding = () => {
-  const { profile, setRoute, setProfile, completeOnboarding, authState, signOut } = useApp();
-  const [data, setData] = useState(emptyData);
-  const [active, setActive] = useState('profile');
+  const { profile, setRoute, setProfile, completeOnboarding, authState, signOut, activeSem, fourYearPlan } = useApp();
+  const draftKey = authState?.user?.uid ? `${ONBOARDING_DRAFT_KEY}:${authState.user.uid}` : ONBOARDING_DRAFT_KEY;
+  const draft = readOnboardingDraft(draftKey);
+  const [data, setData] = useState(() => draft?.data || emptyData);
+  const [active, setActive] = useState(() => draft?.active || 'profile');
+  const transcriptFileRef = useRef(null);
+  const resumeFileRef = useRef(null);
+  const transcriptFileKey = `${draftKey}:transcript`;
+  const resumeFileKey = `${draftKey}:resume`;
 
   const isPrefrosh = data.standing === 'prefrosh';
-  const hasRichSignal = data.transcriptParsed || data.resumeParsed || data.courseworkImported;
+  const hasRichSignal = data.transcriptUploaded || data.resumeUploaded || data.transcriptParsed || data.resumeParsed || data.courseworkImported;
   const needsSkillStep = !hasRichSignal;
+  const rateableCourseCount = completedCoursesForRating(data.courses).length;
 
   const steps = useMemo(() => {
     const list = [{ key: 'profile', label: 'Profile' }];
     if (!isPrefrosh) list.push({ key: 'transcript', label: 'Transcript' });
     list.push({ key: 'resume', label: 'Resume' });
     if (!isPrefrosh) list.push({ key: 'coursework', label: 'Coursework' });
+    if (!isPrefrosh && rateableCourseCount > 0) list.push({ key: 'ratings', label: 'Course feel' });
     if (needsSkillStep) list.push({ key: 'skill', label: 'Skill level' });
-    if (!isPrefrosh && data.courses.length > 0) list.push({ key: 'ratings', label: 'Course feel' });
     return list;
-  }, [isPrefrosh, needsSkillStep, data.courses.length]);
+  }, [isPrefrosh, needsSkillStep, rateableCourseCount]);
 
   useEffect(() => {
+    if (active === 'building') return;
     if (!steps.some((s) => s.key === active)) setActive(steps[steps.length - 1].key);
   }, [steps, active]);
 
   useEffect(() => {
     localStorage.setItem('fr-personalcourse-draft', data.personalCourseMarkdown || toPersonalCourseMarkdown(data));
-  }, [data]);
+    localStorage.setItem(draftKey, JSON.stringify({
+      active,
+      data: sanitizeDraftData(data),
+    }));
+  }, [data, active, draftKey]);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.allSettled([
+      loadOnboardingFile(transcriptFileKey),
+      loadOnboardingFile(resumeFileKey),
+    ]).then(([transcriptResult, resumeResult]) => {
+      if (cancelled) return;
+      const transcriptFile = transcriptResult.status === 'fulfilled' ? transcriptResult.value : null;
+      const resumeFile = resumeResult.status === 'fulfilled' ? resumeResult.value : null;
+      if (transcriptFile) transcriptFileRef.current = transcriptFile;
+      if (resumeFile) resumeFileRef.current = resumeFile;
+      if (transcriptFile || resumeFile) {
+        setData((prev) => ({
+          ...prev,
+          transcriptFileName: transcriptFile && !prev.transcriptFileName ? transcriptFile.name : prev.transcriptFileName,
+          resumeFileName: resumeFile && !prev.resumeFileName ? resumeFile.name : prev.resumeFileName,
+        }));
+      }
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [transcriptFileKey, resumeFileKey]);
 
   const upd = (key, value) => setData((prev) => ({ ...prev, [key]: value }));
   const mergeCourses = (incoming) => setData((prev) => ({
@@ -259,31 +462,21 @@ const Onboarding = () => {
       setData((prev) => ({ ...prev, transcriptError: 'Only PDF uploads are supported for transcripts right now.' }));
       return;
     }
+    transcriptFileRef.current = file;
     setData((prev) => ({
       ...prev,
       transcriptUploaded: true,
       transcriptFileName: file.name,
-      transcriptParsing: true,
+      transcriptParsing: false,
       transcriptParsed: false,
       transcriptError: '',
     }));
     try {
-      const payload = await postOnboardingFile('transcript', file, {
-        profile: profileForPrompt(data),
-        courseworkText: data.courseworkText,
-      });
-      applyMarkdownPayload(payload, {
-        transcriptParsed: true,
-        transcriptParsing: false,
-        transcriptText: payload.transcriptText || '',
-        transcriptFileName: payload.fileName || file.name,
-        courseworkImported: Boolean(data.courseworkText.trim()) || data.courseworkImported,
-      });
+      await saveOnboardingFile(transcriptFileKey, file);
     } catch (error) {
       setData((prev) => ({
         ...prev,
-        transcriptParsing: false,
-        transcriptError: error.message,
+        transcriptError: 'Transcript is selected for this session, but could not be saved for refresh recovery.',
       }));
     }
   };
@@ -293,7 +486,7 @@ const Onboarding = () => {
     const payload = await postOnboardingJson('profile', {
       profile: profileForPrompt(sourceData),
       transcriptText: sourceData.transcriptText,
-      courseworkText: sourceData.courseworkText,
+      courseworkText: '',
     });
     applyMarkdownPayload(payload);
     return payload.personalCourseMarkdown;
@@ -304,36 +497,21 @@ const Onboarding = () => {
       setData((prev) => ({ ...prev, resumeError: 'Only PDF uploads are supported for resumes right now.' }));
       return;
     }
+    resumeFileRef.current = file;
     setData((prev) => ({
       ...prev,
       resumeUploaded: true,
       resumeFileName: file.name,
-      resumeParsing: true,
+      resumeParsing: false,
       resumeParsed: false,
       resumeError: '',
     }));
     try {
-      const baseMarkdown = await ensureBaseMarkdown(data);
-      const payload = await postOnboardingFile('resume', file, {
-        profile: profileForPrompt(data),
-        personalCourseMarkdown: baseMarkdown,
-        userBackgroundText: data.preferencesNote,
-        transcriptText: data.transcriptText,
-        courseworkText: data.courseworkText,
-        skillLevels: data.skillLevel ? { overall_technical_ramp_level: data.skillLevel } : {},
-      });
-      applyMarkdownPayload(payload, {
-        resumeParsed: true,
-        resumeParsing: false,
-        resumeText: payload.resumeText || '',
-        resumeFileName: payload.fileName || file.name,
-        preferencesNote: data.preferencesNote || payload.summary || '',
-      });
+      await saveOnboardingFile(resumeFileKey, file);
     } catch (error) {
       setData((prev) => ({
         ...prev,
-        resumeParsing: false,
-        resumeError: error.message,
+        resumeError: 'Resume is selected for this session, but could not be saved for refresh recovery.',
       }));
     }
   };
@@ -342,15 +520,13 @@ const Onboarding = () => {
     if (!data.courseworkText.trim()) return;
     setData((prev) => ({ ...prev, courseworkImporting: true, courseworkError: '' }));
     try {
-      const payload = await postOnboardingJson('coursework', {
-        profile: profileForPrompt(data),
-        transcriptText: data.transcriptText,
-        courseworkText: data.courseworkText,
-      });
-      applyMarkdownPayload(payload, {
+      const plannedIds = plannedCourseIdsFromText(data.courseworkText, data.personalCourseMarkdown);
+      setData((prev) => ({
+        ...prev,
         courseworkImported: true,
         courseworkImporting: false,
-      });
+        futureCourseworkIds: plannedIds,
+      }));
     } catch (error) {
       setData((prev) => ({
         ...prev,
@@ -361,29 +537,108 @@ const Onboarding = () => {
   };
 
   const finish = async () => {
-    setData((prev) => ({ ...prev, finishing: true, completionError: '' }));
+    setActive('building');
+    setData((prev) => ({ ...prev, finishing: true, completionError: '', buildStatus: BUILD_PHASES[0] }));
     try {
       let personalCourseMarkdown = data.personalCourseMarkdown;
       let courses = data.courses;
+      let transcriptText = data.transcriptText;
+      let resumeText = data.resumeText;
+
+      if (data.transcriptUploaded && !data.transcriptParsed) {
+        setData((prev) => ({ ...prev, buildStatus: BUILD_PHASES[1], transcriptParsing: true }));
+        const transcriptFile = transcriptFileRef.current || await loadOnboardingFile(transcriptFileKey);
+        if (!transcriptFile) {
+          throw new Error('Transcript PDF is no longer available in this browser session. Please go back and upload it again.');
+        }
+        transcriptFileRef.current = transcriptFile;
+        const transcriptPayload = await postOnboardingFile('transcript', transcriptFile, {
+          profile: profileForPrompt(data),
+        });
+        personalCourseMarkdown = transcriptPayload.personalCourseMarkdown || personalCourseMarkdown;
+        transcriptText = transcriptPayload.transcriptText || transcriptText;
+        courses = preserveCoursePreferences(transcriptPayload.courses || courses, courses);
+        setData((prev) => ({
+          ...prev,
+          transcriptParsed: true,
+          transcriptParsing: false,
+          transcriptText,
+          transcriptFileName: transcriptPayload.fileName || prev.transcriptFileName,
+          personalCourseMarkdown,
+          courses,
+          parseWarnings: transcriptPayload.warnings || prev.parseWarnings,
+        }));
+      }
+
       if (!personalCourseMarkdown) {
+        setData((prev) => ({ ...prev, buildStatus: BUILD_PHASES[0] }));
         const basePayload = await postOnboardingJson('profile', {
           profile: profileForPrompt(data),
-          transcriptText: data.transcriptText,
-          courseworkText: data.courseworkText,
+          transcriptText,
+          courseworkText: '',
         });
         personalCourseMarkdown = basePayload.personalCourseMarkdown;
         courses = preserveCoursePreferences(basePayload.courses || [], courses);
       }
-      if (courses.length > 0) {
-        const preferencePayload = await postOnboardingJson('preferences', {
+
+      if (data.resumeUploaded && !data.resumeParsed) {
+        setData((prev) => ({ ...prev, buildStatus: BUILD_PHASES[1], resumeParsing: true }));
+        const resumeFile = resumeFileRef.current || await loadOnboardingFile(resumeFileKey);
+        if (!resumeFile) {
+          throw new Error('Resume PDF is no longer available in this browser session. Please go back and upload it again.');
+        }
+        resumeFileRef.current = resumeFile;
+        const resumePayload = await postOnboardingFile('resume', resumeFile, {
+          profile: profileForPrompt(data),
+          personalCourseMarkdown,
+          userBackgroundText: data.preferencesNote,
+          transcriptText,
+          courseworkText: '',
+          skillLevels: data.skillLevel ? { overall_technical_ramp_level: data.skillLevel } : {},
+        });
+        personalCourseMarkdown = resumePayload.personalCourseMarkdown || personalCourseMarkdown;
+        resumeText = resumePayload.resumeText || resumeText;
+        courses = preserveCoursePreferences(resumePayload.courses || courses, courses);
+        setData((prev) => ({
+          ...prev,
+          resumeParsed: true,
+          resumeParsing: false,
+          resumeText,
+          resumeFileName: resumePayload.fileName || prev.resumeFileName,
           personalCourseMarkdown,
           courses,
+          preferencesNote: prev.preferencesNote || resumePayload.summary || '',
+          parseWarnings: resumePayload.warnings || prev.parseWarnings,
+        }));
+      }
+
+      const preferenceCourses = completedCoursesForRating(courses);
+      if (!data.courseFeelReviewed && active !== 'ratings' && preferenceCourses.length > 0) {
+        setData((prev) => ({
+          ...prev,
+          finishing: false,
+          buildStatus: '',
+          personalCourseMarkdown,
+          courses,
+          transcriptText,
+          resumeText,
+        }));
+        setActive('ratings');
+        return;
+      }
+
+      if (preferenceCourses.length > 0) {
+        setData((prev) => ({ ...prev, buildStatus: BUILD_PHASES[2] }));
+        const preferencePayload = await postOnboardingJson('preferences', {
+          personalCourseMarkdown,
+          courses: preferenceCourses,
         });
         personalCourseMarkdown = preferencePayload.personalCourseMarkdown;
         courses = preserveCoursePreferences(preferencePayload.courses || courses, courses);
       }
 
-      const taken = courses.map((course) => course.id);
+      const summary = PersonalCourse.summarize(personalCourseMarkdown || '');
+      const taken = summary.completedCourseIds || courses.map((course) => course.id);
       const majorLabel = MAJORS.find(([id]) => id === data.major)?.[1] || data.major;
       const nextProfile = {
         ...profile,
@@ -396,30 +651,76 @@ const Onboarding = () => {
           ...profile.preferences,
           skillLevel: data.skillLevel,
           notes: data.preferencesNote,
+          futureCourseworkIds: data.futureCourseworkIds || [],
         },
       };
+
+      setData((prev) => ({ ...prev, buildStatus: BUILD_PHASES[3] }));
+      let recommendedCourseIds = [];
+      try {
+        const currentSchedule = Array.isArray(fourYearPlan?.[activeSem]) ? fourYearPlan[activeSem] : [];
+        const planningSchedule = [...currentSchedule, ...(data.futureCourseworkIds || [])];
+        recommendedCourseIds = await fetchAgentPlanCourseIds({
+          profile: nextProfile,
+          personalCourseMarkdown,
+          schedule: planningSchedule,
+          activeSem,
+          maxResults: 4,
+        });
+      } catch (error) {
+        console.warn('Could not build agent plan recommendations', error);
+        try {
+          const currentSchedule = Array.isArray(fourYearPlan?.[activeSem]) ? fourYearPlan[activeSem] : [];
+          const recommendations = await FRDATA.fetchCurrentRecommendations({
+            schedule: [...currentSchedule, ...(data.futureCourseworkIds || [])],
+            profile: nextProfile,
+            personalCourseMarkdown,
+            maxResults: 4,
+          });
+          recommendedCourseIds = recommendations
+            .map((course) => course?.id)
+            .filter(Boolean)
+            .slice(0, 4);
+        } catch (fallbackError) {
+          console.warn('Could not build fallback plan recommendations', fallbackError);
+        }
+      }
 
       const onboardingForStorage = {
         ...data,
         courses,
+        courseFeelReviewed: data.courseFeelReviewed || active === 'ratings',
         personalCourseMarkdown,
+        recommendedCourseIds,
         finishing: false,
         transcriptText: data.transcriptText ? '[extracted text omitted from stored onboarding payload]' : '',
         resumeText: data.resumeText ? '[extracted text omitted from stored onboarding payload]' : '',
       };
 
       setProfile(nextProfile);
+      localStorage.removeItem(draftKey);
+      removeOnboardingFile(transcriptFileKey).catch(() => {});
+      removeOnboardingFile(resumeFileKey).catch(() => {});
       if (completeOnboarding) {
         completeOnboarding({
           profile: nextProfile,
           onboarding: onboardingForStorage,
           personalCourseMarkdown,
+          recommendedCourseIds,
         });
       } else {
         setRoute({ name: 'planner' });
       }
     } catch (error) {
-      setData((prev) => ({ ...prev, finishing: false, completionError: error.message }));
+      setData((prev) => ({
+        ...prev,
+        finishing: false,
+        transcriptParsing: false,
+        resumeParsing: false,
+        buildStatus: '',
+        completionError: error.message,
+      }));
+      setActive(steps[steps.length - 1]?.key || 'profile');
     }
   };
 
@@ -427,6 +728,7 @@ const Onboarding = () => {
     data, upd, goNext, goBack, skipToNext, currentIndex, steps,
     handleTranscriptUpload, handleResumeUpload, importCoursework, mergeCourses, setCoursePreference,
     isPrefrosh,
+    isLastStep: currentIndex >= steps.length - 1,
   };
 
   return (
@@ -446,12 +748,15 @@ const Onboarding = () => {
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 24px 26px' }}>
-        <Stepper steps={steps} active={active} setActive={setActive} />
-      </div>
+      {active !== 'building' && (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 24px 26px' }}>
+          <Stepper steps={steps} active={active} setActive={setActive} />
+        </div>
+      )}
 
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 24px 56px' }}>
         <div style={{ width: '100%', maxWidth: 680 }}>
+          {active === 'building' && <BuildProgress data={data} />}
           {active === 'profile' && <StepProfile {...stepProps} />}
           {active === 'transcript' && <StepTranscript {...stepProps} />}
           {active === 'resume' && <StepResume {...stepProps} />}
@@ -511,10 +816,11 @@ const StepHeader = ({ eyebrow, title, sub }) => (
   </div>
 );
 
-const Field = ({ label, children, hint }) => (
+const Field = ({ label, children, hint, required = false }) => (
   <div style={{ marginBottom: 19 }}>
     <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 8, fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
       {label}
+      {required && <span style={{ color: '#EF4444', marginLeft: 4 }}>*</span>}
     </label>
     {children}
     {hint && <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 6 }}>{hint}</div>}
@@ -605,7 +911,7 @@ const Choice = ({ value, current, onClick, title, children }) => (
     }}>
       {current === value && <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)' }} />}
     </span>
-    <span>
+    <span style={{ flex: 1, minWidth: 0 }}>
       <span style={{ display: 'block', color: 'var(--text)', fontWeight: 500 }}>{title}</span>
       <span style={{ display: 'block', color: 'var(--text-secondary)', fontSize: 13, marginTop: 3 }}>{children}</span>
     </span>
@@ -736,6 +1042,35 @@ const CourseList = ({ courses, setCoursePreference, compact = false }) => (
   </div>
 );
 
+const GroupedCourseList = ({ courses, setCoursePreference }) => {
+  const groups = groupedCoursesByTerm(courses);
+  if (!groups.length) {
+    return (
+      <div style={{ padding: 18, border: '1px solid var(--border)', borderRadius: 'var(--r-md)', color: 'var(--text-tertiary)' }}>
+        No completed transcript courses found for rating.
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+      {groups.map((group) => (
+        <div key={group.term}>
+          <div className="mono" style={{
+            fontSize: 11,
+            color: 'var(--text-secondary)',
+            textTransform: 'uppercase',
+            marginBottom: 8,
+          }}>
+            {group.term}
+          </div>
+          <CourseList courses={group.rows} setCoursePreference={setCoursePreference} />
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const PreferenceButtons = ({ value, onChange }) => (
   <div style={{
     display: 'grid',
@@ -771,45 +1106,108 @@ const PreferenceButtons = ({ value, onChange }) => (
   </div>
 );
 
+const BuildProgress = ({ data }) => {
+  const activeIndex = Math.max(0, BUILD_PHASES.findIndex((phase) => phase === data.buildStatus));
+  const progress = Math.min(96, 18 + activeIndex * 24 + (data.finishing ? 12 : 0));
+  return (
+    <div className="slide-up" style={{
+      minHeight: 420,
+      display: 'grid',
+      placeItems: 'center',
+      border: '1px solid var(--border)',
+      background: 'var(--surface)',
+      borderRadius: 'var(--r-lg)',
+      padding: 34,
+    }}>
+      <div style={{ width: '100%', maxWidth: 520, textAlign: 'center' }}>
+        <div style={{ display: 'inline-flex', gap: 5, marginBottom: 22 }}>
+          {[0, 1, 2, 3].map((i) => (
+            <span key={i} style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: i <= activeIndex ? 'var(--accent)' : 'var(--border-strong)',
+              animation: `pulse 1s infinite ${i * 0.12}s`,
+            }} />
+          ))}
+        </div>
+        <h1 className="display" style={{ margin: 0, fontSize: 30, fontWeight: 600, letterSpacing: 0 }}>
+          Building your first plan
+        </h1>
+        <p style={{ margin: '10px auto 24px', maxWidth: 420, color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.55 }}>
+          {data.buildStatus || 'Preparing your course context'}
+        </p>
+        <div style={{
+          height: 8,
+          borderRadius: 999,
+          overflow: 'hidden',
+          background: 'var(--surface-2)',
+          border: '1px solid var(--border)',
+        }}>
+          <div style={{
+            width: `${progress}%`,
+            height: '100%',
+            background: 'var(--accent)',
+            transition: 'width 280ms ease',
+          }} />
+        </div>
+        <div style={{ marginTop: 22, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+          {BUILD_PHASES.map((phase, index) => (
+            <div key={phase} className="mono" style={{
+              padding: '8px 6px',
+              borderRadius: 8,
+              background: index <= activeIndex ? 'var(--accent-soft)' : 'var(--surface-2)',
+              color: index <= activeIndex ? 'var(--accent)' : 'var(--text-tertiary)',
+              fontSize: 10,
+              lineHeight: 1.25,
+            }}>
+              {phase}
+            </div>
+          ))}
+        </div>
+        {data.completionError && <StatusPill icon="x" tone="error">{data.completionError}</StatusPill>}
+      </div>
+    </div>
+  );
+};
+
 const StepProfile = ({ data, upd, goNext }) => (
   <div className="slide-up">
     <StepHeader
       eyebrow="Required"
       title="Basic student info"
-      sub="This is the only required section. Everything after this can be skipped or inferred later."
     />
-    <Field label="Your name">
+    <Field label="Your name" required>
       <TextInput placeholder="Alex Chen" value={data.name} onChange={(event) => upd('name', event.target.value)} />
     </Field>
     <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 16 }}>
-      <Field label="Major / intended major">
+      <Field label="Major / intended major" required>
         <Select value={data.major} onChange={(value) => upd('major', value)} options={MAJORS} />
       </Field>
-      <Field label="Year">
+      <Field label="Year" required>
         <Select value={data.standing} onChange={(value) => upd('standing', value)} options={STANDINGS} />
       </Field>
     </div>
-    <Field label="Future double major / minor / concentration space" hint="Not active yet, but this keeps the data model ready.">
+    <Field label="Future double major / minor / concentration">
       <TextInput placeholder="Minor in 18, concentration in linguistics, etc." value={data.futureProgram} onChange={(event) => upd('futureProgram', event.target.value)} />
     </Field>
     {data.standing !== 'prefrosh' && (
-      <Field label="GPA or academic standing" hint="Optional. Leave blank if you do not want recommendations to use it yet.">
+      <Field label="GPA or academic standing">
         <TextInput placeholder="4.7 / 5.0, good standing, or leave blank" value={data.gpa} onChange={(event) => upd('gpa', event.target.value)} />
       </Field>
     )}
     {data.standing === 'prefrosh' && (
-      <StatusPill icon="sparkle">Pre-freshman mode skips transcript, MIT coursework import, and course-rating calibration.</StatusPill>
+      <StatusPill icon="sparkle">Pre-freshman mode</StatusPill>
     )}
     <StepNav onNext={goNext} disabled={!data.name.trim()} />
   </div>
 );
 
-const StepTranscript = ({ data, goNext, goBack, skipToNext, handleTranscriptUpload }) => (
+const StepTranscript = ({ data, goNext, goBack, skipToNext, handleTranscriptUpload, isLastStep }) => (
   <div className="slide-up">
     <StepHeader
       eyebrow="Optional"
       title="Upload transcript or grade report"
-      sub="A PDF unlocks course and grade parsing. You can skip it and still continue."
     />
     <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
       <a className="btn" href={MIT_GRADES_URL} target="_blank" rel="noreferrer">
@@ -829,17 +1227,17 @@ const StepTranscript = ({ data, goNext, goBack, skipToNext, handleTranscriptUplo
     />
     {data.transcriptError && <StatusPill icon="x" tone="error">{data.transcriptError}</StatusPill>}
     {data.parseWarnings.map((warning) => <StatusPill key={warning} icon="sparkle" tone="warning">{warning}</StatusPill>)}
-    {data.transcriptParsed && <StatusPill>Found {data.courses.length} completed courses. Grades are shown again in the final course-feel step.</StatusPill>}
-    <StepNav onNext={goNext} onBack={goBack} onSkip={skipToNext} optional disabled={data.transcriptParsing} nextLabel={data.transcriptUploaded ? 'Continue' : 'Continue without transcript'} />
+    {data.transcriptUploaded && !data.transcriptParsed && <StatusPill>{data.transcriptFileName} is ready. It will be parsed when you build the plan.</StatusPill>}
+    {data.transcriptParsed && <StatusPill>Parsed {data.courses.length} transcript course rows.</StatusPill>}
+    <StepNav onNext={goNext} onBack={goBack} onSkip={skipToNext} optional nextLabel={isLastStep ? 'Build my plan' : 'Continue'} />
   </div>
 );
 
-const StepResume = ({ data, goNext, goBack, skipToNext, handleResumeUpload }) => (
+const StepResume = ({ data, goNext, goBack, skipToNext, handleResumeUpload, isLastStep }) => (
   <div className="slide-up">
     <StepHeader
       eyebrow="Optional"
       title="Upload resume"
-      sub="This will be saved for a backend parser to infer interests, competition background, projects, and skill level."
     />
     <UploadZone
       icon="paperclip"
@@ -853,17 +1251,17 @@ const StepResume = ({ data, goNext, goBack, skipToNext, handleResumeUpload }) =>
     />
     {data.resumeError && <StatusPill icon="x" tone="error">{data.resumeError}</StatusPill>}
     {data.parseWarnings.map((warning) => <StatusPill key={warning} icon="sparkle" tone="warning">{warning}</StatusPill>)}
+    {data.resumeUploaded && !data.resumeParsed && <StatusPill>{data.resumeFileName} is ready. It will be parsed when you build the plan.</StatusPill>}
     {data.resumeParsed && <StatusPill>Resume parsed as {data.resumeFileName}. Skill/background section was added to personal_course.md.</StatusPill>}
-    <StepNav onNext={goNext} onBack={goBack} onSkip={skipToNext} optional disabled={data.resumeParsing} nextLabel={data.resumeUploaded ? 'Continue' : 'Continue without resume'} />
+    <StepNav onNext={goNext} onBack={goBack} onSkip={skipToNext} optional nextLabel={isLastStep ? 'Build my plan' : 'Continue'} />
   </div>
 );
 
-const StepCoursework = ({ data, upd, goNext, goBack, skipToNext, importCoursework, setCoursePreference }) => (
+const StepCoursework = ({ data, upd, goNext, goBack, skipToNext, importCoursework, setCoursePreference, isLastStep }) => (
   <div className="slide-up">
     <StepHeader
       eyebrow="Optional"
-      title="Import existing coursework"
-      sub="For now, paste a list from Fireroad, a CSV, or notes. The importer extracts MIT subject numbers and merges them into personalcourse.md."
+      title="Import future coursework plan"
     />
     <Field label="Import format">
       <Select value={data.courseworkSource} onChange={(value) => upd('courseworkSource', value)} options={[
@@ -872,7 +1270,7 @@ const StepCoursework = ({ data, upd, goNext, goBack, skipToNext, importCoursewor
         ['manual', 'Manual list'],
       ]} />
     </Field>
-    <Field label="Coursework text" hint="Example: 6.100A, 18.02, 8.02, 6.006, 18.06">
+    <Field label="Planned coursework text" hint="Past transcript records are ignored here; this import is for future plans.">
       <TextArea
         placeholder="Paste courses here..."
         value={data.courseworkText}
@@ -885,27 +1283,19 @@ const StepCoursework = ({ data, upd, goNext, goBack, skipToNext, importCoursewor
       disabled={!data.courseworkText.trim() || data.courseworkImporting}
       style={{ opacity: data.courseworkText.trim() && !data.courseworkImporting ? 1 : 0.55 }}
     >
-      <Icon name="download" size={14} /> {data.courseworkImporting ? 'Importing...' : 'Import coursework'}
+      <Icon name="download" size={14} /> {data.courseworkImporting ? 'Importing...' : 'Import planned courses'}
     </button>
     {data.courseworkError && <StatusPill icon="x" tone="error">{data.courseworkError}</StatusPill>}
-    {data.courseworkImported && <StatusPill>Coursework imported into personal_course.md.</StatusPill>}
-    {data.courses.length > 0 && (
-      <div style={{ marginTop: 18 }}>
-        <Field label="Current parsed courses">
-          <CourseList courses={data.courses} setCoursePreference={setCoursePreference} compact />
-        </Field>
-      </div>
-    )}
-    <StepNav onNext={goNext} onBack={goBack} onSkip={skipToNext} optional disabled={data.courseworkImporting} nextLabel={data.courseworkImported ? 'Continue' : 'Continue without import'} />
+    {data.courseworkImported && <StatusPill>{data.futureCourseworkIds.length} future planned courses imported.</StatusPill>}
+    <StepNav onNext={goNext} onBack={goBack} onSkip={skipToNext} optional disabled={data.courseworkImporting} nextLabel={isLastStep ? 'Build my plan' : 'Continue'} />
   </div>
 );
 
 const StepSkill = ({ data, upd, goNext, goBack }) => (
   <div className="slide-up">
     <StepHeader
-      eyebrow="Fallback calibration"
+      eyebrow="Calibration"
       title="Choose skill level"
-      sub="We ask this only when transcript, resume, and coursework signals are absent."
     />
     <Field label="Programming / math competition background">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -934,10 +1324,9 @@ const StepRatings = ({ data, goNext, goBack, setCoursePreference }) => (
     <StepHeader
       eyebrow="Optional calibration"
       title="How did these classes feel?"
-      sub="Every course starts neutral. Mark the ones you loved or hated so the recommender can learn your taste."
     />
     <Field label="Completed courses">
-      <CourseList courses={data.courses} setCoursePreference={setCoursePreference} />
+      <GroupedCourseList courses={data.courses} setCoursePreference={setCoursePreference} />
     </Field>
     {data.completionError && <StatusPill icon="x" tone="error">{data.completionError}</StatusPill>}
     <StepNav onNext={goNext} onBack={goBack} disabled={data.finishing} nextLabel={data.finishing ? 'Building...' : 'Build my plan'} />
