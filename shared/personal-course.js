@@ -6,6 +6,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const COURSE_SECTIONS = [
     ['## Completed / For-Credit Courses', 'completed'],
+    ['## Prior Credits', 'prior_credit'],
+    ['## Prior Credit', 'prior_credit'],
     ['## Listener Courses', 'listener'],
     ['## Dropped Courses', 'dropped'],
     ['## Other Transcript Entries', 'other'],
@@ -13,6 +15,14 @@
 
   function normalizeCourseId(value) {
     return String(value || '').trim().toUpperCase();
+  }
+
+  function decodeMarkdownCell(value) {
+    return String(value || '')
+      .replace(/&amp;/gi, '&')
+      .replace(/&#38;/gi, '&')
+      .replace(/\\&/g, '&')
+      .replace(/＆/g, '&');
   }
 
   function splitTableRow(row) {
@@ -24,13 +34,51 @@
       .map((cell) => cell.trim());
   }
 
+  function escapeRegExp(value) {
+    return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
   function sectionBody(markdown, heading) {
     const text = String(markdown || '');
-    const start = text.indexOf(heading);
-    if (start === -1) return '';
-    const rest = text.slice(start + heading.length);
+    const pattern = new RegExp(`(^|\\n)${escapeRegExp(heading)}\\s*(\\n|$)`);
+    const match = pattern.exec(text);
+    if (!match) return '';
+    const rest = text.slice(match.index + match[0].length);
     const next = rest.search(/\n## /);
     return next === -1 ? rest : rest.slice(0, next);
+  }
+
+  function normalizeGradeCode(value) {
+    return decodeMarkdownCell(value).trim().toUpperCase().replace(/\s+/g, '');
+  }
+
+  function classifyCourseStatus(sectionStatus, grade, auditInfo, notes) {
+    const gradeCode = normalizeGradeCode(grade);
+    const auditCode = normalizeGradeCode(auditInfo);
+    const notesCode = normalizeGradeCode(notes);
+    const evidence = [gradeCode, auditCode, notesCode].join(' ');
+    if (/\bLIS\b/.test(evidence)) return 'listener';
+    if (/\bDR\b/.test(evidence)) return 'dropped';
+    if (gradeCode === 'S' || /&$/.test(gradeCode) || /(?:TRANSFER|ADVANCEDSTANDING|ASE|PRIORCREDIT)/.test(evidence)) return 'prior_credit';
+    return sectionStatus;
+  }
+
+  function normalizePriorCreditCourseId(id, status) {
+    const courseId = normalizeCourseId(id);
+    if (status !== 'prior_credit') return courseId;
+    const introPhysicsAliases = {
+      '8.01L': '8.01',
+      '8.02L': '8.02',
+    };
+    return introPhysicsAliases[courseId] || courseId;
+  }
+
+  function countsTowardRequirements(course) {
+    return course && (course.status === 'completed' || course.status === 'prior_credit');
+  }
+
+  function belongsInTermPlan(course) {
+    return course && course.status === 'completed';
   }
 
   function parseCourseRows(markdown) {
@@ -46,8 +94,14 @@
 
         const cells = splitTableRow(trimmed);
         if (cells.length < 8 || /^none$/i.test(cells[0]) || cells[1] === '—') return;
-        const id = normalizeCourseId(cells[1]);
-        if (!id || id === 'UNKNOWN') return;
+        const rawId = normalizeCourseId(cells[1]);
+        if (!rawId || rawId === 'UNKNOWN') return;
+
+        const grade = /^unknown$/i.test(cells[5]) ? '' : cells[5];
+        const auditInfo = /^unknown$/i.test(cells[6]) ? '' : cells[6];
+        const notes = /^unknown$/i.test(cells[7]) ? '' : cells[7];
+        const nextStatus = classifyCourseStatus(status, grade, auditInfo, notes);
+        const id = normalizePriorCreditCourseId(rawId, nextStatus);
 
         courses.push({
           term: /^unknown$/i.test(cells[0]) ? '' : cells[0],
@@ -55,10 +109,10 @@
           name: /^unknown$/i.test(cells[2]) ? '' : cells[2],
           units: /^unknown$/i.test(cells[3]) ? '' : cells[3],
           level: /^unknown$/i.test(cells[4]) ? '' : cells[4],
-          grade: /^unknown$/i.test(cells[5]) ? '' : cells[5],
-          auditInfo: /^unknown$/i.test(cells[6]) ? '' : cells[6],
-          notes: /^unknown$/i.test(cells[7]) ? '' : cells[7],
-          status,
+          grade,
+          auditInfo,
+          notes,
+          status: nextStatus,
           source,
           preference: 'neutral',
         });
@@ -139,7 +193,7 @@
   function planFromCompletedCourses(markdown) {
     const plan = {};
     parseCourseRows(markdown)
-      .filter((course) => course.status === 'completed')
+      .filter(belongsInTermPlan)
       .forEach((course) => {
         const termId = termIdFromLabel(course.term);
         if (!termId) return;
@@ -153,14 +207,20 @@
     const courses = parseCourseRows(markdown);
     const coursePreferences = parseCoursePreferences(markdown);
     const completedCourses = courses.filter((course) => course.status === 'completed');
+    const priorCreditCourses = courses.filter((course) => course.status === 'prior_credit');
+    const requirementCourses = courses.filter(countsTowardRequirements);
     const listenerCourses = courses.filter((course) => course.status === 'listener');
     const droppedCourses = courses.filter((course) => course.status === 'dropped');
     return {
       courses,
       completedCourses,
+      priorCreditCourses,
+      requirementCourses,
       listenerCourses,
       droppedCourses,
-      completedCourseIds: [...new Set(completedCourses.map((course) => course.id))],
+      completedCourseIds: [...new Set(requirementCourses.map((course) => course.id))],
+      termCompletedCourseIds: [...new Set(completedCourses.map((course) => course.id))],
+      priorCreditCourseIds: [...new Set(priorCreditCourses.map((course) => course.id))],
       listenerCourseIds: [...new Set(listenerCourses.map((course) => course.id))],
       droppedCourseIds: [...new Set(droppedCourses.map((course) => course.id))],
       coursePreferences,
@@ -169,7 +229,10 @@
   }
 
   return {
+    belongsInTermPlan,
+    countsTowardRequirements,
     normalizeCourseId,
+    normalizeGradeCode,
     parseCourseRows,
     parseCoursePreferences,
     planFromCompletedCourses,

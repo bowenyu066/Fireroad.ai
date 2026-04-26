@@ -25,7 +25,7 @@ window.FRDATA = (function (source) {
     ['F', 'Fall'],
     ['SU', 'Summer'],
     ['S', 'Spring'],
-    ['IAP', 'IAP'],
+    ['IAP', 'January Term'],
   ];
 
   const termId = (code, year) => `${code}${String(year).slice(-2)}`;

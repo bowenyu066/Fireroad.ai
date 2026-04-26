@@ -117,8 +117,55 @@ const ThemeToggle = () => {
   );
 };
 
+const ConfirmTranscriptReparseModal = ({ onCancel, onConfirm }) => (
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="reparse-transcript-title"
+    style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 200,
+      background: 'rgba(15, 23, 42, 0.42)',
+      display: 'grid',
+      placeItems: 'center',
+      padding: 24,
+    }}
+  >
+    <div style={{
+      width: '100%',
+      maxWidth: 460,
+      borderRadius: 8,
+      border: '1px solid var(--border)',
+      background: 'var(--surface)',
+      boxShadow: '0 24px 70px rgba(15, 23, 42, 0.24)',
+      padding: 24,
+    }}>
+      <div className="eyebrow" style={{ color: 'var(--accent)', marginBottom: 10 }}>Confirm sync</div>
+      <h2 id="reparse-transcript-title" className="display" style={{ margin: 0, fontSize: 22, fontWeight: 600 }}>
+        Re-parse saved transcript data?
+      </h2>
+      <p style={{ margin: '12px 0 0', color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.55 }}>
+        This will re-read your existing personal_course.md and sync the course list, prior credits, and semester placements from it. It will not delete the saved markdown and will not ask you to upload the transcript again.
+      </p>
+      <p style={{ margin: '10px 0 0', color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.55 }}>
+        Courses marked LIS or DR will be removed from requirements and semesters; transfer/ASE credits will count for requirements but stay outside semester plans.
+      </p>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 22 }}>
+        <button className="btn btn-ghost" onClick={onCancel} style={{ padding: '9px 16px' }}>
+          Cancel
+        </button>
+        <button className="btn btn-primary" onClick={onConfirm} style={{ padding: '9px 16px', background: 'var(--accent)' }}>
+          Re-sync now
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 const TopBar = ({ planningTermLabel }) => {
-  const { setRoute, profile, authState, signOut, resetOnboarding, activeSem, setActiveSem, termOptions, planningTermLabel: activePlanningTermLabel } = useApp();
+  const { route, setRoute, profile, authState, signOut, resetOnboarding, reparseTranscript, activeSem, setActiveSem, termOptions, planningTermLabel: activePlanningTermLabel } = useApp();
+  const [confirmReparseOpen, setConfirmReparseOpen] = useState(false);
   const isLocalDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
   const displayName = profile?.name || authState?.user?.email?.split('@')[0] || 'User';
   const initials = displayName.split(' ').map((s) => s[0]).join('');
@@ -127,7 +174,19 @@ const TopBar = ({ planningTermLabel }) => {
   const allTerms = activeSem && !generatedTerms.some((term) => term.id === activeSem)
     ? [{ id: activeSem, label: termLabel }, ...generatedTerms]
     : generatedTerms;
-  const terms = allTerms.filter((t) => !/^SU\d+$/i.test(t.id));
+  const terms = [
+    { id: '__priorcredit', label: 'Prior Credit' },
+    ...allTerms.filter((t) => !/^SU\d+$/i.test(t.id)),
+  ];
+  const selectedTerm = route?.name === 'priorcredit' ? '__priorcredit' : activeSem;
+  const handleTermChange = (value) => {
+    if (value === '__priorcredit') {
+      setRoute({ name: 'priorcredit' });
+      return;
+    }
+    setActiveSem(value);
+    if (route?.name === 'priorcredit' || route?.name === 'fouryear') setRoute({ name: 'planner' });
+  };
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -146,6 +205,14 @@ const TopBar = ({ planningTermLabel }) => {
           <Icon name="grid" size={13} />
           4-Year Plan
         </button>
+        <button
+          onClick={() => setRoute({ name: 'priorcredit' })}
+          className="btn-ghost"
+          style={{ fontSize: 12, padding: '5px 10px', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-secondary)' }}
+        >
+          <Icon name="file" size={13} />
+          Prior Credit
+        </button>
       </div>
 
       <div style={{
@@ -156,8 +223,8 @@ const TopBar = ({ planningTermLabel }) => {
         <Icon name="calendar" size={14} />
         {setActiveSem ? (
           <select
-            value={activeSem}
-            onChange={(event) => setActiveSem(event.target.value)}
+            value={selectedTerm}
+            onChange={(event) => handleTermChange(event.target.value)}
             className="mono"
             title="Planning term"
             style={{
@@ -196,6 +263,29 @@ const TopBar = ({ planningTermLabel }) => {
             <Icon name="rotateCcw" size={15} />
           </button>
         )}
+        {reparseTranscript && (
+          <button
+            className="btn"
+            onClick={() => setConfirmReparseOpen(true)}
+            title="Re-parse transcript for this account"
+            style={{
+              height: 32,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+              padding: '0 10px',
+              borderRadius: 8,
+              color: 'var(--accent)',
+              borderColor: 'rgba(163, 31, 52, 0.35)',
+              background: 'var(--accent-soft)',
+              fontSize: 12,
+            }}
+          >
+            <Icon name="upload" size={15} />
+            Re-parse transcript
+          </button>
+        )}
         <button
           onClick={() => setRoute({ name: 'profile' })}
           title={authState?.user?.email || 'Profile'}
@@ -230,6 +320,15 @@ const TopBar = ({ planningTermLabel }) => {
           </button>
         )}
       </div>
+      {confirmReparseOpen && (
+        <ConfirmTranscriptReparseModal
+          onCancel={() => setConfirmReparseOpen(false)}
+          onConfirm={() => {
+            setConfirmReparseOpen(false);
+            reparseTranscript();
+          }}
+        />
+      )}
     </div>
   );
 };

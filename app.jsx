@@ -165,11 +165,11 @@ const App = () => {
   };
   const emptyFourYearPlan = () => Object.fromEntries((FRDATA.semesterOrder || []).map((id) => [id, []]));
   const mergePlanWithMarkdown = (plan, markdown) => {
+    const parsedCourseIds = new Set(PersonalCourse.parseCourseRows(markdown || '').map((course) => course.id));
     const completedPlan = PersonalCourse.planFromCompletedCourses(markdown || '');
-    const completedIds = new Set(Object.values(completedPlan).flat());
     const next = Object.fromEntries(Object.entries(plan || {}).map(([termId, courseIds]) => [
       termId,
-      Array.isArray(courseIds) ? courseIds.filter((courseId) => !completedIds.has(PersonalCourse.normalizeCourseId(courseId))) : [],
+      Array.isArray(courseIds) ? courseIds.filter((courseId) => !parsedCourseIds.has(PersonalCourse.normalizeCourseId(courseId))) : [],
     ]));
     Object.entries(completedPlan).forEach(([termId, courseIds]) => {
       const existing = Array.isArray(next[termId]) ? next[termId] : [];
@@ -206,10 +206,12 @@ const App = () => {
   };
   const deriveProfileFromMarkdown = (profile, markdown) => {
     const summary = PersonalCourse.summarize(markdown || '');
-    if (!summary.completedCourseIds.length) return profile;
+    const parsedCourseIds = new Set(summary.courses.map((course) => course.id));
+    if (!summary.courses.length) return profile;
+    const manualTaken = (profile.taken || []).filter((courseId) => !parsedCourseIds.has(PersonalCourse.normalizeCourseId(courseId)));
     return {
       ...profile,
-      taken: summary.completedCourseIds,
+      taken: [...new Set([...manualTaken, ...summary.completedCourseIds])],
       preferences: {
         ...(profile.preferences || {}),
         courseRatings: {
@@ -293,10 +295,11 @@ const App = () => {
         };
 
         const nextActiveSem = resolveSavedActiveSem(saved);
-        const nextPersonalCourseMarkdown = saved?.personalCourseMarkdown
-          || saved?.onboarding?.personalCourseMarkdown
-          || localStorage.getItem('fr-personalcourse-draft')
-          || '';
+        const nextPersonalCourseMarkdown = typeof saved?.personalCourseMarkdown === 'string'
+          ? saved.personalCourseMarkdown
+          : (saved?.onboarding?.personalCourseMarkdown
+            || localStorage.getItem('fr-personalcourse-draft')
+            || '');
         nextProfile = deriveProfileFromMarkdown(nextProfile, nextPersonalCourseMarkdown);
         setProfile(nextProfile);
         setPersonalCourseMarkdown(nextPersonalCourseMarkdown);
@@ -366,9 +369,17 @@ const App = () => {
     setSchedule((s) => [...s, id]);
   };
 
-  const completeOnboarding = async ({ profile: nextProfile, onboarding, personalCourseMarkdown }) => {
+  const completeOnboarding = async ({ profile: nextProfile, onboarding, personalCourseMarkdown, recommendedCourseIds = [] }) => {
     const hydratedProfile = deriveProfileFromMarkdown(nextProfile, personalCourseMarkdown);
-    const hydratedFourYearPlan = mergePlanWithMarkdown(fourYearPlan, personalCourseMarkdown);
+    let hydratedFourYearPlan = mergePlanWithMarkdown(fourYearPlan, personalCourseMarkdown);
+    const recommendedIds = [...new Set((recommendedCourseIds || []).map((id) => String(id || '').trim().toUpperCase()).filter(Boolean))];
+    if (recommendedIds.length) {
+      const currentPlan = hydratedFourYearPlan[activeSem] || [];
+      hydratedFourYearPlan = {
+        ...hydratedFourYearPlan,
+        [activeSem]: [...new Set([...currentPlan, ...recommendedIds])],
+      };
+    }
     setOnboardingCompleted(true);
     setProfile(hydratedProfile);
     setPersonalCourseMarkdown(personalCourseMarkdown || '');
@@ -407,10 +418,35 @@ const App = () => {
     setRoute({ name: 'onboarding' });
   };
 
+  const reparseTranscript = async () => {
+    const markdown = personalCourseMarkdown || '';
+    const nextProfile = deriveProfileFromMarkdown(profile, markdown);
+    const nextFourYearPlan = mergePlanWithMarkdown(fourYearPlan, markdown);
+    setProfile(nextProfile);
+    setPersonalCourseMarkdown(markdown);
+    if (markdown) localStorage.setItem('fr-personalcourse-draft', markdown);
+    setFourYearPlan(nextFourYearPlan);
+    setSaveState('saving');
+    try {
+      await FRAuth.saveUserData({
+        onboardingCompleted,
+        profile: nextProfile,
+        fourYearPlan: nextFourYearPlan,
+        activeSem,
+        personalCourseMarkdown: markdown,
+      });
+      setSaveState('saved');
+      setTimeout(() => setSaveState('idle'), 1000);
+    } catch (err) {
+      console.error(err);
+      setSaveState('error');
+    }
+  };
+
   const ctx = {
     theme, setTheme, route, setRoute, profile, setProfile, personalCourseMarkdown, setPersonalCourseMarkdown, fourYearPlan, setFourYearPlan, activeSem, setActiveSem, termOptions, planningTermLabel,
     authState, dataReady, onboardingCompleted, saveState,
-    completeOnboarding, resetOnboarding, signOut: FRAuth.signOut,
+    completeOnboarding, resetOnboarding, reparseTranscript, signOut: FRAuth.signOut,
   };
 
   return (
@@ -436,6 +472,7 @@ const App = () => {
             )}
             {route.name === 'profile' && <ProfilePage />}
             {route.name === 'fouryear' && <FourYearPlanPage />}
+            {route.name === 'priorcredit' && <PriorCreditPage />}
           </>
         )}
       </AuthGate>
