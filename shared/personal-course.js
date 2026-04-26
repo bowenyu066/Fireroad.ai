@@ -34,6 +34,22 @@
       .map((cell) => cell.trim());
   }
 
+  // The LLM that generates personal_course.md sometimes merges the MIT-transcript
+  // "Level" column ("U" / "G") with the adjacent "Grade" column. e.g. it emits
+  // a single cell "UA+" / "UA&" / "ULIS" instead of two cells "U" and "A+".
+  // When that happens the row has 7 cells instead of 8 and would otherwise be
+  // skipped, and an `A&` ASE marker hides inside `UA&` so classification breaks.
+  // Split the merged cell back into Level and Grade so downstream code sees the
+  // 8-column shape it expects.
+  function unmergeLevelGrade(cells) {
+    if (cells.length !== 7) return cells;
+    const merged = String(cells[4] || '').trim();
+    const match = merged.match(/^(U|G)([A-Z][A-Z0-9+\-&]*)$/);
+    if (!match) return cells;
+    const [, level, grade] = match;
+    return [cells[0], cells[1], cells[2], cells[3], level, grade, cells[5], cells[6]];
+  }
+
   function escapeRegExp(value) {
     return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
@@ -61,6 +77,23 @@
     if (/\bDR\b/.test(evidence)) return 'dropped';
     if (gradeCode === 'S' || /&$/.test(gradeCode) || /(?:TRANSFER|ADVANCEDSTANDING|ASE|PRIORCREDIT)/.test(evidence)) return 'prior_credit';
     return sectionStatus;
+  }
+
+  // MIT ASE/advanced-standing grades end in `&` (e.g. `A&`, `B&`, `P&`).
+  // The LLM that parses the transcript sometimes strips the `&` even though
+  // the prompt says to keep it. When a row lands in Prior Credits and its
+  // grade is a bare letter grade, restore the `&` so downstream classification
+  // and display stay correct.
+  function restoreAseAmpersand(sectionStatus, grade, auditInfo) {
+    if (sectionStatus !== 'prior_credit') return grade;
+    const code = normalizeGradeCode(grade);
+    if (!code) return grade;
+    if (/&$/.test(code)) return grade;
+    if (code === 'S') return grade; // MIT transfer credit
+    const auditCode = normalizeGradeCode(auditInfo);
+    if (/TRANSFERCREDIT/.test(auditCode)) return grade;
+    if (/^[A-FPX][+\-]?$/.test(code)) return `${String(grade).trim()}&`;
+    return grade;
   }
 
   function normalizePriorCreditCourseId(id, status) {
@@ -92,14 +125,15 @@
         if (!trimmed.startsWith('|')) return;
         if (/^\|\s*-+/.test(trimmed) || /^\|\s*Term\s*\|/i.test(trimmed)) return;
 
-        const cells = splitTableRow(trimmed);
+        const cells = unmergeLevelGrade(splitTableRow(trimmed));
         if (cells.length < 8 || /^none$/i.test(cells[0]) || cells[1] === '—') return;
         const rawId = normalizeCourseId(cells[1]);
         if (!rawId || rawId === 'UNKNOWN') return;
 
-        const grade = /^unknown$/i.test(cells[5]) ? '' : cells[5];
+        const rawGrade = /^unknown$/i.test(cells[5]) ? '' : cells[5];
         const auditInfo = /^unknown$/i.test(cells[6]) ? '' : cells[6];
         const notes = /^unknown$/i.test(cells[7]) ? '' : cells[7];
+        const grade = restoreAseAmpersand(status, rawGrade, auditInfo);
         const nextStatus = classifyCourseStatus(status, grade, auditInfo, notes);
         const id = normalizePriorCreditCourseId(rawId, nextStatus);
 

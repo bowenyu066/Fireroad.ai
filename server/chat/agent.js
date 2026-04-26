@@ -28,6 +28,9 @@ const TOOL_DISPLAY_NAMES = {
   get_course_history_summary: 'Checking historical offerings',
   get_offering_history: 'Reading historical offering details',
   check_requirements: 'Checking degree requirements',
+  check_degree_requirements: 'Checking degree requirements',
+  get_requirement_courses: 'Checking requirement course list',
+  course_satisfies: 'Checking course requirement coverage',
   check_schedule_conflicts: 'Checking schedule conflicts',
 };
 
@@ -43,6 +46,9 @@ const TOOL_TRACE_LABELS = {
   get_course_history_summary: 'historical offerings',
   get_offering_history: 'historical offerings',
   check_requirements: 'degree requirements',
+  check_degree_requirements: 'degree requirements',
+  get_requirement_courses: 'requirement course list',
+  course_satisfies: 'requirement coverage',
   check_schedule_conflicts: 'schedule conflicts',
 };
 
@@ -98,6 +104,7 @@ function previewToolInput(toolName, args = {}) {
     if (args.query) parts.push(`query "${compactText(args.query, 60)}"`);
     if (asArray(args.requirements || args.satisfies).length) parts.push(`requirements ${asArray(args.requirements || args.satisfies).slice(0, 4).join(', ')}`);
     if (asArray(args.areas).length) parts.push(`areas ${asArray(args.areas).slice(0, 4).join(', ')}`);
+    if (asArray(args.departments).length) parts.push(`departments ${asArray(args.departments).slice(0, 4).join(', ')}`);
     if (args.max_workload) parts.push(`max ${args.max_workload}h/wk`);
     return parts.join(' · ') || 'broad current catalog search';
   }
@@ -137,6 +144,24 @@ function previewToolInput(toolName, args = {}) {
   if (toolName === 'check_requirements') {
     const schedule = asArray(args.schedule);
     return compactText([args.major, schedule.length ? `${schedule.length} active courses` : 'student profile'].filter(Boolean).join(' · '), 120);
+  }
+
+  if (toolName === 'check_degree_requirements') {
+    const courses = asArray(args.courses);
+    const major = args.major || (args.profile && args.profile.major);
+    return compactText([major, courses.length ? `${courses.length} courses` : 'student profile'].filter(Boolean).join(' · '), 120);
+  }
+
+  if (toolName === 'get_requirement_courses') {
+    const parts = [];
+    if (args.major) parts.push(compactText(args.major, 40));
+    if (args.group) parts.push(`group "${compactText(args.group, 60)}"`);
+    if (args.intersect_with) parts.push(`intersect "${compactText(args.intersect_with, 60)}"`);
+    return parts.join(' · ') || 'requirement course list';
+  }
+
+  if (toolName === 'course_satisfies') {
+    return compactText([args.major, args.course_id || args.courseId].filter(Boolean).join(' · ') || 'course requirement coverage', 80);
   }
 
   if (toolName === 'check_schedule_conflicts') {
@@ -196,6 +221,27 @@ function summarizeToolResultForUi(toolName, result) {
     const groups = asArray(result.groups);
     const unmet = groups.filter((group) => !group.satisfied).length;
     return `Checked ${result.satisfiedCount || 0}/${result.totalCount || groups.length} requirement groups; ${unmet} unmet`;
+  }
+
+  if (toolName === 'check_degree_requirements') {
+    if (result.found === false) return `Not found: ${compactText(result.reason || 'requirements unavailable', 120)}`;
+    const groups = asArray(result.groups);
+    const unmet = asArray(result.unsatisfiedGroups).length || groups.filter((group) => !group.satisfied).length;
+    return `Checked ${result.satisfiedCount || 0}/${result.totalCount || groups.length} requirement groups; ${unmet} unmet`;
+  }
+
+  if (toolName === 'get_requirement_courses') {
+    if (!result.found) return `Not found: ${compactText(result.reason || 'requirement group unavailable', 120)}`;
+    const catalogCourses = asArray(result.catalogCourses);
+    const total = Number(result.totalInRequirementJson) || catalogCourses.length;
+    const group = asArray(result.matchedGroups).join(', ') || 'requirement group';
+    return `Found ${catalogCourses.length}/${total} current courses for ${compactText(group, 80)}`;
+  }
+
+  if (toolName === 'course_satisfies') {
+    if (!result.found) return `Not found: ${compactText(result.reason || 'requirement coverage unavailable', 120)}`;
+    const count = Number(result.satisfiesCount) || asArray(result.satisfiedGroups).length;
+    return `${result.courseId || 'Course'} appears in ${count} requirement groups`;
   }
 
   if (toolName === 'check_schedule_conflicts') {
@@ -306,6 +352,7 @@ function buildContext({ profile, personalization, personalCourseMarkdown, schedu
     activeSem: activeSem || null,
     planningTermLabel: planningTermLabel || null,
     studentName: effectiveStudentName,
+    toolHistory: [],
   };
   context.studentPlanningContext = buildStudentPlanningContext(context);
   return context;
@@ -323,10 +370,10 @@ function latestAssistantBeforeLastUser(messages) {
   return [...beforeLastUser].reverse().find((message) => message && message.role !== 'user') || null;
 }
 
-function buildRequirementContext(profile, schedule) {
+function buildRequirementContextForMajor(profile, schedule, majorField) {
   try {
     const allCourses = [...new Set([...asArray(profile.taken), ...schedule])];
-    const result = checkMajorRequirements(profile.major, allCourses);
+    const result = checkMajorRequirements(profile[majorField], allCourses);
     if (!result) return null;
     return {
       major: result.title,
@@ -341,16 +388,29 @@ function buildRequirementContext(profile, schedule) {
   }
 }
 
+function buildRequirementContext(profile, schedule) {
+  return buildRequirementContextForMajor(profile, schedule, 'major');
+}
+
+function buildRequirementContextSecond(profile, schedule) {
+  if (!profile.major2) return null;
+  return buildRequirementContextForMajor(profile, schedule, 'major2');
+}
+
 function buildModelMessages(messages, context) {
   const { profile, schedule, activeSem, planningTermLabel, studentName, personalCourseMarkdown, studentPlanningContext } = context;
   const effectiveStudentName = String(studentName || profile.name || '').trim();
   const reqContext = buildRequirementContext(profile, schedule);
-  const relevantDepartments = majorToDepartments(profile.major);
+  const reqContextSecond = buildRequirementContextSecond(profile, schedule);
+  const dept1 = majorToDepartments(profile.major);
+  const dept2 = profile.major2 ? majorToDepartments(profile.major2) : [];
+  const relevantDepartments = [...new Set([...dept1, ...dept2])];
   const state = {
     studentName: effectiveStudentName || null,
     profile: {
       name: effectiveStudentName || profile.name,
       major: profile.major,
+      major2: profile.major2 || null,
       year: profile.year,
       gradYear: profile.gradYear,
       taken: profile.taken,
@@ -363,6 +423,7 @@ function buildModelMessages(messages, context) {
     activeSemesterSchedule: schedule,
     planningScope: 'active_semester_only',
     requirementProgress: reqContext || 'unavailable — call check_requirements tool',
+    requirementProgressSecondMajor: reqContextSecond || (profile.major2 ? 'unavailable — call check_requirements tool with major arg' : null),
     relevantDepartments,
     catalogNote: relevantDepartments.length
       ? `Catalog has 5000+ courses. Pass departments: ${JSON.stringify(relevantDepartments)} to search/recommend when searching for major-relevant courses. Omit the departments filter for cross-department queries (HASS, linguistics, biology, specific non-major departments). Common MIT departments: 6=EECS, 18=Math, 8=Physics, 7=Biology, 5=Chemistry, 24=Linguistics&Philosophy, 21=Humanities, 14=Economics, 9=Brain&Cog.`
@@ -413,6 +474,51 @@ function parseToolArguments(rawArgs) {
   }
 }
 
+const REMOVE_GROUNDING_TOOLS = new Set(['summarize_semester_plan', 'summarize_schedule']);
+const ADD_GROUNDING_TOOLS = new Set(['search_current_courses', 'search_courses', 'get_current_course', 'get_course', 'recommend_courses']);
+
+function actionMentionsExactCourseId(action = {}, userText = '') {
+  const ids = extractCourseIdsFromText(userText);
+  if (!ids.length) return false;
+  const actionIds = [
+    action.courseId || action.course_id,
+    action.removeCourseId || action.remove_course_id,
+  ].map((id) => String(id || '').trim().toUpperCase()).filter(Boolean);
+  return actionIds.some((id) => ids.includes(id));
+}
+
+function hasPriorTool(context, names) {
+  return asArray(context.toolHistory).some((entry) => entry && names.has(entry.name));
+}
+
+function validateActionGroundingError(toolName, args = {}, context = {}) {
+  if (toolName !== 'validate_ui_action') return null;
+  const latestText = context.latestUserText || '';
+  if (!explicitScheduleChangeRequested(latestText)) return null;
+
+  const action = args.action || {};
+  if (actionMentionsExactCourseId(action, latestText)) return null;
+
+  const type = action.type;
+  if (type === 'remove_course' && !hasPriorTool(context, REMOVE_GROUNDING_TOOLS)) {
+    return 'For a removal request without an exact course id, first call summarize_semester_plan to inspect the active schedule and resolve the user’s course reference, then retry validate_ui_action.';
+  }
+
+  if (type === 'add_course' && !hasPriorTool(context, ADD_GROUNDING_TOOLS)) {
+    return 'For an add request without an exact course id, first call search_current_courses, get_current_course, or recommend_courses to resolve the user’s course reference, then retry validate_ui_action.';
+  }
+
+  if (type === 'replace_course') {
+    const hasScheduleGrounding = hasPriorTool(context, REMOVE_GROUNDING_TOOLS);
+    const hasCatalogGrounding = hasPriorTool(context, ADD_GROUNDING_TOOLS);
+    if (!hasScheduleGrounding || !hasCatalogGrounding) {
+      return 'For a replacement request without exact course ids, first inspect the active schedule and current catalog, then retry validate_ui_action.';
+    }
+  }
+
+  return null;
+}
+
 async function executeToolCall(toolCall, context) {
   const name = toolCall.function && toolCall.function.name;
   const args = parseToolArguments(toolCall.function && toolCall.function.arguments);
@@ -441,6 +547,17 @@ async function executeToolCall(toolCall, context) {
       name,
       args,
       result: { error: `Could not parse tool arguments: ${args._parseError}` },
+    };
+    log('tool:end', { name, ms: Date.now() - startedAt, result: summarizeToolResult(result.result) });
+    return result;
+  }
+
+  const groundingError = validateActionGroundingError(name, args, context);
+  if (groundingError) {
+    const result = {
+      name,
+      args,
+      result: { ok: false, reason: groundingError },
     };
     log('tool:end', { name, ms: Date.now() - startedAt, result: summarizeToolResult(result.result) });
     return result;
@@ -490,7 +607,8 @@ function explicitScheduleChangeRequested(text, messages = []) {
   }
   const hasMutationVerb = /\b(add|put|include|enroll|register|remove|drop|delete|swap|replace)\b/.test(lower);
   const hasCourseOrScheduleContext = /\b(schedules?|plans?|semesters?|courses?|class(?:es)?)\b/.test(lower) || extractCourseIdsFromText(lower).length > 0;
-  return hasMutationVerb && hasCourseOrScheduleContext;
+  const hasMutationObject = /\b(add|put|include|enroll|register|remove|drop|delete|swap|replace)\s+(?:the\s+|my\s+|this\s+|that\s+)?[a-z0-9][a-z0-9 .&-]*/i.test(lower);
+  return hasMutationVerb && (hasCourseOrScheduleContext || hasMutationObject);
 }
 
 function normalizeMentionText(value) {
@@ -617,7 +735,7 @@ async function validateFinalActions(actions, context, debug, allowActions) {
 
 async function describeUiAction(action) {
   const course = action.courseId ? await resolveCurrentCourseSummary(action.courseId) : null;
-  const courseLabel = `${action.courseId || 'course'}${course && course.name ? ` (${course.name})` : ''}`;
+  const courseLabel = `${courseCatalogLink(action.courseId)}${course && course.name ? ` (${course.name})` : ''}`;
 
   if (action.type === 'remove_course') {
     return `Remove ${courseLabel}`;
@@ -625,11 +743,16 @@ async function describeUiAction(action) {
 
   if (action.type === 'replace_course') {
     const removed = action.removeCourseId ? await resolveCurrentCourseSummary(action.removeCourseId) : null;
-    const removedLabel = `${action.removeCourseId || 'course'}${removed && removed.name ? ` (${removed.name})` : ''}`;
+    const removedLabel = `${courseCatalogLink(action.removeCourseId)}${removed && removed.name ? ` (${removed.name})` : ''}`;
     return `Replace ${removedLabel} with ${courseLabel}`;
   }
 
   return `Add ${courseLabel}`;
+}
+
+function courseCatalogLink(courseId) {
+  const normalizedId = String(courseId || '').trim().toUpperCase();
+  return normalizedId ? `[${normalizedId}](catalog/${normalizedId})` : 'course';
 }
 
 async function buildProposalFromActions(actions, context, options = {}) {
@@ -655,10 +778,31 @@ async function buildProposalFromActions(actions, context, options = {}) {
 }
 
 async function buildActionResponseText(actions, context) {
-  const descriptions = await Promise.all(asArray(actions).map(describeUiAction));
+  const descriptions = await Promise.all(asArray(actions).map(async (action) => {
+    const course = action.courseId ? await resolveCurrentCourseSummary(action.courseId) : null;
+    const courseLabel = `${courseCatalogLink(action.courseId)}${course && course.name ? ` (${course.name})` : ''}`;
+    if (action.type === 'remove_course') return `removed ${courseLabel}`;
+    if (action.type === 'replace_course') {
+      const removed = action.removeCourseId ? await resolveCurrentCourseSummary(action.removeCourseId) : null;
+      const removedLabel = `${courseCatalogLink(action.removeCourseId)}${removed && removed.name ? ` (${removed.name})` : ''}`;
+      return `replaced ${removedLabel} with ${courseLabel}`;
+    }
+    return `added ${courseLabel}`;
+  }));
   const termLabel = context.planningTermLabel || context.activeSem || 'the active semester';
   if (!descriptions.length) return '';
-  return `Done. ${descriptions.join('; ')} in ${termLabel}.`;
+  return `Done. I ${descriptions.join('; ')} in ${termLabel}.`;
+}
+
+async function buildUnresolvedActionResponseText(context, latestText) {
+  const termLabel = context.planningTermLabel || context.activeSem || 'the active semester';
+  const courses = await Promise.all(context.schedule.map(async (courseId) => {
+    const course = await resolveCurrentCourseSummary(courseId);
+    return `${courseCatalogLink(courseId)}${course && course.name ? ` (${course.name})` : ''}`;
+  }));
+  const currentList = courses.length ? ` Current courses: ${courses.join(', ')}.` : '';
+  const request = compactText(latestText, 80);
+  return `I couldn't safely match "${request}" to exactly one course in ${termLabel}. Please use the course number or exact title.${currentList}`;
 }
 
 async function buildResponseSuggestions(text, debug = {}, uiActions = []) {
@@ -684,6 +828,17 @@ async function buildResponseSuggestions(text, debug = {}, uiActions = []) {
   return sanitizeSuggestions(extractCourseIdsFromText(text));
 }
 
+function validatedUiActionsFromToolCalls(debug = {}) {
+  const actions = [];
+  asArray(debug.toolCalls).forEach((entry) => {
+    if (!entry || entry.name !== 'validate_ui_action') return;
+    const action = entry.result && entry.result.ok && entry.result.action;
+    if (!action || typeof action !== 'object') return;
+    actions.push(action);
+  });
+  return actions;
+}
+
 async function buildApiResponse(content, context, debug, requestMessages, options = {}) {
   const log = context.log || (() => {});
   const raw = normalizeContentText(content);
@@ -695,14 +850,17 @@ async function buildApiResponse(content, context, debug, requestMessages, option
   const allowActions = explicitScheduleChangeRequested(latestText, requestMessages);
   let uiActions = [];
   if (allowActions) {
-    const fallbackActions = await extractRequestedUiActions(latestText, context.schedule, requestMessages);
-    debug.fallbackActionExtraction = fallbackActions;
-    uiActions = await validateFinalActions(fallbackActions, context, debug, true);
+    const modelValidatedActions = validatedUiActionsFromToolCalls(debug);
+    debug.modelValidatedActions = modelValidatedActions;
+    uiActions = await validateFinalActions(modelValidatedActions, context, debug, true);
   }
+  const unresolvedActionRequest = allowActions && !uiActions.length;
   const text = (uiActions.length
     ? await buildActionResponseText(uiActions, context)
+    : unresolvedActionRequest
+      ? await buildUnresolvedActionResponseText(context, latestText)
     : raw || 'I found a grounded answer from the course data, but could not format it cleanly.').trim();
-  const suggestions = await buildResponseSuggestions(text, debug, uiActions);
+  const suggestions = unresolvedActionRequest ? [] : await buildResponseSuggestions(text, debug, uiActions);
   const traceSummary = options.traceSummary || buildTraceSummary(debug.toolCalls);
   const proposal = options.proposal || await buildProposalFromActions(uiActions, context);
   log('final:validated', {
@@ -733,39 +891,11 @@ async function buildApiResponse(content, context, debug, requestMessages, option
   };
 }
 
-async function buildValidatedLocalActionResult(context, messages, debug, options = {}) {
-  if (!explicitScheduleChangeRequested(latestUserText(messages), messages)) return null;
-
-  const requestedActions = await extractRequestedUiActions(latestUserText(messages), context.schedule, messages);
-  debug.fallbackActionExtraction = requestedActions;
-  if (!requestedActions.length) return null;
-
-  const uiActions = await validateFinalActions(requestedActions, context, debug, true);
-  if (!uiActions.length) return null;
-
-  const proposal = await buildProposalFromActions(uiActions, context, {
-    source: options.source || 'local_validated_active_semester_request',
-    warnings: options.warnings,
-  });
-  const text = await buildActionResponseText(uiActions, context);
-
-  return {
-    message: {
-      role: 'agent',
-      text,
-      suggestions: [],
-      proposal,
-    },
-    uiActions,
-    proposal,
-    debug: publicDebug(debug),
-  };
-}
-
 async function buildLocalActionFallback(body = {}, reason) {
   const messages = asArray(body.messages);
   const studentName = String(body.studentName || '').trim();
   const context = buildContext({ ...body, studentName });
+  context.latestUserText = latestUserText(messages);
   context.log = body.log || (() => {});
   const latestText = latestUserText(messages);
   context.log('fallback:consider', {
@@ -810,15 +940,13 @@ async function buildLocalActionFallback(body = {}, reason) {
 
 async function runAgentChat({ messages, profile, personalization, personalCourseMarkdown, schedule, activeSem, planningTermLabel, studentName, log }) {
   const context = buildContext({ profile, personalization, personalCourseMarkdown, schedule, activeSem, planningTermLabel, studentName });
+  context.latestUserText = latestUserText(messages);
   context.log = log || (() => {});
   const debug = {
     model: OPENROUTER_MODEL,
     toolCalls: [],
     finalActionValidation: [],
   };
-
-  const localActionResult = await buildValidatedLocalActionResult(context, messages, debug);
-  if (localActionResult) return localActionResult;
 
   const modelMessages = buildModelMessages(messages, context);
   context.log('agent:start', {
@@ -877,6 +1005,7 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
     for (const toolCall of toolCalls) {
       const executed = await executeToolCall(toolCall, context);
       debug.toolCalls.push(executed);
+      context.toolHistory.push(executed);
       modelMessages.push({
         role: 'tool',
         tool_call_id: toolCall.id,
@@ -903,6 +1032,7 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
 async function runAgentChatStream(body = {}, onEvent = () => {}) {
   const { messages } = body;
   const context = buildContext(body);
+  context.latestUserText = latestUserText(messages);
   context.log = body.log || (() => {});
   const debug = {
     model: OPENROUTER_MODEL,
@@ -910,11 +1040,6 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
     finalActionValidation: [],
   };
   const emit = (event) => onEvent(event);
-  if (explicitScheduleChangeRequested(latestUserText(messages), messages)) {
-    emit({ type: 'status', text: 'Validating proposed plan change' });
-    const localActionResult = await buildValidatedLocalActionResult(context, messages, debug);
-    if (localActionResult) return localActionResult;
-  }
   const modelMessages = buildModelMessages(messages, context);
   const suppressModelProgressText = explicitScheduleChangeRequested(latestUserText(messages), messages);
 
@@ -993,6 +1118,7 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
       emit({ type: 'tool_activity_start', ...startActivity });
       const executed = await executeToolCall(toolCall, context);
       debug.toolCalls.push(executed);
+      context.toolHistory.push(executed);
       const resultActivity = toolActivityFromExecution(toolCall, executed.args, executed.result, executed.result && executed.result.error ? 'error' : 'done');
       emit({
         type: resultActivity.state === 'error' ? 'tool_activity_error' : 'tool_activity_result',

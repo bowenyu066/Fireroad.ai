@@ -74,12 +74,56 @@ const ColumnResizer = ({ onDrag }) => {
   );
 };
 
+// Floating toast for transient feedback
+const Toast = ({ notification, onClose }) => {
+  useEffect(() => {
+    if (!notification) return undefined;
+    const timer = setTimeout(onClose, notification.duration || 4500);
+    return () => clearTimeout(timer);
+  }, [notification, onClose]);
+
+  if (!notification) return null;
+  const tone = notification.tone || 'success';
+  const palette = {
+    success: { bg: 'var(--success)', fg: '#fff' },
+    error:   { bg: 'var(--accent)', fg: '#fff' },
+    info:    { bg: 'var(--info)', fg: '#fff' },
+  }[tone] || { bg: 'var(--surface)', fg: 'var(--text)' };
+
+  return (
+    <div style={{
+      position: 'fixed', top: 80, right: 24, zIndex: 300,
+      maxWidth: 420, padding: '12px 16px', borderRadius: 10,
+      background: palette.bg, color: palette.fg,
+      boxShadow: '0 12px 32px rgba(0,0,0,0.18)',
+      display: 'flex', alignItems: 'flex-start', gap: 12,
+      fontSize: 14, lineHeight: 1.45,
+    }}>
+      <div style={{ flex: 1 }}>
+        {notification.title && (
+          <div style={{ fontWeight: 600, marginBottom: notification.detail ? 4 : 0 }}>
+            {notification.title}
+          </div>
+        )}
+        {notification.detail && <div style={{ opacity: 0.92 }}>{notification.detail}</div>}
+      </div>
+      <button
+        onClick={onClose}
+        style={{ color: palette.fg, opacity: 0.8, padding: 2, fontSize: 18, lineHeight: 1 }}
+        title="Dismiss"
+      >
+        ×
+      </button>
+    </div>
+  );
+};
+
 // Section panel header, also resizable for requirements column
 const SectionHeader = ({ label, right }) => (
   <div style={{
-    padding: '12px 16px', borderBottom: '1px solid var(--border)',
+    padding: '16px 20px', borderBottom: '1px solid var(--border)',
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    minHeight: 44, boxSizing: 'border-box',
+    minHeight: 56, boxSizing: 'border-box', flexShrink: 0,
   }}>
     <div className="eyebrow">{label}</div>
     {right || null}
@@ -104,6 +148,10 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
   const { setRoute, profile, activeSem } = React.useContext(AppCtx);
   const [justAddedId, setJustAddedId] = useState(null);
   const [viewMode, setViewMode] = useState('list');
+  const courseCatalogLink = (id) => {
+    const courseId = String(id || '').trim().toUpperCase();
+    return courseId ? `[${courseId}](catalog/${courseId})` : 'course';
+  };
 
   const onAddCourse = async (id) => {
     const courseId = String(id || '').trim().toUpperCase();
@@ -124,7 +172,7 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
     setTimeout(() => setJustAddedId(null), 800);
     setMessages((m) => [...m, {
       role: 'agent',
-      text: `Added ${c.id} (${c.name}) to ${planningTermLabel}. You're at about ${newUnits} units. Want me to suggest something to balance the workload?`,
+      text: `Added ${courseCatalogLink(c.id)} (${c.name}) to ${planningTermLabel}. You're at about ${newUnits} units. Want me to suggest something to balance the workload?`,
     }]);
   };
 
@@ -135,7 +183,7 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
     setSchedule((s) => s.filter((x) => x !== courseId));
     setMessages((m) => [...m, {
       role: 'agent',
-      text: `Removed ${c.id} (${c.name}) from ${planningTermLabel}.`,
+      text: `Removed ${courseCatalogLink(c.id)} (${c.name}) from ${planningTermLabel}.`,
     }]);
   };
 
@@ -274,17 +322,18 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
   const gridTemplate = `${paneWidths.leftPx}px ${RESIZER_PX}px ${paneWidths.middlePx}px ${RESIZER_PX}px minmax(${MIN_PX}px, 1fr)`;
 
   return (
-    <div className="fade-in" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="fade-in" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <TopBar planningTermLabel={planningTermLabel} />
 
       <div
         ref={containerRef}
         style={{
-          flex: 1,
+          flex: '1 1 0',
+          minHeight: 0,
           display: 'grid',
           gridTemplateColumns: gridTemplate,
+          gridTemplateRows: 'minmax(0, 1fr)',
           overflow: 'hidden',
-          minHeight: 'calc(100vh - 65px)',
         }}
       >
         {/* LEFT — schedule (course cards only) */}
@@ -336,6 +385,8 @@ const App = () => {
     kerberos: '',
     major: '',
     majorLabel: '',
+    major2: '',
+    major2Label: '',
     year: '',
     gradYear: '',
     taken: [],
@@ -444,6 +495,7 @@ const App = () => {
   const [authState, setAuthState] = useState(() => FRAuth.getState());
   const [dataReady, setDataReady] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+  const [notification, setNotification] = useState(null);
   const [saveState, setSaveState] = useState('idle');
 
   useEffect(() => {
@@ -617,13 +669,46 @@ const App = () => {
 
   const reparseTranscript = async () => {
     const markdown = personalCourseMarkdown || '';
+    if (!markdown.trim()) {
+      setNotification({
+        tone: 'error',
+        title: 'No saved transcript markdown',
+        detail: 'Re-parse needs an existing personal_course.md. Use Reset to upload a new transcript.',
+      });
+      return;
+    }
+
+    const summary = PersonalCourse.summarize(markdown);
     const nextProfile = deriveProfileFromMarkdown(profile, markdown);
     const nextFourYearPlan = mergePlanWithMarkdown(fourYearPlan, markdown);
+
+    const oldTaken = new Set((profile.taken || []).map(PersonalCourse.normalizeCourseId));
+    const newTaken = new Set((nextProfile.taken || []).map(PersonalCourse.normalizeCourseId));
+    const addedTaken = [...newTaken].filter((id) => !oldTaken.has(id));
+    const removedTaken = [...oldTaken].filter((id) => !newTaken.has(id));
+
+    const flatten = (plan) => Object.values(plan || {}).flat().map(PersonalCourse.normalizeCourseId);
+    const oldPlan = new Set(flatten(fourYearPlan));
+    const newPlan = new Set(flatten(nextFourYearPlan));
+    const addedPlan = [...newPlan].filter((id) => !oldPlan.has(id));
+    const removedPlan = [...oldPlan].filter((id) => !newPlan.has(id));
+
+    console.info('[reparse] summary', {
+      completed: summary.completedCourses.length,
+      priorCredits: summary.priorCreditCourses.length,
+      listener: summary.listenerCourses.length,
+      dropped: summary.droppedCourses.length,
+      addedTaken,
+      removedTaken,
+      addedPlan,
+      removedPlan,
+    });
+
     setProfile(nextProfile);
     setPersonalCourseMarkdown(markdown);
-    if (markdown) localStorage.setItem('fr-personalcourse-draft', markdown);
+    localStorage.setItem('fr-personalcourse-draft', markdown);
     setFourYearPlan(nextFourYearPlan);
-    setSaveState('saving');
+
     try {
       await FRAuth.saveUserData({
         onboardingCompleted,
@@ -632,18 +717,36 @@ const App = () => {
         activeSem,
         personalCourseMarkdown: markdown,
       });
-      setSaveState('saved');
-      setTimeout(() => setSaveState('idle'), 1000);
     } catch (err) {
-      console.error(err);
-      setSaveState('error');
+      console.error('[reparse] save failed', err);
+      setNotification({
+        tone: 'error',
+        title: 'Re-parse saved locally — sync failed',
+        detail: 'Changes applied to this session but did not sync to the server. Try again or check your connection.',
+      });
+      return;
     }
+
+    const counts = `${summary.completedCourses.length} completed · ${summary.priorCreditCourses.length} prior credits · ${summary.listenerCourses.length} listener · ${summary.droppedCourses.length} dropped`;
+    const changeBits = [];
+    if (addedTaken.length || removedTaken.length) {
+      changeBits.push(`taken: +${addedTaken.length} / −${removedTaken.length}`);
+    }
+    if (addedPlan.length || removedPlan.length) {
+      changeBits.push(`plan: +${addedPlan.length} / −${removedPlan.length}`);
+    }
+    setNotification({
+      tone: 'success',
+      title: changeBits.length ? 'Transcript re-synced' : 'Transcript re-synced (no changes)',
+      detail: changeBits.length ? `${counts}. ${changeBits.join(' · ')}.` : counts,
+    });
   };
 
   const ctx = {
     theme, setTheme, route, setRoute, profile, setProfile, personalCourseMarkdown, setPersonalCourseMarkdown, fourYearPlan, setFourYearPlan, activeSem, setActiveSem, termOptions, planningTermLabel,
     authState, dataReady, onboardingCompleted, saveState,
     completeOnboarding, resetOnboarding, reparseTranscript, signOut: FRAuth.signOut,
+    notification, setNotification,
   };
 
   return (
@@ -671,6 +774,7 @@ const App = () => {
             {route.name === 'profile' && <ProfilePage />}
             {route.name === 'fouryear' && <FourYearPlanPage />}
             {route.name === 'priorcredit' && <PriorCreditPage />}
+            <Toast notification={notification} onClose={() => setNotification(null)} />
           </>
         )}
       </AuthGate>

@@ -1,5 +1,6 @@
 /* global React, FRDATA, Icon, MatchBar, AreaDot, useApp */
 const { useState, useEffect, useRef } = React;
+const STREAM_FLUSH_MS = 140;
 
 const coerceText = (value) => {
   if (value === null || value === undefined) return '';
@@ -99,7 +100,10 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onR
     || '';
 
   useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    const frame = requestAnimationFrame(() => {
+      if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    });
+    return () => cancelAnimationFrame(frame);
   }, [messages, typing]);
 
   const updateStreamingMessage = (id, updater) => {
@@ -163,6 +167,8 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onR
     setInput('');
     setTyping(true);
 
+    let flushBufferedStream = () => {};
+
     try {
       const payload = {
         messages: nextMessages,
@@ -201,21 +207,77 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onR
       }
 
       let sawFinalTextDelta = false;
-      const updateProgressText = (text, append = true) => {
-        const safeText = coerceText(text);
-        updateStreamingMessage(agentMessageId, (message) => ({
-          progress: {
-            ...(message.progress || {}),
-            finalAnswerStarted: Boolean(message.progress?.finalAnswerStarted || message.progress?.latestToolActivity),
-            latestInterimText: append
-              ? `${message.progress?.latestToolActivity && !message.progress?.finalAnswerStarted ? '' : coerceText(message.progress?.latestInterimText)}${safeText}`
-              : safeText,
-            latestToolActivity: message.progress?.latestToolActivity && !message.progress?.finalAnswerStarted ? null : message.progress?.latestToolActivity,
-          },
-          status: '',
-        }));
+      let finalTextBuffer = '';
+      let progressTextBuffer = '';
+      let progressReplacement = null;
+      let streamFlushTimer = null;
+
+      flushBufferedStream = () => {
+        if (streamFlushTimer) {
+          clearTimeout(streamFlushTimer);
+          streamFlushTimer = null;
+        }
+
+        const finalChunk = finalTextBuffer;
+        const progressChunk = progressTextBuffer;
+        const progressReplace = progressReplacement;
+        finalTextBuffer = '';
+        progressTextBuffer = '';
+        progressReplacement = null;
+        if (!finalChunk && !progressChunk && progressReplace === null) return;
+
+        updateStreamingMessage(agentMessageId, (message) => {
+          const currentProgress = message.progress || {};
+          const next = { status: '' };
+
+          if (finalChunk) {
+            next.text = `${coerceText(message.text)}${finalChunk}`;
+            next.progress = {
+              ...currentProgress,
+              finalAnswerStarted: true,
+              latestInterimText: '',
+              latestToolActivity: null,
+            };
+            return next;
+          }
+
+          const shouldStartAnswer = Boolean(currentProgress.finalAnswerStarted || currentProgress.latestToolActivity);
+          next.progress = {
+            ...currentProgress,
+            finalAnswerStarted: shouldStartAnswer,
+            latestInterimText: progressReplace !== null
+              ? progressReplace
+              : `${currentProgress.latestToolActivity && !currentProgress.finalAnswerStarted ? '' : coerceText(currentProgress.latestInterimText)}${progressChunk}`,
+            latestToolActivity: currentProgress.latestToolActivity && !currentProgress.finalAnswerStarted
+              ? null
+              : currentProgress.latestToolActivity,
+          };
+          return next;
+        });
       };
+
+      const scheduleBufferedFlush = () => {
+        if (streamFlushTimer) return;
+        streamFlushTimer = setTimeout(flushBufferedStream, STREAM_FLUSH_MS);
+      };
+
+      const enqueueFinalText = (text) => {
+        finalTextBuffer += coerceText(text);
+        scheduleBufferedFlush();
+      };
+
+      const enqueueProgressText = (text, append = true) => {
+        if (append) {
+          progressTextBuffer += coerceText(text);
+        } else {
+          progressReplacement = coerceText(text);
+          progressTextBuffer = '';
+        }
+        scheduleBufferedFlush();
+      };
+
       const updateToolActivity = (activity) => {
+        flushBufferedStream();
         updateStreamingMessage(agentMessageId, (message) => ({
           progress: {
             ...(message.progress || {}),
@@ -238,55 +300,32 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onR
         },
         final_text_delta: ({ text }) => {
           sawFinalTextDelta = true;
-          const safeText = coerceText(text);
-          updateStreamingMessage(agentMessageId, (message) => ({
-            text: `${coerceText(message.text)}${safeText}`,
-            status: '',
-            progress: {
-              ...(message.progress || {}),
-              finalAnswerStarted: true,
-              latestInterimText: '',
-              latestToolActivity: null,
-            },
-          }));
+          enqueueFinalText(text);
         },
         delta: ({ text }) => {
           if (sawFinalTextDelta) return;
-          const safeText = coerceText(text);
-          updateStreamingMessage(agentMessageId, (message) => ({
-            text: `${coerceText(message.text)}${safeText}`,
-            status: '',
-            progress: {
-              ...(message.progress || {}),
-              finalAnswerStarted: true,
-              latestInterimText: '',
-              latestToolActivity: null,
-            },
-          }));
+          enqueueFinalText(text);
         },
         text_delta: ({ text }) => {
-          const safeText = coerceText(text);
-          updateStreamingMessage(agentMessageId, (message) => ({
-            text: `${coerceText(message.text)}${safeText}`,
-            status: '',
-            progress: {
-              ...(message.progress || {}),
-              finalAnswerStarted: true,
-              latestInterimText: '',
-              latestToolActivity: null,
-            },
-          }));
+          enqueueFinalText(text);
         },
-        progress_text: ({ text }) => updateProgressText(text, false),
-        progress_text_delta: ({ text }) => updateProgressText(text, true),
+        progress_text: ({ text }) => enqueueProgressText(text, false),
+        progress_text_delta: ({ text }) => enqueueProgressText(text, true),
         tool_activity_start: updateToolActivity,
         tool_activity_input: updateToolActivity,
         tool_activity_running: updateToolActivity,
         tool_activity_result: updateToolActivity,
         tool_activity_error: updateToolActivity,
-        trace_summary: (traceSummary) => updateStreamingMessage(agentMessageId, () => ({ traceSummary })),
-        proposal: (proposal) => updateStreamingMessage(agentMessageId, () => ({ proposal })),
+        trace_summary: (traceSummary) => {
+          flushBufferedStream();
+          updateStreamingMessage(agentMessageId, () => ({ traceSummary }));
+        },
+        proposal: (proposal) => {
+          flushBufferedStream();
+          updateStreamingMessage(agentMessageId, () => ({ proposal }));
+        },
         final: (payload) => {
+          flushBufferedStream();
           console.debug('[agent stream] final', {
             clientRequestId,
             textLength: payload?.message?.text?.length || 0,
@@ -312,11 +351,13 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onR
           }
         },
         error: (payload) => {
+          flushBufferedStream();
           console.error('[agent stream] sse error', { clientRequestId, payload });
           throw new Error(coerceText(payload?.message?.text || payload?.error) || 'The agent is unavailable right now. Manual planning still works.');
         },
       });
     } catch (error) {
+      flushBufferedStream();
       console.error('[agent stream] failed', { clientRequestId, error });
       const failedToFetch = String(error && error.message || '').includes('Failed to fetch');
       updateStreamingMessage(agentMessageId, () => ({
@@ -335,25 +376,26 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onR
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       {/* Header */}
       <div style={{
-        padding: '14px 18px', borderBottom: '1px solid var(--border)',
+        padding: '16px 20px', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        flexShrink: 0, minHeight: 56, boxSizing: 'border-box',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{
-            width: 22, height: 22, borderRadius: 6,
+            width: 28, height: 28, borderRadius: 8,
             background: 'var(--accent-soft)',
             border: '1px solid var(--accent)',
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--accent)',
           }}>
-            <Icon name="sparkle" size={12} />
+            <Icon name="sparkle" size={15} />
           </span>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 500 }}>Agent</div>
-            <div style={{ fontSize: 11, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ fontSize: 15, fontWeight: 600 }}>Agent</div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)' }} />
               {calibratedToUser ? 'Online · Calibrated to you' : 'Online'}
             </div>
@@ -363,7 +405,7 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onR
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div ref={scrollRef} style={{ flex: '1 1 0', minHeight: 0, overflowY: 'auto', padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
         {messages.map((m, i) => (
           <MessageBubble
             key={m.id || i}
@@ -379,28 +421,28 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onR
       </div>
 
       {/* Input */}
-      <div style={{ padding: 12, borderTop: '1px solid var(--border)' }}>
+      <div style={{ padding: 14, borderTop: '1px solid var(--border)', flexShrink: 0 }}>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 8,
-          padding: '6px 6px 6px 12px', borderRadius: 'var(--r-md)',
+          padding: '8px 8px 8px 14px', borderRadius: 'var(--r-md)',
           background: 'var(--surface)', border: '1px solid var(--border)',
         }}>
           <button className="btn-ghost" style={{ color: 'var(--text-tertiary)', padding: 4 }} title="Attach">
-            <Icon name="paperclip" size={15} />
+            <Icon name="paperclip" size={16} />
           </button>
           <input
             placeholder="Ask the agent…"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && send()}
-            style={{ flex: 1, fontSize: 13, padding: '6px 0' }}
+            style={{ flex: 1, fontSize: 15, padding: '8px 0' }}
           />
           <button onClick={send} className="btn-primary" style={{
-            width: 28, height: 28, borderRadius: 7, padding: 0,
+            width: 32, height: 32, borderRadius: 8, padding: 0,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             opacity: input.trim() ? 1 : 0.5,
           }}>
-            <Icon name="send" size={13} />
+            <Icon name="send" size={15} />
           </button>
         </div>
       </div>
@@ -415,26 +457,44 @@ const escapeHtml = (value) => coerceText(value)
   .replace(/"/g, '&quot;')
   .replace(/'/g, '&#39;');
 
+const COURSE_MENTION_PATTERN = /\b[A-Z0-9]{1,5}\.[A-Z0-9]{2,5}\b/gi;
+const COURSE_CATALOG_LINK_PATTERN = /\[([^\]]+)\]\((?:catalog|course)\/([A-Z0-9]{1,5}\.[A-Z0-9]{2,5})\)/gi;
+
+const normalizeCourseMentionId = (value) => {
+  const match = String(value || '').trim().match(/^[A-Z0-9]{1,5}\.[A-Z0-9]{2,5}$/i);
+  return match ? match[0].toUpperCase() : '';
+};
+
+const courseMentionAnchor = (label, courseId) => {
+  const normalizedId = normalizeCourseMentionId(courseId);
+  if (!normalizedId) return label;
+  return `<a href="#course-${normalizedId}" class="chat-course-mention mono" data-course-id="${normalizedId}">${label}</a>`;
+};
+
 const renderInlineMarkdown = (value) => {
   let html = escapeHtml(value);
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+  html = html.replace(COURSE_CATALOG_LINK_PATTERN, (_, label, courseId) => courseMentionAnchor(label, courseId));
   html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
   return html;
 };
 
-const COURSE_MENTION_PATTERN = /\b[A-Z0-9]{1,5}\.[A-Z0-9]{2,5}\b/gi;
-
 const extractCourseMentionCandidates = (value) => {
   const text = coerceText(value);
-  const matches = [...text.matchAll(COURSE_MENTION_PATTERN)]
+  const linkedMatches = [...text.matchAll(COURSE_CATALOG_LINK_PATTERN)]
+    .map((match) => match[2]);
+  const bareMatches = [...text.matchAll(COURSE_MENTION_PATTERN)]
     .filter((match) => {
+      const start = match.index || 0;
       const end = (match.index || 0) + match[0].length;
-      return !/^\s*\//.test(text.slice(end, end + 4));
+      return text[start - 1] !== '/' && !/^\s*\//.test(text.slice(end, end + 4));
     })
     .map((match) => match[0]);
-  return [...new Set(matches.map((match) => match.toUpperCase()))];
+  return [...new Set([...linkedMatches, ...bareMatches]
+    .map(normalizeCourseMentionId)
+    .filter(Boolean))];
 };
 
 const wrapCourseMentions = (html, validCourseIds = new Set()) => {
@@ -456,14 +516,27 @@ const wrapCourseMentions = (html, validCourseIds = new Set()) => {
       if (inAnchor || inCode) return part;
       return part.replace(COURSE_MENTION_PATTERN, (match, offset, text) => {
         const end = offset + match.length;
-        if (/^\s*\//.test(text.slice(end, end + 4))) return match;
-        const courseId = match.toUpperCase();
+        if (text[offset - 1] === '/' || /^\s*\//.test(text.slice(end, end + 4))) return match;
+        const courseId = normalizeCourseMentionId(match);
         if (!valid.has(courseId)) return match;
-        return `<a href="#course-${courseId}" class="chat-course-mention mono" data-course-id="${courseId}">${match}</a>`;
+        return courseMentionAnchor(match, courseId);
       });
     })
     .join('');
 };
+
+const StreamingText = ({ value, validCourseIds, onCourseMentionClick }) => (
+  <div
+    className="chat-markdown chat-stream-text"
+    onClickCapture={onCourseMentionClick}
+    dangerouslySetInnerHTML={{
+      __html: renderMarkdown(value, {
+        linkCourses: true,
+        validCourseIds,
+      }),
+    }}
+  />
+);
 
 const renderMarkdown = (value, options = {}) => {
   const lines = coerceText(value).split('\n');
@@ -530,9 +603,11 @@ const uiActionLabel = (action) => {
   if (!action || typeof action !== 'object') return 'Update plan';
   const courseId = String(action.courseId || '').toUpperCase();
   const removeCourseId = String(action.removeCourseId || '').toUpperCase();
-  if (action.type === 'remove_course') return `Remove ${courseId}`;
-  if (action.type === 'replace_course') return `Replace ${removeCourseId || 'course'} with ${courseId}`;
-  return `Add ${courseId}`;
+  const courseLabel = courseId ? `[${courseId}](catalog/${courseId})` : 'course';
+  const removeCourseLabel = removeCourseId ? `[${removeCourseId}](catalog/${removeCourseId})` : 'course';
+  if (action.type === 'remove_course') return `Remove ${courseLabel}`;
+  if (action.type === 'replace_course') return `Replace ${removeCourseLabel} with ${courseLabel}`;
+  return `Add ${courseLabel}`;
 };
 
 const proposalFromUiActions = (uiActions) => {
@@ -543,14 +618,17 @@ const proposalFromUiActions = (uiActions) => {
     title: 'Proposed changes',
     actions,
     actionItems: actions.map(uiActionLabel),
-    assumptions: ['Applies only to the active semester.'],
     warnings: [],
     source: 'legacy_ui_actions',
   };
 };
 
 const normalizeProposal = (proposal, legacyUiActions) => {
-  if (proposal && typeof proposal === 'object') return proposal;
+  if (proposal && typeof proposal === 'object') {
+    const actions = Array.isArray(proposal.actions) ? proposal.actions : [];
+    if (!actions.length) return null;
+    return { ...proposal, actions };
+  }
   return proposalFromUiActions(legacyUiActions);
 };
 
@@ -596,14 +674,18 @@ const ToolActivityCard = ({ activity }) => {
   );
 };
 
-const ProgressBlock = ({ progress, fallback }) => {
+const ProgressBlock = ({ progress, fallback, validCourseIds, onCourseMentionClick }) => {
   const interim = coerceText(progress?.latestInterimText);
   const activity = progress?.latestToolActivity;
   const showActivity = activity && !progress?.finalAnswerStarted;
   return (
     <div>
       {interim ? (
-        <div className="chat-markdown" dangerouslySetInnerHTML={{ __html: renderMarkdown(interim) }} />
+        <StreamingText
+          value={interim}
+          validCourseIds={validCourseIds}
+          onCourseMentionClick={onCourseMentionClick}
+        />
       ) : (
         <div style={{ color: 'var(--text-secondary)' }}>{fallback || 'Thinking...'}</div>
       )}
@@ -651,11 +733,12 @@ const TraceSummary = ({ traceSummary }) => {
   );
 };
 
-const ProposalCard = ({ proposal, onApplyUiActions }) => {
+const ProposalCard = ({ proposal, onApplyUiActions, onCourseMentionClick }) => {
   const [state, setState] = useState('applying');
   const undoRef = useRef(null);
   const appliedRef = useRef(false);
   const actions = Array.isArray(proposal?.actions) ? proposal.actions : [];
+  const canApply = actions.length > 0 && typeof onApplyUiActions === 'function';
   const actionItems = Array.isArray(proposal?.actionItems) && proposal.actionItems.length
     ? proposal.actionItems
     : actions.map(uiActionLabel);
@@ -667,10 +750,7 @@ const ProposalCard = ({ proposal, onApplyUiActions }) => {
     .filter(Boolean);
 
   useEffect(() => {
-    if (!proposal || appliedRef.current || !actions.length || typeof onApplyUiActions !== 'function') {
-      if (!actions.length || typeof onApplyUiActions !== 'function') setState('applied');
-      return;
-    }
+    if (!proposal || !canApply || appliedRef.current || state === 'cancelled') return;
     appliedRef.current = true;
     Promise.resolve(onApplyUiActions(actions)).then((undo) => {
       undoRef.current = typeof undo === 'function' ? undo : null;
@@ -679,9 +759,9 @@ const ProposalCard = ({ proposal, onApplyUiActions }) => {
       console.error('[proposal] failed to apply ui actions', error);
       setState('applied');
     });
-  }, [proposal, actions, onApplyUiActions]);
+  }, [proposal, actions, canApply, onApplyUiActions, state]);
 
-  if (!proposal || state === 'dismissed') return null;
+  if (!proposal || !canApply || state === 'dismissed') return null;
 
   return (
     <div style={{
@@ -696,8 +776,16 @@ const ProposalCard = ({ proposal, onApplyUiActions }) => {
       <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>
         {state === 'cancelled' ? 'Cancelled changes' : 'Applied changes'}
       </div>
-      <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--text)' }}>
-        {displayActionItems.map((item, index) => <li key={index}>{item}</li>)}
+      <ul
+        onClickCapture={onCourseMentionClick}
+        style={{ margin: 0, paddingLeft: 18, color: 'var(--text)' }}
+      >
+        {displayActionItems.map((item, index) => (
+          <li
+            key={index}
+            dangerouslySetInnerHTML={{ __html: renderInlineMarkdown(item) }}
+          />
+        ))}
       </ul>
       {displayWarnings.length > 0 && (
         <div style={{ marginTop: 8, color: 'var(--accent)', lineHeight: 1.45 }}>
@@ -781,6 +869,7 @@ const CourseMentionMenu = ({ courseId, position, schedule, onAddCourse, onRemove
     maxWidth: 'calc(100vw - 24px)',
     marginTop: 0,
     zIndex: 3000,
+    transform: position.placement === 'below' ? 'translateX(-50%)' : 'translate(-50%, -100%)',
   } : {};
 
   const handleScheduleAction = () => {
@@ -855,17 +944,19 @@ const MessageBubble = ({ msg, schedule, onAddCourse, onRemoveCourse, onOpenCours
   const [validCourseMentions, setValidCourseMentions] = useState(new Set());
   const [invalidCourseMentions, setInvalidCourseMentions] = useState(new Set());
   const displayText = isUser ? coerceText(msg.text) : coerceText(msg.text);
-  const courseCandidates = extractCourseMentionCandidates(displayText);
+  const progressText = !isUser ? coerceText(msg.progress?.latestInterimText) : '';
+  const courseCandidates = extractCourseMentionCandidates(`${displayText}\n${progressText}`);
   const courseCandidateKey = courseCandidates.join('|');
   const immediatelyValidCourseIds = new Set([
     ...validCourseMentions,
+    ...(msg.streaming ? courseCandidates : []),
     ...(schedule || []).map((id) => String(id).toUpperCase()),
     ...(msg.suggestions || []).map((id) => coerceText(id).toUpperCase()),
   ]);
-  const messageHtml = renderMarkdown(displayText, {
-    linkCourses: !isUser,
+  const messageHtml = !isUser && !msg.streaming ? renderMarkdown(displayText, {
+    linkCourses: true,
     validCourseIds: immediatelyValidCourseIds,
-  });
+  }) : '';
   const showProgressOnly = !isUser && msg.streaming && !displayText;
   const proposal = !isUser && !msg.streaming ? normalizeProposal(msg.proposal, msg.uiActions) : null;
 
@@ -920,11 +1011,11 @@ const MessageBubble = ({ msg, schedule, onAddCourse, onRemoveCourse, onOpenCours
     if (!courseId) return;
     const rect = mention.getBoundingClientRect();
     const menuWidth = 380;
-    const menuHeight = 88;
-    const left = Math.max(12, Math.min(rect.left, window.innerWidth - menuWidth - 12));
-    const aboveTop = rect.top - menuHeight - 8;
-    const top = aboveTop >= 12 ? aboveTop : Math.min(rect.bottom + 8, window.innerHeight - menuHeight - 12);
-    setCourseMenu({ courseId, position: { left, top } });
+    const menuHalfWidth = menuWidth / 2;
+    const left = Math.max(12 + menuHalfWidth, Math.min(rect.left + rect.width / 2, window.innerWidth - menuHalfWidth - 12));
+    const placement = rect.top >= 78 ? 'above' : 'below';
+    const top = placement === 'above' ? rect.top - 8 : rect.bottom + 8;
+    setCourseMenu({ courseId, position: { left, top, placement } });
   };
 
   return (
@@ -934,21 +1025,34 @@ const MessageBubble = ({ msg, schedule, onAddCourse, onRemoveCourse, onOpenCours
     }}>
       <div style={{
         maxWidth: '88%',
-        padding: '10px 14px', borderRadius: 'var(--r-md)',
+        padding: '12px 16px', borderRadius: 'var(--r-md)',
         background: isUser ? 'var(--accent)' : 'var(--surface)',
         color: isUser ? '#fff' : 'var(--text)',
         border: isUser ? 'none' : '1px solid var(--border)',
-        fontSize: 13, lineHeight: 1.55,
+        fontSize: 15, lineHeight: 1.6,
       }}>
         {isUser ? displayText : showProgressOnly ? (
-          <ProgressBlock progress={msg.progress} fallback={msg.status} />
+          <ProgressBlock
+            progress={msg.progress}
+            fallback={msg.status}
+            validCourseIds={immediatelyValidCourseIds}
+            onCourseMentionClick={handleCourseMentionClick}
+          />
         ) : (
           <>
-            <div
-              className="chat-markdown"
-              onClickCapture={handleCourseMentionClick}
-              dangerouslySetInnerHTML={{ __html: messageHtml }}
-            />
+            {msg.streaming ? (
+              <StreamingText
+                value={displayText}
+                validCourseIds={immediatelyValidCourseIds}
+                onCourseMentionClick={handleCourseMentionClick}
+              />
+            ) : (
+              <div
+                className="chat-markdown"
+                onClickCapture={handleCourseMentionClick}
+                dangerouslySetInnerHTML={{ __html: messageHtml }}
+              />
+            )}
             {msg.streaming && msg.progress?.latestToolActivity && !msg.progress?.finalAnswerStarted && (
               <ToolActivityCard activity={msg.progress.latestToolActivity} />
             )}
@@ -972,7 +1076,11 @@ const MessageBubble = ({ msg, schedule, onAddCourse, onRemoveCourse, onOpenCours
       )}
 
       {proposal && (
-        <ProposalCard proposal={proposal} onApplyUiActions={onApplyUiActions} />
+        <ProposalCard
+          proposal={proposal}
+          onApplyUiActions={onApplyUiActions}
+          onCourseMentionClick={handleCourseMentionClick}
+        />
       )}
     </div>
   );
@@ -1875,8 +1983,13 @@ const Recommendations = ({ schedule, onAddCourse, onRemoveCourse, onOpenCourse }
     return () => { cancelled = true; };
   }, [schedule.join('|'), JSON.stringify(profile?.taken || []), JSON.stringify(profile?.remainingReqs || []), JSON.stringify(personalization || {}), personalCourseMarkdown]);
 
+  const personalMatchTotal = (course) => {
+    const value = Number(course?.personalMatch?.total);
+    return Number.isFinite(value) ? value : 0;
+  };
+
   const sorted = [...recs].sort((a, b) => {
-    if (sort === 'match') return (b.personalMatch?.total || FRDATA.getMatch(b.id).total) - (a.personalMatch?.total || FRDATA.getMatch(a.id).total);
+    if (sort === 'match') return personalMatchTotal(b) - personalMatchTotal(a) || (b.rankScore || 0) - (a.rankScore || 0);
     if (sort === 'workload') return a.hydrant - b.hydrant;
     return b.units - a.units;
   });
@@ -1971,7 +2084,7 @@ const Recommendations = ({ schedule, onAddCourse, onRemoveCourse, onOpenCourse }
           </div>
         )}
         {sorted.map((c) => {
-          const m = c.personalMatch || FRDATA.getMatch(c.id);
+          const matchScore = personalMatchTotal(c);
           const courseId = String(c.id || '').toUpperCase();
           const isScheduled = scheduledSet.has(courseId);
           return (
@@ -1994,9 +2107,11 @@ const Recommendations = ({ schedule, onAddCourse, onRemoveCourse, onOpenCourse }
                     {c.name}
                   </span>
                 </div>
-                <div style={{ marginTop: 4 }}>
-                  <MatchBar score={m.total} width={120} compact animated={false} />
-                </div>
+                {matchScore > 0 && (
+                  <div style={{ marginTop: 4 }}>
+                    <MatchBar score={matchScore} width={120} compact animated={false} />
+                  </div>
+                )}
                 {Array.isArray(c.recommendationReasons) && c.recommendationReasons.length > 0 && (
                   <div style={{ marginTop: 4, fontSize: 11, color: 'var(--text-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {c.recommendationReasons.slice(0, 2).join(' · ')}

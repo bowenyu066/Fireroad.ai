@@ -11,7 +11,7 @@ npm install
 export OPENROUTER_API_KEY="your_openrouter_key"
 # Optional:
 export OPENROUTER_MODEL="openai/gpt-4.1-mini"
-export OPENROUTER_TIMEOUT_MS=60000
+export OPENROUTER_TIMEOUT_MS=120000
 # Optional local demo fallback when data/courses.json cannot load:
 export DEMO_MODE=true
 npm run dev
@@ -58,11 +58,11 @@ The active term selector is generated in `data.js` from the current date, using 
 
 - `FRDATA.catalog` — array of course objects with `id`, `name`, `units`, `schedule`, `days`, `time`, `satisfies`, `prereqs`, `hydrant`, `rating`, `topics`, `area`
 - `FRDATA.profile` — mock student profile (taken courses, preferences, calibration, remaining requirements)
-- `FRDATA.matchScores` — match score breakdown per course (`total`, `interest`, `workload`, `reqValue`)
+- `FRDATA.matchScores` — legacy mock/demo match score breakdowns. Do not expose these through current catalog or agent tool summaries as real current/personalized scores.
 - `FRDATA.fourYearPlan`, `FRDATA.semesterLabels`, `FRDATA.semesterOrder`, `FRDATA.defaultActiveSem` — term-aware seed plan data; the editable schedule is `fourYearPlan[activeSem]`
 - `FRDATA.termOptions` — rolling term picker options generated from the current date
 - `FRDATA.fetchCurrentCourse(id)` / `FRDATA.fetchCurrentSearch(q)` / `FRDATA.fetchCurrentCatalog()` — server-backed current catalog helpers. Do not silently fall back to mock data when these APIs fail.
-- `FRDATA.getCourse(id)` / `FRDATA.getMatch(id)` — fallback lookup helpers
+- `FRDATA.getCourse(id)` / `FRDATA.getMatch(id)` — legacy fallback lookup helpers for demo UI only
 
 The planner's manual course search path must call `FRDATA.fetchCurrentSearch(...)` and treat `/api/current/search` as the primary source. Cache current search results for schedule/detail display, but do not reintroduce mock catalog filtering as the main user path.
 
@@ -102,14 +102,14 @@ The app has a small real backend, while transcript parsing and some student-data
 - `AgentPanel` prefers `POST /api/chat/stream` for Server-Sent Events. The current stream contract separates ephemeral progress from final chat text: `progress_text`, `progress_text_delta`, `tool_activity_start`, `tool_activity_result`, `tool_activity_error`, `final_text_delta`, `trace_summary`, `proposal`, `final`, `error`, and `done`. `delta` is only a backward-compatible alias for final text.
 - Final assistant text is ordinary Markdown, not JSON. Do not ask the model to return `{ text, suggestions, uiActions }`, and do not parse tool calls or plan mutations out of final prose.
 - Tool progress is temporary UI. While streaming, show only the latest interim assistant text and current tool activity. After final, hide the progress block and optionally show the collapsed `Checked: ...` trace with safe tool input/result summaries. Do not send or render full raw tool outputs by default.
-- Plan changes are proposal/confirmation based. Legacy `uiActions` may remain in payloads for compatibility, but the frontend must render them as a proposal card with Apply/Dismiss. Only Apply calls the existing `onApplyUiActions` path.
+- For explicit validated active-semester mutations, the UI optimistically applies the change and shows an Applied changes card with Cancel/Undo. Recommendation-only answers do not mutate the plan.
 - Chat routes emit request-scoped server logs as `[agent <id>] ...`. Preserve this logging when touching agent/tool behavior; it is the primary way to debug model rounds, tool call args/results, trace/proposal generation, and validated UI actions.
 - Agent message text is rendered as a limited Markdown subset in `components/agent.jsx`; keep model-facing prompts aligned so responses use real Markdown lists and no raw HTML.
 - `server/current/*`: normalizes the local `data/courses.json` catalog snapshot for frontend current views, recommendations, and agent tools. Override with `CURRENT_CATALOG_PATH` when needed. If catalog loading fails, current routes fail by default; mock fallback is allowed only with `DEMO_MODE=true`.
 - `server/history/*`: SQLite-backed read-only historical offerings/documents/policies. History research should have the model write the complete display-ready `offering_markdown`; frontend code should render that Markdown directly instead of extracting Course Format/Attendance/Grading fields from prose. Use `npm run history:ablate-markdown -- <courseId> --limit 4 --jobs 4` with `OPENROUTER_API_KEY` to compare prompt variants without writing to the DB, then `npm run history:rewrite-markdown -- <courseId> --jobs 4` to regenerate offering display copy from cached documents without changing source coverage.
-- `server/chat/prompt.js`: keep the agent focused on the active semester, final Markdown answers, tool-grounded course facts, and confirmation-based plan proposals. Reject cross-semester roadmap mutations unless a future portfolio proposal flow is explicitly implemented.
+- `server/chat/prompt.js`: keep the agent focused on the active semester, final Markdown answers, tool-grounded course facts, and optimistic active-semester mutation proposals with Cancel/Undo. Reject cross-semester roadmap mutations unless a future portfolio proposal flow is explicitly implemented.
 - `server/chat/tools.js`: search, course detail, recommendations, schedule summaries, suggestion sanitization, and UI action validation should resolve courses through `server/current/fireroad.js` first. Mock data must not mask current snapshot load failures unless `DEMO_MODE=true`.
-- Match scores in `FRDATA.matchScores` should come from `POST /api/score-courses`
+- Real recommendation scores should come from the server's personalized recommendation path, not `FRDATA.matchScores`; agent-facing current course summaries must not include legacy mock match scores.
 - First-entry onboarding calls `/api/onboarding/*` for PDF text extraction, prompt execution, course import, and course-preference updates. The browser persists returned `personalCourseMarkdown` through Firebase client auth.
 - The workload estimate in `CourseDetail` uses `profile.calibration` (0–1 float) — calibration should eventually be computed server-side
 

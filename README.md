@@ -12,7 +12,7 @@ Course detail is split into `Current` and `Historical` views. Current data comes
 
 The active term selector is generated from the current date in `data.js`, similar to Hydrant's rolling term picker. Users can still manually choose another term; do not hardcode stale semester labels or default active terms.
 
-Manual course search in the planner uses `FRDATA.fetchCurrentSearch(...)`, which calls `/api/current/search` and caches normalized current courses for schedule display. The chat agent's course lookup, search, recommendation, schedule summary, and UI action validation tools also use the server-side current catalog. `shared/mock-data.js` is seed/demo data, and current-catalog load failures only fall back to mock data when `DEMO_MODE=true`.
+Manual course search in the planner uses `FRDATA.fetchCurrentSearch(...)`, which calls `/api/current/search` and caches normalized current courses for schedule display. The chat agent's course lookup, search, recommendation, schedule summary, and UI action validation tools also use the server-side current catalog. `shared/mock-data.js` is seed/demo data, including legacy mock match scores that must not be exposed as real current or personalized scores. Current-catalog load failures only fall back to mock data when `DEMO_MODE=true`.
 
 ## Setup
 
@@ -21,7 +21,7 @@ npm install
 export OPENROUTER_API_KEY="your_openrouter_key"
 # Optional:
 export OPENROUTER_MODEL="openai/gpt-4.1-mini"
-export OPENROUTER_TIMEOUT_MS=60000
+export OPENROUTER_TIMEOUT_MS=120000
 # Optional local demo fallback when data/courses.json cannot load:
 export DEMO_MODE=true
 npm run dev
@@ -37,7 +37,7 @@ Open http://localhost:3000.
 - `POST /api/chat` accepts `{ messages, profile, schedule, activeSem, studentName }` where `schedule` is `fourYearPlan[activeSem]`, and returns an agent message plus any pending proposal. Final agent text is ordinary Markdown, not a JSON string.
 - `POST /api/chat/stream` accepts the same payload and returns Server-Sent Events for ephemeral progress and final text: `status`, `progress_text`, `progress_text_delta`, `tool_activity_start`, `tool_activity_result`, `tool_activity_error`, `final_text_delta`, `trace_summary`, `proposal`, `final`, `error`, and `done`. `delta` remains a backward-compatible alias for final text deltas.
 - Tool calls stay in the model tool-calling channel. The browser shows compact in-progress tool activity while the assistant is working, then hides it when the final answer arrives. Completed answers may show a collapsed `Checked: ...` trace summary with safe tool input/result summaries, never full raw tool output by default.
-- Schedule changes are confirmation-based. Legacy `uiActions` may still appear in API payloads for compatibility, but the frontend renders them as a proposal card. The plan is modified only after the user clicks Apply; Dismiss does nothing.
+- For explicit validated active-semester mutations, the UI optimistically applies the change and shows an Applied changes card with Cancel/Undo. Recommendation-only answers do not mutate the plan.
 - Chat requests log request-scoped diagnostics in the server terminal as `[agent <id>] ...`, including model rounds, tool call arguments, current-catalog result summaries, trace/proposal generation, and UI action validation. The browser console also logs `[agent stream] ...` for stream start/status/final/failure events.
 - Agent message text is rendered as a small safe Markdown subset in the chat UI, so model responses should use real newline-separated Markdown bullets instead of one-line pseudo-lists.
 - `GET /api/current/course/:courseId` returns normalized current catalog data.
