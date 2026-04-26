@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 
-const { publicErrorMessage } = require('../chat/openrouter');
+const { callOpenRouter, publicErrorMessage } = require('../chat/openrouter');
 const { parseCourseRows } = require('./markdown');
 const { extractPdfText } = require('./pdf');
 const { runPromptFile } = require('./prompts');
@@ -45,6 +45,18 @@ function markdownResponse(personalCourseMarkdown, warnings = [], extra = {}) {
   };
 }
 
+function parseJsonObject(text) {
+  const raw = String(text || '').trim();
+  const first = raw.indexOf('{');
+  const last = raw.lastIndexOf('}');
+  const candidate = first >= 0 && last > first ? raw.slice(first, last + 1) : raw;
+  try {
+    return JSON.parse(candidate);
+  } catch (error) {
+    return null;
+  }
+}
+
 function buildProfile(reqBody) {
   return parseJsonField(reqBody.profile, reqBody.profile || {});
 }
@@ -84,6 +96,193 @@ function toCourseRatings(courses) {
     title: course.name || course.title || 'Unknown',
     rating: preferenceToPromptRating(course.preference),
   }));
+}
+
+function answerValue(value, fallback = 'Unknown') {
+  if (value === null || value === undefined || value === '') return fallback;
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  return String(value);
+}
+
+function tableRow(cells) {
+  return `| ${cells.map((cell) => String(cell ?? '').replace(/\|/g, '/')).join(' | ')} |`;
+}
+
+function ratingRow(label, value, scale = '0-10') {
+  return tableRow([label, answerValue(value), answerValue(value, 'Unknown') === 'Unknown' ? 'Unknown' : scale, 'None']);
+}
+
+function replacePlanningPreferenceSection(markdown, section) {
+  const heading = '## Course Planning Preferences and Constraints';
+  const start = markdown.indexOf(heading);
+  if (start >= 0) {
+    const rest = markdown.slice(start + heading.length);
+    const next = rest.search(/\n## /);
+    if (next === -1) return `${markdown.slice(0, start).trimEnd()}\n\n${section}\n`;
+    return `${markdown.slice(0, start).trimEnd()}\n\n${section}\n\n${rest.slice(next + 1).trimStart()}`;
+  }
+
+  const anchors = ['## Course Preferences', '## Student Background and Skill Levels', '## Student Profile'];
+  for (const anchor of anchors) {
+    const anchorStart = markdown.indexOf(anchor);
+    if (anchorStart === -1) continue;
+    const rest = markdown.slice(anchorStart + anchor.length);
+    const next = rest.search(/\n## /);
+    if (next === -1) return `${markdown.trimEnd()}\n\n${section}\n`;
+    const insertAt = anchorStart + anchor.length + next;
+    return `${markdown.slice(0, insertAt).trimEnd()}\n\n${section}\n\n${markdown.slice(insertAt).trimStart()}`;
+  }
+
+  return `${markdown.trimEnd()}\n\n${section}\n`;
+}
+
+function buildPlanningPreferenceSection(questionnaire = {}, freeformNotes = '') {
+  const workload = questionnaire.workload || {};
+  const commitments = questionnaire.commitments || {};
+  const commitmentDetails = answerValue(commitments.details, 'None');
+  const grading = questionnaire.gradingPreferences || {};
+  const topics = questionnaire.topicRatings || {};
+  const formats = questionnaire.formatPreferences || {};
+  const desired = questionnaire.desiredCoursesPerDirection || {};
+  const followUps = Array.isArray(questionnaire.agentFollowUps) ? questionnaire.agentFollowUps : [];
+  const scale = questionnaire.ratingScale || '0-10';
+  const topicLabels = {
+    coding: 'Coding',
+    proofs: 'Proofs',
+    algorithms: 'Algorithms',
+    probability: 'Probability',
+    linearAlgebra: 'Linear Algebra',
+    machineLearning: 'Machine Learning',
+    systems: 'Systems',
+    softwareEngineering: 'Software Engineering',
+    math: 'Math Overall',
+  };
+  const formatLabels = {
+    psets: 'Problem Sets / Written Homework',
+    codingLabs: 'Coding Labs / Programming Assignments',
+    exams: 'Exams',
+    labs: 'Labs',
+    finalProjects: 'Final Projects',
+    paperReading: 'Paper Reading',
+    teamProjects: 'Team Projects',
+    presentations: 'Presentations',
+  };
+
+  const desiredRows = Object.entries(desired)
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
+    .map(([direction, value]) => tableRow([direction, value, 'None']));
+  const academicRows = Object.entries(topics)
+    .filter(([, value]) => value && value.interest !== undefined && value.interest !== null && value.interest !== '')
+    .map(([topic, value]) => tableRow([
+      Number(value.interest) <= 2 ? 'Not Interested' : 'Interested',
+      topicLabels[topic] || topic,
+      value.interest,
+      'Derived from explicit interest slider',
+    ]));
+
+  return [
+    '## Course Planning Preferences and Constraints',
+    '',
+    '### Planned / Intended Courses',
+    '',
+    '| Term | Subject | Title | Confidence | Notes |',
+    '|---|---|---|---|---|',
+    '| None specified | — | — | — | — |',
+    '',
+    '### Academic Direction Preferences',
+    '',
+    '| Direction Type | Direction / Area | Preference Strength | Notes |',
+    '|---|---|---:|---|',
+    ...(academicRows.length ? academicRows : ['| None specified | — | — | — |']),
+    '',
+    '### Workload and Scheduling Constraints',
+    '',
+    '| Dimension | Value | Notes |',
+    '|---|---|---|',
+    tableRow(['Weekly Course Hours Budget', answerValue(workload.weeklyCourseHoursBudget), 'None']),
+    tableRow(['Attendance Importance', answerValue(workload.attendanceImportance), 'None']),
+    tableRow(['Grading Importance', answerValue(workload.gradingImportance), 'None']),
+    tableRow(['Challenge Preference', answerValue(workload.challengePreference), 'None']),
+    tableRow(['Recruiting Commitment', answerValue(commitments.recruiting), commitmentDetails]),
+    tableRow(['UROP Commitment', answerValue(commitments.urop), commitmentDetails]),
+    tableRow(['TA Commitment', answerValue(commitments.ta), commitmentDetails]),
+    tableRow(['Club / Extracurricular Commitment', answerValue(commitments.clubs), commitmentDetails]),
+    tableRow(['Other Major Commitments', answerValue(commitments.other, 'None specified'), 'None']),
+    '',
+    '### Desired Course Distribution by Direction',
+    '',
+    '| Direction / Area | Desired Number of Courses | Notes |',
+    '|---|---:|---|',
+    ...(desiredRows.length ? desiredRows : ['| None specified | — | — |']),
+    '',
+    '### Course Format Preferences',
+    '',
+    '| Course Format | Preference Level | Scale | Notes |',
+    '|---|---:|---|---|',
+    ...Object.entries(formatLabels).map(([key, label]) => ratingRow(label, formats[key], scale)),
+    '',
+    '### Collaboration and Work Style Preferences',
+    '',
+    '| Dimension | Preference | Scale | Notes |',
+    '|---|---|---|---|',
+    ratingRow('Collaboration Preference', formats.teamProjects, scale),
+    ratingRow('Individual Work Preference', '', scale),
+    ratingRow('Team-Based Work Preference', formats.teamProjects, scale),
+    ratingRow('Coding Preference', topics.coding && topics.coding.interest, scale),
+    ratingRow('Proof-Based Thinking Preference', topics.proofs && topics.proofs.interest, scale),
+    ratingRow('Algorithmic Thinking Preference', topics.algorithms && topics.algorithms.interest, scale),
+    ratingRow('Conceptual Thinking Preference', '', scale),
+    ratingRow('Implementation Preference', topics.coding && topics.coding.interest, scale),
+    ratingRow('Reading Preference', formats.paperReading, scale),
+    '',
+    '### Grading and Evaluation Preferences',
+    '',
+    '| Dimension | Preference | Notes |',
+    '|---|---|---|',
+    tableRow(['Prefers Lenient Grading', answerValue(grading.preferLenientGrading), 'None']),
+    tableRow(['Avoids Harsh Curves', answerValue(grading.avoidHarshCurves), 'None']),
+    tableRow(['Prefers Clear Rubrics', answerValue(grading.preferClearRubrics), 'None']),
+    tableRow(['Comfortable With Exams', answerValue(formats.exams), `Scale: ${scale}`]),
+    tableRow(['Comfortable With Projects', answerValue(formats.finalProjects), `Scale: ${scale}`]),
+    tableRow(['Comfortable With Open-Ended Assignments', answerValue(formats.finalProjects), `Scale: ${scale}`]),
+    tableRow(['Comfortable With Heavy Weekly Assignments', answerValue(workload.challengePreference), 'None']),
+    '',
+    '### Topic Skill Self-Ratings',
+    '',
+    '| Topic / Skill Area | Self-Rating | Scale | Notes |',
+    '|---|---:|---|---|',
+    ...Object.entries(topicLabels).map(([key, label]) => ratingRow(label, topics[key] && topics[key].skill, scale)),
+    '',
+    '### Contextual Synthesis for Recommendation Engine',
+    '',
+    '| Dimension | Synthesis | Evidence Used | Confidence |',
+    '|---|---|---|---|',
+    tableRow(['Academic Focus', academicRows.length ? 'Use explicit topic interest ratings as ranking signals.' : 'Unknown', 'questionnaire', academicRows.length ? 'Medium' : 'Low']),
+    tableRow(['Preferred Course Style', Object.values(formats).some((value) => value !== '' && value !== undefined) ? 'Use explicit course format ratings as ranking signals.' : 'Unknown', 'questionnaire', Object.values(formats).some((value) => value !== '' && value !== undefined) ? 'Medium' : 'Low']),
+    tableRow(['Workload Risk', workload.weeklyCourseHoursBudget ? 'Use weekly hours budget and commitments to flag heavy schedules.' : 'Unknown', 'questionnaire', workload.weeklyCourseHoursBudget ? 'Medium' : 'Low']),
+    tableRow(['Areas to Prioritize', academicRows.length ? 'Prioritize areas with high explicit interest ratings.' : 'Unknown', 'questionnaire', academicRows.length ? 'Medium' : 'Low']),
+    tableRow(['Areas to Avoid or Deprioritize', academicRows.some((row) => row.includes('Not Interested')) ? 'Deprioritize areas with very low explicit interest ratings.' : 'Unknown', 'questionnaire', academicRows.some((row) => row.includes('Not Interested')) ? 'Medium' : 'Low']),
+    '',
+    '### Additional User Notes',
+    '',
+    `- ${freeformNotes || questionnaire.freeformNotes || 'None specified'}`,
+    '',
+    '### Agent Follow-up Answers',
+    '',
+    '| Question | Answer |',
+    '|---|---|',
+    ...(followUps.filter((item) => item && (item.question || item.answer)).length
+      ? followUps
+          .filter((item) => item && (item.question || item.answer))
+          .map((item) => tableRow([answerValue(item.question, 'Unknown'), answerValue(item.answer, 'None specified')]))
+      : ['| None specified | — |']),
+  ].join('\n');
+}
+
+function hasPromptExampleLeak(markdown, questionnaire = {}) {
+  const source = JSON.stringify(questionnaire);
+  const leakedValues = ['6.1220', 'computer vision', 'hardware', 'part-time research project'];
+  return leakedValues.some((value) => markdown.includes(value) && !source.includes(value));
 }
 
 async function extractUploadedPdf(req, warnings) {
@@ -182,6 +381,166 @@ router.post('/preferences', asyncRoute(async (req, res) => {
 
   res.json(markdownResponse(updatedMarkdown, [], {
     summary: 'Course preferences updated.',
+  }));
+}));
+
+router.post('/personalization-questions', asyncRoute(async (req, res) => {
+  if (!process.env.OPENROUTER_API_KEY) {
+    res.json({ ok: true, questions: null, source: 'fallback' });
+    return;
+  }
+
+  const profile = req.body.profile || {};
+  const personalCourseMarkdown = normalizeText(req.body.personalCourseMarkdown).slice(0, 12000);
+  const personalization = req.body.personalization || {};
+  const prompt = `You write short, friendly question copy for Fireroad.ai's optional MIT course recommendation personalization flow.
+
+Return only JSON with this exact shape:
+{
+  "questions": {
+    "workload": {"title": "...", "body": "..."},
+    "evaluation": {"title": "...", "body": "..."},
+    "interests": {"title": "...", "body": "..."},
+    "skills": {"title": "...", "body": "..."},
+    "formats": {"title": "...", "body": "..."},
+    "notes": {"title": "...", "body": "..."}
+  }
+}
+
+Rules:
+- Each title must be under 90 characters.
+- Each body must be under 160 characters.
+- Ask about preferences, not specific course recommendations.
+- Personalize wording using the profile and personal_course.md if helpful.
+- Do not invent facts about the student.
+
+PROFILE_JSON:
+${JSON.stringify(profile, null, 2)}
+
+EXISTING_PERSONALIZATION_JSON:
+${JSON.stringify(personalization, null, 2)}
+
+PERSONAL_COURSE_MD:
+${personalCourseMarkdown || 'Not provided'}`;
+
+  const completion = await callOpenRouter({
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.4,
+    max_tokens: 600,
+  });
+  const parsed = parseJsonObject(completion?.choices?.[0]?.message?.content);
+  res.json({
+    ok: true,
+    questions: parsed && parsed.questions ? parsed.questions : null,
+    source: parsed && parsed.questions ? 'model' : 'fallback',
+  });
+}));
+
+router.post('/personalization-followups', asyncRoute(async (req, res) => {
+  const fallbackQuestions = [
+    'Is there a kind of course you liked or disliked in the past that the recommender should understand better?',
+    'Are there any constraints this semester that are not captured by workload hours or commitments?',
+  ];
+
+  if (!process.env.OPENROUTER_API_KEY) {
+    res.json({ ok: true, questions: fallbackQuestions, source: 'fallback' });
+    return;
+  }
+
+  const profile = req.body.profile || {};
+  const personalCourseMarkdown = normalizeText(req.body.personalCourseMarkdown).slice(0, 12000);
+  const personalization = req.body.personalization || {};
+  const prompt = `You are Fireroad.ai's personalization follow-up interviewer for MIT course recommendations.
+
+Generate 1 to 3 short follow-up questions that would help personalize course recommendations beyond the fixed questionnaire.
+
+Return only JSON:
+{"questions":["question 1","question 2"]}
+
+Rules:
+- Ask questions the user can answer in 1-3 sentences.
+- Use the student's profile, personal_course.md, and current questionnaire answers.
+- Do not ask for information already clearly answered.
+- Do not recommend specific courses.
+- Do not invent facts.
+- Avoid sensitive personal information.
+- Prefer questions about concrete context, tradeoffs, or examples: what kind of UROP/recruiting/TA work, past course likes/dislikes, preferred intensity, project/team/exam nuance, or goals.
+
+PROFILE_JSON:
+${JSON.stringify(profile, null, 2)}
+
+PERSONALIZATION_JSON:
+${JSON.stringify(personalization, null, 2)}
+
+PERSONAL_COURSE_MD:
+${personalCourseMarkdown || 'Not provided'}`;
+
+  const completion = await callOpenRouter({
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.5,
+    max_tokens: 500,
+  });
+  const parsed = parseJsonObject(completion?.choices?.[0]?.message?.content);
+  const questions = Array.isArray(parsed && parsed.questions)
+    ? parsed.questions.map((question) => String(question || '').trim()).filter(Boolean).slice(0, 3)
+    : [];
+
+  res.json({
+    ok: true,
+    questions: questions.length ? questions : fallbackQuestions,
+    source: questions.length ? 'model' : 'fallback',
+  });
+}));
+
+router.post('/more-preferences', asyncRoute(async (req, res) => {
+  const personalCourseMarkdown = normalizeText(req.body.personalCourseMarkdown);
+  if (!personalCourseMarkdown) throw new Error('personalCourseMarkdown is required before saving further preferences.');
+
+  const questionnaire = req.body.questionnaire && typeof req.body.questionnaire === 'object'
+    ? req.body.questionnaire
+    : parseJsonField(req.body.questionnaire, {});
+  const normalizedData = req.body.normalizedData && typeof req.body.normalizedData === 'object'
+    ? req.body.normalizedData
+    : parseJsonField(req.body.normalizedData, {});
+  const freeformNotes = normalizeText(req.body.freeformNotes || questionnaire.freeformNotes);
+
+  if (!process.env.OPENROUTER_API_KEY) {
+    res.json(markdownResponse(personalCourseMarkdown, ['OPENROUTER_API_KEY is not set, so personal_course.md was not regenerated.'], {
+      summary: 'Further personalization saved structurally. Markdown regeneration was skipped because the model is unavailable.',
+      skippedMarkdownUpdate: true,
+    }));
+    return;
+  }
+
+  let updatedMarkdown;
+  let usedDeterministicFallback = false;
+  try {
+    updatedMarkdown = await runPromptFile('prompt4_more.md', {
+      PERSONAL_COURSE_MD: personalCourseMarkdown,
+      QUESTIONNAIRE_JSON: JSON.stringify(questionnaire || {}, null, 2),
+      USER_FREEFORM_NOTES: freeformNotes || 'None specified',
+      OPTIONAL_NORMALIZED_DATA: JSON.stringify(normalizedData || {}, null, 2),
+    });
+    if (hasPromptExampleLeak(updatedMarkdown, questionnaire)) {
+      usedDeterministicFallback = true;
+      updatedMarkdown = replacePlanningPreferenceSection(
+        personalCourseMarkdown,
+        buildPlanningPreferenceSection(questionnaire, freeformNotes),
+      );
+    }
+  } catch (error) {
+    usedDeterministicFallback = true;
+    updatedMarkdown = replacePlanningPreferenceSection(
+      personalCourseMarkdown,
+      buildPlanningPreferenceSection(questionnaire, freeformNotes),
+    );
+  }
+
+  res.json(markdownResponse(updatedMarkdown, [], {
+    summary: usedDeterministicFallback
+      ? 'Further course-planning preferences updated with the deterministic fallback.'
+      : 'Further course-planning preferences updated.',
+    usedDeterministicFallback,
   }));
 }));
 
