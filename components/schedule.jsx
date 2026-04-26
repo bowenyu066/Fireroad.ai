@@ -359,7 +359,7 @@ const ManualCourseSearch = ({ schedule, onAddCourse, onOpenCourse, onCoursesLoad
 };
 
 // ============== Schedule panel (left) ==============
-const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAddCourse, onRemoveCourse, viewMode, setViewMode, planningTermLabel = 'Next Semester' }) => {
+const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAddCourse, onRemoveCourse, viewMode, setViewMode, planningTermLabel = 'Next Semester', hideRequirements = false, compact = false }) => {
   const [showCoursePicker, setShowCoursePicker] = useState(false);
   const [courseMap, setCourseMap] = useState(() => Object.fromEntries(FRDATA.catalog.map((course) => [course.id, course])));
 
@@ -511,15 +511,24 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
       </div>
 
       {/* Footer summary */}
-      <div style={{ borderTop: '1px solid var(--border)', padding: '14px 20px', background: 'var(--bg)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+      {!hideRequirements ? (
+        <div style={{ borderTop: '1px solid var(--border)', padding: '14px 20px', background: 'var(--bg)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <span className="eyebrow">This semester</span>
+            <span className="mono" style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+              <span style={{ color: 'var(--text)' }}>{totalUnits}</span> units
+            </span>
+          </div>
+          <RequirementsPanel schedule={schedule} />
+        </div>
+      ) : (
+        <div style={{ borderTop: '1px solid var(--border)', padding: '10px 20px', background: 'var(--bg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span className="eyebrow">This semester</span>
           <span className="mono" style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
             <span style={{ color: 'var(--text)' }}>{totalUnits}</span> units
           </span>
         </div>
-        <RequirementsPanel schedule={schedule} />
-      </div>
+      )}
     </div>
   );
 };
@@ -690,6 +699,7 @@ const RequirementsPanel = ({ schedule }) => {
 };
 
 window.SchedulePanel = SchedulePanel;
+window.RequirementsPanel = RequirementsPanel;
 
 // ============== 4-Year Plan page ==============
 const FourYearPlanPage = () => {
