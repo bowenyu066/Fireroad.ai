@@ -18,11 +18,28 @@ const coerceText = (value) => {
 };
 
 // ============== Agent / chat panel (top-right) ==============
+const hasPersonalizationEvidence = (personalization, personalCourseMarkdown = '') => {
+  if (String(personalCourseMarkdown || '').trim()) return true;
+  if (!personalization || typeof personalization !== 'object') return false;
+  const workload = personalization.workload || {};
+  const gradingPreferences = personalization.gradingPreferences || {};
+  return Boolean(
+    Object.keys(personalization.topicRatings || {}).length
+    || Object.keys(personalization.formatPreferences || {}).length
+    || Object.keys(personalization.desiredCoursesPerDirection || {}).length
+    || Object.values(workload).some((value) => value !== null && value !== undefined && value !== '')
+    || Object.values(gradingPreferences).some((value) => value !== null && value !== undefined)
+    || String(personalization.freeformNotes || '').trim()
+  );
+};
+
 const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onOpenCourse, onApplyUiActions }) => {
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
   const scrollRef = useRef(null);
   const { activeSem, planningTermLabel, authState, personalCourseMarkdown } = useApp();
+  const personalization = profile?.preferences?.personalization || null;
+  const calibratedToUser = hasPersonalizationEvidence(personalization, personalCourseMarkdown);
   const studentName = String(profile?.name || '').trim()
     || String(authState?.user?.email || '').split('@')[0]
     || '';
@@ -93,26 +110,34 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
     setTyping(true);
 
     try {
+      const payload = {
+        messages: nextMessages,
+        profile,
+        personalization,
+        personalCourseMarkdown,
+        schedule,
+        activeSem,
+        planningTermLabel,
+        studentName,
+      };
       console.debug('[agent stream] start', {
         clientRequestId,
         activeSem,
         schedule,
         messageCount: nextMessages.length,
         latestUserText: userMsg.text,
+        payload,
+        personalizationDebug: {
+          hasProfilePersonalization: Boolean(personalization),
+          hasEvidence: calibratedToUser,
+          personalCourseMarkdownLength: String(personalCourseMarkdown || '').length,
+          completedGroups: personalization?.progress?.completedGroups || [],
+        },
       });
       const response = await fetch('/api/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: nextMessages,
-          profile,
-          personalization: profile?.preferences?.personalization || null,
-          personalCourseMarkdown,
-          schedule,
-          activeSem,
-          planningTermLabel,
-          studentName,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -256,7 +281,7 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
             <div style={{ fontSize: 13, fontWeight: 500 }}>Agent</div>
             <div style={{ fontSize: 11, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)' }} />
-              Online · Calibrated to you
+              {calibratedToUser ? 'Online · Calibrated to you' : 'Online'}
             </div>
           </div>
         </div>
@@ -1584,13 +1609,18 @@ const Recommendations = ({ schedule, onAddCourse, onOpenCourse }) => {
   });
 
   const savePersonalization = (nextPersonalization) => {
+    const normalizedPersonalization = normalizePersonalization(clonePersonalization(nextPersonalization));
     const nextProfile = {
       ...profile,
       preferences: {
         ...(profile.preferences || {}),
-        personalization: nextPersonalization,
+        personalization: normalizedPersonalization,
       },
     };
+    console.debug('[personalization] saving profile.preferences.personalization', {
+      completedGroups: normalizedPersonalization.progress?.completedGroups || [],
+      hasEvidence: hasPersonalizationEvidence(normalizedPersonalization, personalCourseMarkdown),
+    });
     setProfile(nextProfile);
 
     fetch('/api/onboarding/more-preferences', {
@@ -1598,9 +1628,9 @@ const Recommendations = ({ schedule, onAddCourse, onOpenCourse }) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         personalCourseMarkdown: personalCourseMarkdown || localStorage.getItem('fr-personalcourse-draft') || '# personalcourse.md\n',
-        questionnaire: nextPersonalization,
-        freeformNotes: nextPersonalization.freeformNotes || '',
-        normalizedData: nextPersonalization,
+        questionnaire: normalizedPersonalization,
+        freeformNotes: normalizedPersonalization.freeformNotes || '',
+        normalizedData: normalizedPersonalization,
       }),
     })
       .then(async (response) => {

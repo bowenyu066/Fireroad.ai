@@ -338,9 +338,34 @@ function scheduleForTool(args = {}, context = {}) {
   return normalizeSchedule(candidate);
 }
 
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function deepMerge(base = {}, override = {}) {
+  const result = { ...(isPlainObject(base) ? base : {}) };
+  Object.entries(isPlainObject(override) ? override : {}).forEach(([key, value]) => {
+    if (isPlainObject(value) && isPlainObject(result[key])) {
+      result[key] = deepMerge(result[key], value);
+    } else {
+      result[key] = value;
+    }
+  });
+  return result;
+}
+
 function profileForTool(args = {}, context = {}) {
-  const hasProfileArgs = args.profile && typeof args.profile === 'object' && Object.keys(args.profile).length > 0;
-  return normalizeProfile(hasProfileArgs ? args.profile : context.profile);
+  const contextProfile = context.profile && typeof context.profile === 'object' ? context.profile : {};
+  const argProfile = args.profile && typeof args.profile === 'object' ? args.profile : {};
+  const contextPersonalization = contextProfile.preferences && contextProfile.preferences.personalization;
+  const merged = deepMerge(contextProfile, argProfile);
+  if (contextPersonalization && typeof contextPersonalization === 'object') {
+    merged.preferences = {
+      ...(merged.preferences || {}),
+      personalization: contextPersonalization,
+    };
+  }
+  return normalizeProfile(merged);
 }
 
 function currentCourseSummary(course) {
@@ -502,11 +527,15 @@ function commitmentCount(commitments = {}) {
     + (String(commitments.other || '').trim() ? 1 : 0);
 }
 
-function applyPersonalizationSignals(course, rankScore, reasons, profile, schedule) {
+function applyPersonalizationSignals(course, rankScore, reasons, profile, schedule, personalizationReasons = []) {
   const personalization = profile.preferences && profile.preferences.personalization;
   if (!personalization || typeof personalization !== 'object') return rankScore;
 
   let score = rankScore;
+  const addReason = (reason) => {
+    reasons.push(reason);
+    personalizationReasons.push(reason);
+  };
   const topicRatings = personalization.topicRatings || {};
   Object.entries(topicRatings).forEach(([topic, ratings]) => {
     if (!ratings || !topicMatchesCourse(topic, course)) return;
@@ -514,20 +543,20 @@ function applyPersonalizationSignals(course, rankScore, reasons, profile, schedu
     const skill = Number(ratings.skill);
     if (Number.isFinite(interest)) {
       if (interest >= 8) {
-        score += 6;
-        reasons.push(`high interest in ${topic}`);
+        score += 14;
+        addReason(`high interest in ${topic}`);
       } else if (interest <= 2) {
-        score -= 8;
-        reasons.push(`low interest in ${topic}`);
+        score -= 16;
+        addReason(`low interest in ${topic}`);
       }
     }
     if (Number.isFinite(skill)) {
       if (skill >= 7) {
-        score += 2;
-        reasons.push(`strong self-rated ${topic} preparation`);
+        score += 5;
+        addReason(`strong self-rated ${topic} preparation`);
       } else if (skill <= 3) {
-        score -= 3;
-        reasons.push(`may need ramp-up in ${topic}`);
+        score -= 6;
+        addReason(`may need ramp-up in ${topic}`);
       }
     }
   });
@@ -537,22 +566,22 @@ function applyPersonalizationSignals(course, rankScore, reasons, profile, schedu
   if (course.totalHours) {
     const perCourseComfort = workloadPlan.targetHours / Math.max(workloadPlan.maxCourses + schedule.length, 1);
     if (course.totalHours > perCourseComfort + 5) {
-      score -= workloadPlan.level === 'high' ? 3 : 8;
-      reasons.push('large share of stated weekly workload budget');
+      score -= workloadPlan.level === 'high' ? 5 : 14;
+      addReason('large share of stated weekly workload budget');
     } else if (course.totalHours <= perCourseComfort + 1) {
-      score += 3;
-      reasons.push('fits stated weekly workload budget');
+      score += 7;
+      addReason('fits stated weekly workload budget');
     }
   }
 
   const challenge = String(workload.challengePreference || '').toLowerCase();
   if (challenge.includes('high') && course.totalHours >= 12) {
-    score += 2;
-    reasons.push('matches high challenge preference');
+    score += 5;
+    addReason('matches high challenge preference');
   }
   if ((challenge.includes('low') || challenge.includes('lighter')) && course.totalHours >= 12) {
-    score -= 4;
-    reasons.push('may be too challenging for stated preference');
+    score -= 10;
+    addReason('may be too challenging for stated preference');
   }
 
   score = applyEvaluationSignals(course, score, reasons, profile);
@@ -573,15 +602,29 @@ function applyPersonalizationSignals(course, rankScore, reasons, profile, schedu
     if (!pattern.test(text) || !hasNumericValue(formatPreferences[key])) return;
     const value = Number(formatPreferences[key]);
     if (value >= 8) {
-      score += 2;
-      reasons.push(`matches ${key} preference`);
+      score += 6;
+      addReason(`matches ${key} preference`);
     } else if (value <= 2) {
-      score -= 3;
-      reasons.push(`may not match ${key} preference`);
+      score -= 7;
+      addReason(`may not match ${key} preference`);
     }
   });
 
   return score;
+}
+
+function personalizationEvidence(profile = {}, personalCourseMarkdown = '') {
+  const personalization = profile.preferences && profile.preferences.personalization;
+  const reasons = [];
+  if (personalization && typeof personalization === 'object') {
+    if (Object.keys(personalization.topicRatings || {}).length) reasons.push('topic ratings');
+    if (Object.keys(personalization.formatPreferences || {}).length) reasons.push('format preferences');
+    if (personalization.workload && Object.values(personalization.workload).some((value) => value !== null && value !== undefined && value !== '')) reasons.push('workload preferences');
+    if (personalization.gradingPreferences && Object.values(personalization.gradingPreferences).some((value) => value !== null && value !== undefined)) reasons.push('grading preferences');
+    if (String(personalization.freeformNotes || '').trim()) reasons.push('freeform notes');
+  }
+  if (String(personalCourseMarkdown || '').trim()) reasons.push('personal_course.md');
+  return unique(reasons);
 }
 
 function courseLooksLikePreference(course, personalCourseMarkdown) {
@@ -599,6 +642,9 @@ async function recommendCourses(args = {}, context = {}) {
   const schedule = scheduleForTool(args, context);
   const profile = profileForTool(args, context);
   const workloadPlan = workloadPlanForProfile(profile, schedule);
+  const mode = ['preference_first', 'requirement_first', 'balanced'].includes(args.mode)
+    ? args.mode
+    : 'balanced';
   const requestedMaxResults = Math.max(1, Math.min(Number(args.max_results) || workloadPlan.maxCourses, 10));
   const maxResults = Math.max(1, Math.min(requestedMaxResults, workloadPlan.maxCourses));
   const requestedCourseWorkload = Number(args.max_workload);
@@ -652,13 +698,13 @@ async function recommendCourses(args = {}, context = {}) {
 
       const exactRequirementHit = unmetCourseIds.includes(course.id);
       if (exactRequirementHit) {
-        rankScore += nearGraduation ? 90 : 70;
+        rankScore += mode === 'preference_first' ? (nearGraduation ? 70 : 50) : (nearGraduation ? 95 : 75);
         reasons.push('listed as unmet in your degree requirements');
       }
 
       const reqHits = asArray(course.requirements).filter((req) => targetRequirements.includes(req));
       if (reqHits.length) {
-        rankScore += reqHits.length * 12;
+        rankScore += reqHits.length * (mode === 'preference_first' ? 8 : 14);
         reasons.push(`covers ${reqHits.join(', ')}`);
       }
 
@@ -696,17 +742,26 @@ async function recommendCourses(args = {}, context = {}) {
         reasons.push('popular among similar students');
       }
 
-      rankScore = applyPersonalizationSignals(course, rankScore, reasons, profile, schedule);
+      const personalizationReasons = [];
+      const beforePersonalizationScore = rankScore;
+      rankScore = applyPersonalizationSignals(course, rankScore, reasons, profile, schedule, personalizationReasons);
+      if (mode === 'preference_first') {
+        rankScore += (rankScore - beforePersonalizationScore) * 0.35;
+      } else if (mode === 'requirement_first') {
+        rankScore -= Math.max(0, rankScore - beforePersonalizationScore) * 0.2;
+      }
       const preferenceScore = courseLooksLikePreference(course, context.personalCourseMarkdown);
       if (preferenceScore) {
-        rankScore += preferenceScore;
+        rankScore += preferenceScore * (mode === 'requirement_first' ? 0.75 : 1.5);
         reasons.push('matches signals from personal_course.md');
+        personalizationReasons.push('matches signals from personal_course.md');
       }
 
       return {
         ...currentCourseSummary(course),
         rank_score: rankScore,
         reasons,
+        personalizationReasons: unique(personalizationReasons),
         missingPrereqs: unique(missingPrereqs),
       };
     })
@@ -757,6 +812,9 @@ async function recommendCourses(args = {}, context = {}) {
 
   return {
     semesterPlan: schedule,
+    mode,
+    personalizationUsed: personalizationEvidence(profile, context.personalCourseMarkdown).length > 0,
+    personalizationReasons: personalizationEvidence(profile, context.personalCourseMarkdown),
     semesterPlanSummary: {
       workloadPreference: workloadPlan.level,
       targetWeeklyHours: workloadPlan.targetHours,
@@ -1056,10 +1114,15 @@ const toolSchemas = [
           profile: { type: 'object' },
           max_results: { type: 'number' },
           max_workload: { type: 'number' },
+          mode: {
+            type: 'string',
+            enum: ['preference_first', 'requirement_first', 'balanced'],
+            description: 'Ranking strategy. preference_first emphasizes saved preferences when requirements are flexible; requirement_first prioritizes unmet requirements; balanced is the default.',
+          },
           target_requirements: { type: 'array', items: { type: 'string' } },
           departments: { type: 'array', items: { type: 'string' }, description: 'Override department filter, e.g. ["6","18"]. Defaults to major-appropriate departments.' },
         },
-        required: ['schedule', 'profile'],
+        required: ['schedule'],
       },
     },
   },

@@ -261,6 +261,9 @@ function summarizeToolResult(result) {
       ids: result.recommendations.slice(0, 8).map((course) => course && course.id).filter(Boolean),
       targetRequirements: result.targetRequirements,
       semesterPlanSummary: result.semesterPlanSummary,
+      mode: result.mode,
+      personalizationUsed: result.personalizationUsed,
+      personalizationReasons: result.personalizationReasons,
     };
   }
   if (Array.isArray(result.courses)) {
@@ -704,6 +707,12 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
     activeSem: context.activeSem,
     planningTermLabel: context.planningTermLabel,
     schedule: context.schedule,
+    personalization: {
+      fromProfile: Boolean(context.profile.preferences && context.profile.preferences.personalization),
+      fromBody: Boolean(personalization),
+      evidence: context.studentPlanningContext.personalization,
+      personalCourseMarkdownLength: context.personalCourseMarkdown.length,
+    },
     requirementStatus: context.studentPlanningContext.requirementStatus,
     completedCourseCount: context.studentPlanningContext.courseHistory.completedCourseIds.length,
     messageCount: asArray(messages).length,
@@ -789,6 +798,12 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
     activeSem: context.activeSem,
     planningTermLabel: context.planningTermLabel,
     schedule: context.schedule,
+    personalization: {
+      fromProfile: Boolean(context.profile.preferences && context.profile.preferences.personalization),
+      fromBody: Boolean(body.personalization),
+      evidence: context.studentPlanningContext.personalization,
+      personalCourseMarkdownLength: context.personalCourseMarkdown.length,
+    },
     requirementStatus: context.studentPlanningContext.requirementStatus,
     completedCourseCount: context.studentPlanningContext.courseHistory.completedCourseIds.length,
     messageCount: asArray(messages).length,
