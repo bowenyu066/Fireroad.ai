@@ -1,0 +1,171 @@
+{
+  "title-no-degree": "Business Analytics",
+  "list-id": "masterBAn.reql",
+  "title": "Master of Business Analytics",
+  "medium-title": "MBAn",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "15.062"
+        },
+        {
+          "req": "15.079"
+        },
+        {
+          "req": "15.093"
+        },
+        {
+          "req": "15.572"
+        },
+        {
+          "req": "15.071"
+        }
+      ],
+      "title": "Core Subjects"
+    },
+    {
+      "req": "15.003",
+      "title": "Seminar"
+    },
+    {
+      "threshold": {
+        "cutoff": 27,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "connection-type": "all",
+      "threshold-desc": "select any 27 units",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "15.567"
+            },
+            {
+              "req": "15.570"
+            },
+            {
+              "req": "15.571"
+            }
+          ],
+          "title": "E-Commerce"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "15.433"
+            },
+            {
+              "req": "15.437"
+            },
+            {
+              "req": "15.439"
+            },
+            {
+              "req": "15.450"
+            }
+          ],
+          "title": "Finance"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "threshold-desc": "optional - select any",
+          "req": "15.034",
+          "title": "Managerial Economics"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "15.810"
+            },
+            {
+              "req": "15.818"
+            }
+          ],
+          "title": "Marketing"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "15.761"
+            },
+            {
+              "req": "15.762"
+            },
+            {
+              "req": "15.764"
+            },
+            {
+              "req": "15.767"
+            }
+          ],
+          "title": "Operations Management"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "6.867"
+            },
+            {
+              "req": "15.068"
+            },
+            {
+              "req": "15.094"
+            }
+          ],
+          "title": "Operations Research/Statistics"
+        }
+      ],
+      "title": "Electives"
+    },
+    {
+      "desc": "Students register for the capstone during IAP, spring, and summer terms for a combined total of 24 units.",
+      "req": "15.089",
+      "title": "Capstone"
+    }
+  ],
+  "short-title": "15",
+  "desc": "The Master of Business Analytics program is a specialized advanced master's degree designed to prepare students for careers in business analytics.\n\nThe program is tailored for students in their final year of their undergraduate education or recent college graduates who plan to pursue a career in the data science industry, as well as those seeking career advancement or change, especially engineers, mathematicians, physicists, computer programmers, and other high-tech professionals.\n\nThe full-time, year-long program is divided into three semesters: fall, spring, and a summer capstone. During the 10-week capstone, students work in small teams on site at a US or international company on a real data science problem. Each group completes a written report and gives a final oral presentation to the company and MIT Sloan and MIT Operations Research Center faculty."
+}

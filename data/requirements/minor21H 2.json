@@ -1,0 +1,41 @@
+{
+  "title-no-degree": "History",
+  "list-id": "minor21H.reql",
+  "title": "Minor in History",
+  "medium-title": "21H Minor",
+  "reqs": [
+    {
+      "req": "21H.390",
+      "title": "Required Subject"
+    },
+    {
+      "connection-type": "all",
+      "desc": "Of these subjects, at least two temporal periods—one pre-modern (before 1700) and one modern—must be covered. For the seminar, select from 21H subjects for which the first digit after the decimal is 3.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "1 21H seminar",
+          "plain-string": true
+        },
+        {
+          "threshold": {
+            "cutoff": 4,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "req": "4 introductory or intermediate subjects",
+          "plain-string": true,
+          "threshold-desc": "select any 4"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Additional Subjects"
+    }
+  ],
+  "short-title": "21H",
+  "desc": "The goal of this minor is to lead the student from basic survey subjects into more focused studies of individual countries or periods of time, and to encourage thinking about broader analytical and comparative issues in historical study."
+}

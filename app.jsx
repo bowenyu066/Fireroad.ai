@@ -125,8 +125,12 @@ const App = () => {
   };
   const emptyFourYearPlan = () => Object.fromEntries((FRDATA.semesterOrder || []).map((id) => [id, []]));
   const mergePlanWithMarkdown = (plan, markdown) => {
-    const next = { ...plan };
     const completedPlan = PersonalCourse.planFromCompletedCourses(markdown || '');
+    const completedIds = new Set(Object.values(completedPlan).flat());
+    const next = Object.fromEntries(Object.entries(plan || {}).map(([termId, courseIds]) => [
+      termId,
+      Array.isArray(courseIds) ? courseIds.filter((courseId) => !completedIds.has(PersonalCourse.normalizeCourseId(courseId))) : [],
+    ]));
     Object.entries(completedPlan).forEach(([termId, courseIds]) => {
       const existing = Array.isArray(next[termId]) ? next[termId] : [];
       next[termId] = [...existing];
@@ -324,9 +328,11 @@ const App = () => {
 
   const completeOnboarding = async ({ profile: nextProfile, onboarding, personalCourseMarkdown }) => {
     const hydratedProfile = deriveProfileFromMarkdown(nextProfile, personalCourseMarkdown);
+    const hydratedFourYearPlan = mergePlanWithMarkdown(fourYearPlan, personalCourseMarkdown);
     setOnboardingCompleted(true);
     setProfile(hydratedProfile);
     setPersonalCourseMarkdown(personalCourseMarkdown || '');
+    setFourYearPlan(hydratedFourYearPlan);
     if (personalCourseMarkdown) localStorage.setItem('fr-personalcourse-draft', personalCourseMarkdown);
     setMessages(personalizeAgentMessages(hydratedProfile));
     setRoute({ name: 'planner' });
@@ -335,7 +341,7 @@ const App = () => {
       await FRAuth.saveUserData({
         onboardingCompleted: true,
         profile: hydratedProfile,
-        fourYearPlan,
+        fourYearPlan: hydratedFourYearPlan,
         activeSem,
         onboarding,
         personalCourseMarkdown,

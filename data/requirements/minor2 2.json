@@ -1,0 +1,88 @@
+{
+  "title-no-degree": "Mechanical Engineering",
+  "list-id": "minor2.reql",
+  "title": "Minor in Mechanical Engineering",
+  "medium-title": "2 Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "req": "18.03"
+        },
+        {
+          "threshold": {
+            "cutoff": 3,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "2.001"
+            },
+            {
+              "req": "2.002"
+            },
+            {
+              "req": "2.003"
+            },
+            {
+              "req": "2.004"
+            },
+            {
+              "req": "2.005"
+            },
+            {
+              "req": "2.006"
+            },
+            {
+              "req": "2.007"
+            },
+            {
+              "req": "2.008"
+            },
+            {
+              "req": "2.009"
+            },
+            {
+              "req": "2.016"
+            },
+            {
+              "req": "2.017"
+            },
+            {
+              "req": "2.019"
+            },
+            {
+              "req": "2.086"
+            },
+            {
+              "req": "2.612"
+            },
+            {
+              "req": "2.671"
+            }
+          ],
+          "threshold-desc": "select any 3"
+        }
+      ],
+      "title": "Required Subjects"
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 2",
+      "req": "2 subjects",
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "title": "Additional Subjects",
+      "desc": "Select two additional subjects from the required subjects or restricted electives for either Course 2 or Course 2-OE."
+    }
+  ],
+  "short-title": "2",
+  "desc": "Students pursuing a minor in the department must complete a total of six 12-unit subjects in the Mechanical Engineering Department program. At least three of the subjects must be selected from among the required subjects for the Course 2 and Course 2-OE degree programs. In addition, two subjects may be selected from restricted electives in those programs."
+}

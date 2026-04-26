@@ -1,0 +1,80 @@
+{
+  "title-no-degree": "Writing",
+  "list-id": "minor21W.reql",
+  "title": "Minor in Writing",
+  "medium-title": "21W Minor",
+  "reqs": [
+    {
+      "connection-type": "any",
+      "threshold-desc": "select any",
+      "reqs": [
+        {
+          "req": "21W.011"
+        },
+        {
+          "req": "21W.021"
+        },
+        {
+          "req": "21W.013"
+        },
+        {
+          "req": "21W.014"
+        },
+        {
+          "req": "21W.015"
+        },
+        {
+          "req": "21W.021"
+        },
+        {
+          "req": "21W.022"
+        },
+        {
+          "req": "21W.026"
+        },
+        {
+          "req": "21W.031"
+        },
+        {
+          "req": "21W.032"
+        },
+        {
+          "req": "21W.034"
+        },
+        {
+          "req": "21W.035"
+        },
+        {
+          "req": "21W.036"
+        },
+        {
+          "req": "21W.041"
+        },
+        {
+          "req": "21W.042"
+        },
+        {
+          "req": "21W.755"
+        },
+        {
+          "req": "21W.756"
+        }
+      ],
+      "title": "Tier I"
+    },
+    {
+      "plain-string": true,
+      "threshold-desc": "select any 5",
+      "req": "5 subjects",
+      "threshold": {
+        "cutoff": 5,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "title": "Tier II",
+      "desc": "Select five subjects from among the writing subjects in the area of focus."
+    }
+  ],
+  "short-title": "21W",
+  "desc": "The minor consists of six subjects that are selected to focus on one of three areas: creative writing, science writing, or digital media."
+}

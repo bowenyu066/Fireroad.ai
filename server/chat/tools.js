@@ -1,12 +1,26 @@
 const mockData = require('../../shared/mock-data.js');
+const { summarize: summarizePersonalCourse } = require('../../shared/personal-course');
 const { fetchCurrentCourse, searchCurrentCourses } = require('../current/fireroad');
 const { normalizeCourseId } = require('../current/normalize');
 const { createHistoryRepo } = require('../history/repo');
-const { checkMajorRequirements } = require('../requirements');
+const { checkMajorRequirements, getRequirementGroupCourses, getCourseRequirementGroups, resolveMajorKey } = require('../requirements');
 const mostTaken = require('../../data/most_taken.json');
 
 const asArray = (value) => (Array.isArray(value) ? value : []);
 const unique = (items) => [...new Set(items)];
+const policySignalCache = new Map();
+
+// Return the most relevant course departments for a given major so searches
+// don't scan all 5000+ courses unnecessarily.
+function majorToDepartments(major) {
+  const code = String(major || '').replace(/^course\s+/i, '').trim().split(/[:\s]/)[0].toLowerCase();
+  if (code.startsWith('6')) return ['6', '18', '8'];
+  if (code === '18') return ['18', '6', '8'];
+  if (code === '8') return ['8', '18', '6'];
+  if (code === '16') return ['16', '6', '18'];
+  if (code === '2') return ['2', '6', '18'];
+  return [];
+}
 
 function yearKey(year) {
   const map = { freshman: 'Y1', sophomore: 'Y2', junior: 'Y3', senior: 'Y4' };
@@ -44,15 +58,279 @@ function normalizeSchedule(schedule) {
 function normalizeProfile(profile) {
   const incoming = profile && typeof profile === 'object' ? profile : {};
   return {
-    ...mockData.profile,
     ...incoming,
-    taken: asArray(incoming.taken).length ? asArray(incoming.taken).map(normalizeCourseId) : mockData.profile.taken,
-    remainingReqs: asArray(incoming.remainingReqs).length ? asArray(incoming.remainingReqs).map(String) : mockData.profile.remainingReqs,
+    taken: asArray(incoming.taken).map(normalizeCourseId).filter(Boolean),
+    remainingReqs: asArray(incoming.remainingReqs).map(String).filter(Boolean),
     preferences: {
-      ...mockData.profile.preferences,
       ...(incoming.preferences || {}),
     },
   };
+}
+
+function personalSummaryFromContext(context = {}) {
+  return summarizePersonalCourse(context.personalCourseMarkdown || '');
+}
+
+function completedCourseIds(profile = {}, personal = { completedCourseIds: [] }) {
+  return unique([
+    ...asArray(profile.taken).map(normalizeCourseId),
+    ...asArray(personal.completedCourseIds).map(normalizeCourseId),
+  ].filter(Boolean));
+}
+
+function requirementStatusForProfile(profile = {}, courseIds = []) {
+  const majorKey = resolveMajorKey(profile.majorKey || profile.major);
+  const checked = checkMajorRequirements(profile.majorKey || profile.major, courseIds);
+  if (!majorKey || !checked) {
+    return {
+      available: false,
+      majorKey,
+      title: profile.major || '',
+      satisfiedCount: 0,
+      totalCount: 0,
+      groups: [],
+      unsatisfiedGroups: [],
+      unmetCourseIds: [],
+    };
+  }
+  const unsatisfiedGroups = asArray(checked.groups)
+    .filter((group) => !group.satisfied)
+    .map((group) => ({
+      id: group.id,
+      label: group.label,
+      progress: group.progress,
+      unmet: asArray(group.unmet).slice(0, 8),
+      isManual: Boolean(group.isManual),
+      subGroups: asArray(group.subGroups)
+        .filter((sub) => !sub.satisfied)
+        .map((sub) => ({
+          id: sub.id,
+          label: sub.label,
+          progress: sub.progress,
+          unmet: asArray(sub.unmet).slice(0, 5),
+          isManual: Boolean(sub.isManual),
+        })),
+    }));
+  return {
+    available: true,
+    majorKey,
+    title: checked.title,
+    fullTitle: checked.fullTitle,
+    satisfiedCount: checked.satisfiedCount,
+    totalCount: checked.totalCount,
+    groups: checked.groups,
+    unsatisfiedGroups,
+    unmetCourseIds: unique(unsatisfiedGroups.flatMap((group) => [
+      ...asArray(group.unmet),
+      ...asArray(group.subGroups).flatMap((sub) => asArray(sub.unmet)),
+    ].map(normalizeCourseId)).filter(Boolean)),
+  };
+}
+
+function compactPersonalization(profile = {}) {
+  const personalization = profile.preferences && profile.preferences.personalization;
+  if (!personalization || typeof personalization !== 'object') return null;
+  return {
+    workload: personalization.workload || {},
+    commitments: personalization.commitments || {},
+    topicRatings: personalization.topicRatings || {},
+    formatPreferences: personalization.formatPreferences || {},
+    desiredCoursesPerDirection: personalization.desiredCoursesPerDirection || {},
+    freeformNotes: personalization.freeformNotes || '',
+    progress: personalization.progress || {},
+  };
+}
+
+function buildStudentPlanningContext(context = {}) {
+  const profile = normalizeProfile(context.profile || {});
+  const personal = personalSummaryFromContext(context);
+  const completed = completedCourseIds(profile, personal);
+  const schedule = normalizeSchedule(context.schedule);
+  const allCoursesForRequirements = unique([...completed, ...schedule]);
+  const requirementStatus = requirementStatusForProfile(profile, allCoursesForRequirements);
+
+  return {
+    profile: {
+      name: profile.name || '',
+      major: profile.major || '',
+      majorLabel: profile.majorLabel || '',
+      year: profile.year || '',
+      gradYear: profile.gradYear || '',
+    },
+    activeSemester: {
+      activeSem: context.activeSem || null,
+      label: context.planningTermLabel || null,
+      schedule,
+    },
+    courseHistory: {
+      completedCourseIds: completed,
+      listenerCourseIds: asArray(personal.listenerCourseIds),
+      droppedCourseIds: asArray(personal.droppedCourseIds),
+      completedPlan: personal.completedPlan || {},
+      coursePreferences: personal.coursePreferences || {},
+      counts: {
+        completed: asArray(personal.completedCourses).length,
+        listener: asArray(personal.listenerCourses).length,
+        dropped: asArray(personal.droppedCourses).length,
+      },
+    },
+    personalization: compactPersonalization(profile),
+    requirementStatus: {
+      available: requirementStatus.available,
+      majorKey: requirementStatus.majorKey,
+      title: requirementStatus.title,
+      satisfiedCount: requirementStatus.satisfiedCount,
+      totalCount: requirementStatus.totalCount,
+      unsatisfiedGroups: asArray(requirementStatus.unsatisfiedGroups).slice(0, 12),
+      unmetCourseIds: asArray(requirementStatus.unmetCourseIds).slice(0, 40),
+    },
+  };
+}
+
+function isNearGraduation(profile = {}) {
+  const year = String(profile.year || '').toLowerCase();
+  const gradYear = Number(profile.gradYear);
+  const currentYear = new Date().getFullYear();
+  return year.includes('senior') || year.includes('meng') || (Number.isFinite(gradYear) && gradYear <= currentYear + 1);
+}
+
+function workloadPlanForProfile(profile = {}, schedule = []) {
+  const personalization = profile.preferences && profile.preferences.personalization
+    ? profile.preferences.personalization
+    : {};
+  const workload = personalization.workload || {};
+  const commitments = personalization.commitments || {};
+  const challenge = String(workload.challengePreference || '').toLowerCase();
+  const weeklyBudget = Number(workload.weeklyCourseHoursBudget);
+  let level = 'medium';
+
+  if (/low|light|lighter|gentle|gentler|easy/.test(challenge)) level = 'low';
+  if (/high|heavy|push|challenge|hard|cracked/.test(challenge)) level = 'high';
+  if (/medium|moderate|balanced/.test(challenge)) level = 'medium';
+
+  const commitmentHours = commitmentCount(commitments) * 4;
+  const defaultTargetHours = level === 'low' ? 28 : level === 'high' ? 48 : 36;
+  const targetHours = Math.max(12, Number.isFinite(weeklyBudget) && weeklyBudget > 0
+    ? weeklyBudget - commitmentHours
+    : defaultTargetHours - commitmentHours);
+  const existingCount = normalizeSchedule(schedule).length;
+  const maxCoursesBeforeSchedule = level === 'low' ? 3 : level === 'high' ? 4 : 3;
+  const maxTechnicalBeforeSchedule = level === 'low' ? 2 : level === 'high' ? 4 : 3;
+
+  return {
+    level,
+    targetHours: Number(targetHours.toFixed(1)),
+    maxCourses: Math.max(1, maxCoursesBeforeSchedule - existingCount),
+    maxTechnicalCourses: maxTechnicalBeforeSchedule,
+    hasExplicitWeeklyBudget: Number.isFinite(weeklyBudget) && weeklyBudget > 0,
+  };
+}
+
+function technicalCourseCount(courseIds = []) {
+  return normalizeSchedule(courseIds).filter((id) => isTechnicalCourseId(id)).length;
+}
+
+function isTechnicalCourseId(courseId) {
+  return /^(1|2|3|4|5|6|8|9|10|12|16|18|20|22|24)\./.test(normalizeCourseId(courseId) || '');
+}
+
+function isTechnicalCourse(course = {}) {
+  return isTechnicalCourseId(course.id) || ['cs', 'eng', 'science', 'math'].includes(String(course.area || '').toLowerCase());
+}
+
+function ratingOnSeven(course = {}) {
+  const value = Number(course.rating && course.rating.value);
+  const scale = Number(course.rating && course.rating.scale);
+  if (!Number.isFinite(value) || value <= 0) return null;
+  if (Number.isFinite(scale) && scale > 0 && scale !== 7) return (value / scale) * 7;
+  return value;
+}
+
+function getPolicySignals(courseId) {
+  const normalized = normalizeCourseId(courseId);
+  if (policySignalCache.has(normalized)) return policySignalCache.get(normalized);
+  try {
+    const repo = createHistoryRepo();
+    const offerings = repo.listCourseOfferings(normalized);
+    const latestOffering = offerings[0];
+    const latestAttendance = latestOffering ? repo.getLatestAttendancePolicy(latestOffering.id) : null;
+    const latestGrading = latestOffering ? repo.getLatestGradingPolicy(latestOffering.id) : null;
+    const stats = repo.getCoursePolicyStats(normalized);
+    const result = { stats, latestAttendance, latestGrading };
+    policySignalCache.set(normalized, result);
+    return result;
+  } catch (error) {
+    const result = { stats: null, latestAttendance: null, latestGrading: null };
+    policySignalCache.set(normalized, result);
+    return result;
+  }
+}
+
+function applyEvaluationSignals(course, score, reasons, profile = {}) {
+  const personalization = profile.preferences && profile.preferences.personalization
+    ? profile.preferences.personalization
+    : {};
+  const workload = personalization.workload || {};
+  const gradingPreferences = personalization.gradingPreferences || {};
+  const attendanceConcern = String(workload.attendanceImportance || '').toLowerCase();
+  const gradingConcern = String(workload.gradingImportance || '').toLowerCase();
+  const caresAboutAttendance = attendanceConcern === 'low';
+  const caresAboutGrading = gradingConcern === 'high'
+    || gradingPreferences.preferLenientGrading === true
+    || gradingPreferences.avoidHarshCurves === true
+    || gradingPreferences.preferClearRubrics === true;
+  const text = courseText(course);
+  const policies = getPolicySignals(course.id);
+
+  if (caresAboutAttendance) {
+    const attendanceHeavyText = /attendance required|attendance mandatory|participation|recitation required|in-person|lab attendance|studio|presentation/.test(text);
+    const latestAttendance = policies.latestAttendance || {};
+    const required = String(latestAttendance.attendanceRequired || '').toLowerCase();
+    const counts = String(latestAttendance.attendanceCountsTowardGrade || '').toLowerCase();
+    if (required === 'yes' || counts === 'yes' || attendanceHeavyText) {
+      score -= 14;
+      reasons.push('attendance-heavy risk for your preference');
+    } else if (policies.stats && Number(policies.stats.attendance_policy_count) > 0) {
+      score += 3;
+      reasons.push('no strong attendance-heavy signal found');
+    } else {
+      score -= 2;
+      reasons.push('attendance policy uncertain');
+    }
+  }
+
+  if (caresAboutGrading) {
+    const rating = ratingOnSeven(course);
+    const latestGrading = policies.latestGrading || {};
+    const participationWeight = Number(latestGrading.participationWeight);
+    const quizWeight = Number(latestGrading.quizWeight);
+    const hasClearPolicy = policies.stats && Number(policies.stats.grading_policy_count) > 0;
+    if (Number.isFinite(rating)) {
+      if (rating >= 5.6) {
+        score += 8;
+        reasons.push('strong Fireroad rating for grading-sensitive preference');
+      } else if (rating < 4.8) {
+        score -= 16;
+        reasons.push('lower Fireroad rating conflicts with grading priority');
+      } else {
+        score -= 4;
+        reasons.push('grading fit is not clearly strong');
+      }
+    }
+    if (hasClearPolicy) {
+      score += 2;
+      reasons.push('grading policy evidence available');
+    } else {
+      score -= 3;
+      reasons.push('grading policy uncertain');
+    }
+    if ((Number.isFinite(participationWeight) && participationWeight >= 10) || (Number.isFinite(quizWeight) && quizWeight >= 25)) {
+      score -= 5;
+      reasons.push('grading structure may be less forgiving');
+    }
+  }
+
+  return score;
 }
 
 function scheduleForTool(args = {}, context = {}) {
@@ -123,6 +401,9 @@ function detectConflicts(courseIds) {
 async function summarizeSemesterPlan(args = {}, context = {}) {
   const schedule = scheduleForTool(args, context);
   const profile = profileForTool(args, context);
+  const personal = personalSummaryFromContext(context);
+  const completed = completedCourseIds(profile, personal);
+  const requirementStatus = requirementStatusForProfile(profile, unique([...completed, ...schedule]));
   const courses = (await Promise.all(schedule.map(fetchCurrentCourse))).filter(Boolean);
   const coveredSet = new Set();
 
@@ -131,8 +412,12 @@ async function summarizeSemesterPlan(args = {}, context = {}) {
   });
 
   const coveredRequirements = [...coveredSet].sort();
-  const completedBeforeSchedule = mockData.allReqs.filter((req) => req.done).map((req) => req.id);
-  const remainingRequirements = profile.remainingReqs.filter((req) => !coveredSet.has(req));
+  const completedBeforeSchedule = requirementStatus.available
+    ? requirementStatus.groups.filter((group) => group.satisfied).map((group) => group.label)
+    : [];
+  const remainingRequirements = requirementStatus.available
+    ? requirementStatus.unsatisfiedGroups.map((group) => group.label)
+    : profile.remainingReqs.filter((req) => !coveredSet.has(req));
   const fulfilledRequirements = unique([...completedBeforeSchedule, ...coveredRequirements]);
 
   return {
@@ -145,6 +430,14 @@ async function summarizeSemesterPlan(args = {}, context = {}) {
     remainingRequirements,
     completedBeforeSchedule,
     fulfilledRequirements,
+    degreeRequirements: {
+      available: requirementStatus.available,
+      title: requirementStatus.title,
+      satisfiedCount: requirementStatus.satisfiedCount,
+      totalCount: requirementStatus.totalCount,
+      unsatisfiedGroups: requirementStatus.unsatisfiedGroups,
+      unmetCourseIds: requirementStatus.unmetCourseIds,
+    },
     conflicts: detectConflicts(schedule),
   };
 }
@@ -240,15 +533,13 @@ function applyPersonalizationSignals(course, rankScore, reasons, profile, schedu
   });
 
   const workload = personalization.workload || {};
-  const commitments = personalization.commitments || {};
-  const weeklyBudget = Number(workload.weeklyCourseHoursBudget);
-  if (Number.isFinite(weeklyBudget) && course.totalHours) {
-    const adjustedBudget = Math.max(8, weeklyBudget - commitmentCount(commitments) * 4);
-    const targetPerCourse = adjustedBudget / Math.max(schedule.length + 1, 1);
-    if (course.totalHours > targetPerCourse + 4) {
-      score -= 6;
-      reasons.push('workload may exceed stated weekly budget');
-    } else if (course.totalHours <= targetPerCourse + 1) {
+  const workloadPlan = workloadPlanForProfile(profile, schedule);
+  if (course.totalHours) {
+    const perCourseComfort = workloadPlan.targetHours / Math.max(workloadPlan.maxCourses + schedule.length, 1);
+    if (course.totalHours > perCourseComfort + 5) {
+      score -= workloadPlan.level === 'high' ? 3 : 8;
+      reasons.push('large share of stated weekly workload budget');
+    } else if (course.totalHours <= perCourseComfort + 1) {
       score += 3;
       reasons.push('fits stated weekly workload budget');
     }
@@ -263,6 +554,8 @@ function applyPersonalizationSignals(course, rankScore, reasons, profile, schedu
     score -= 4;
     reasons.push('may be too challenging for stated preference');
   }
+
+  score = applyEvaluationSignals(course, score, reasons, profile);
 
   const formatPreferences = personalization.formatPreferences || {};
   const text = courseText(course);
@@ -291,37 +584,77 @@ function applyPersonalizationSignals(course, rankScore, reasons, profile, schedu
   return score;
 }
 
+function courseLooksLikePreference(course, personalCourseMarkdown) {
+  const userText = String(personalCourseMarkdown || '').toLowerCase();
+  const text = courseText(course);
+  let score = 0;
+  if (/machine learning|deep learning|\bml\b|artificial intelligence|\bai\b/.test(userText) && isMlCourse(course)) score += 8;
+  if (/systems?|operating system|network|database|compiler|architecture/.test(userText) && /system|network|database|compiler|architecture/.test(text)) score += 6;
+  if (/theory|proof|algorithm|complexity/.test(userText) && isTheoryCourse(course)) score += 6;
+  if (/linear algebra|probability|statistics|optimization/.test(userText) && /linear algebra|probability|statistics|optimization/.test(text)) score += 5;
+  return score;
+}
+
 async function recommendCourses(args = {}, context = {}) {
   const schedule = scheduleForTool(args, context);
   const profile = profileForTool(args, context);
-  const maxResults = Math.max(1, Math.min(Number(args.max_results) || 5, 10));
-  const maxWorkload = Number(args.max_workload) || null;
+  const workloadPlan = workloadPlanForProfile(profile, schedule);
+  const requestedMaxResults = Math.max(1, Math.min(Number(args.max_results) || workloadPlan.maxCourses, 10));
+  const maxResults = Math.max(1, Math.min(requestedMaxResults, workloadPlan.maxCourses));
+  const requestedCourseWorkload = Number(args.max_workload);
+  const maxWorkload = Number.isFinite(requestedCourseWorkload) && requestedCourseWorkload > 0 && requestedCourseWorkload <= 25
+    ? requestedCourseWorkload
+    : null;
+  const personal = personalSummaryFromContext(context);
+  const completed = completedCourseIds(profile, personal);
+  const requirementStatus = requirementStatusForProfile(profile, unique([...completed, ...schedule]));
   const targetRequirements = asArray(args.target_requirements).length
     ? asArray(args.target_requirements).map(String)
-    : profile.remainingReqs;
+    : requirementStatus.unsatisfiedGroups.map((group) => group.label);
+  const unmetCourseIds = asArray(requirementStatus.unmetCourseIds).map(normalizeCourseId);
   const scheduledSet = new Set(schedule);
-  const takenSet = new Set([...asArray(profile.taken).map(normalizeCourseId), ...schedule]);
+  const takenSet = new Set([...completed, ...schedule]);
+  const nearGraduation = isNearGraduation(profile);
+  const scheduledCourses = (await Promise.all(schedule.map(fetchCurrentCourse))).filter(Boolean);
+  const scheduledHours = scheduledCourses.reduce((total, course) => total + (Number(course.totalHours) || 0), 0);
+
+  const departments = asArray(args.departments).length
+    ? asArray(args.departments)
+    : majorToDepartments(profile.major);
 
   let pool = await searchCurrentCourses({
     query: '',
-    maxResults: Math.max(maxResults * 8, 40),
+    maxResults: Math.max(maxResults * 10, 50),
     maxWorkload,
     requirements: targetRequirements,
+    departments,
   });
   if (!pool.results.length && targetRequirements.length) {
     pool = await searchCurrentCourses({
       query: '',
       maxResults: Math.max(maxResults * 8, 40),
       maxWorkload,
+      departments,
     });
   }
+  const exactUnmetCourses = (await Promise.all(unmetCourseIds.slice(0, 40).map(fetchCurrentCourse))).filter(Boolean);
+  const poolById = new Map();
+  [...exactUnmetCourses, ...pool.results].forEach((course) => {
+    if (course && course.id && !poolById.has(course.id)) poolById.set(course.id, course);
+  });
 
-  const recommendations = pool.results
-    .filter((course) => !scheduledSet.has(course.id))
+  const scored = [...poolById.values()]
+    .filter((course) => !scheduledSet.has(course.id) && !takenSet.has(course.id))
     .map((course) => {
       const match = getMatch(course.id);
       const reasons = [];
-      let rankScore = match.total || course.matchScore || course.searchScore || 1;
+      let rankScore = course.matchScore || course.searchScore || match.total || 20;
+
+      const exactRequirementHit = unmetCourseIds.includes(course.id);
+      if (exactRequirementHit) {
+        rankScore += nearGraduation ? 90 : 70;
+        reasons.push('listed as unmet in your degree requirements');
+      }
 
       const reqHits = asArray(course.requirements).filter((req) => targetRequirements.includes(req));
       if (reqHits.length) {
@@ -364,6 +697,11 @@ async function recommendCourses(args = {}, context = {}) {
       }
 
       rankScore = applyPersonalizationSignals(course, rankScore, reasons, profile, schedule);
+      const preferenceScore = courseLooksLikePreference(course, context.personalCourseMarkdown);
+      if (preferenceScore) {
+        rankScore += preferenceScore;
+        reasons.push('matches signals from personal_course.md');
+      }
 
       return {
         ...currentCourseSummary(course),
@@ -372,13 +710,145 @@ async function recommendCourses(args = {}, context = {}) {
         missingPrereqs: unique(missingPrereqs),
       };
     })
-    .sort((a, b) => b.rank_score - a.rank_score || b.match_score - a.match_score || a.id.localeCompare(b.id))
-    .slice(0, maxResults);
+    .sort((a, b) => b.rank_score - a.rank_score || b.match_score - a.match_score || a.id.localeCompare(b.id));
+
+  const recommendations = [];
+  let plannedHours = scheduledHours;
+  let plannedTechnicalCount = technicalCourseCount(schedule);
+  const workloadAllowance = workloadPlan.level === 'high' ? 8 : workloadPlan.level === 'low' ? 2 : 4;
+  for (const candidate of scored) {
+    if (recommendations.length >= maxResults) break;
+    const hours = Number(candidate.workload_hours_per_week) || 12;
+    const technical = isTechnicalCourse(candidate);
+    const exactRequirementHit = unmetCourseIds.includes(candidate.id);
+    const wouldExceedHours = plannedHours + hours > workloadPlan.targetHours + workloadAllowance;
+    const wouldExceedTechnical = technical && plannedTechnicalCount >= workloadPlan.maxTechnicalCourses;
+
+    if (wouldExceedTechnical && !exactRequirementHit) continue;
+    if (wouldExceedHours && recommendations.length >= 1 && !(exactRequirementHit && recommendations.length < 2)) continue;
+
+    const nextCandidate = {
+      ...candidate,
+      reasons: [...candidate.reasons],
+    };
+    if (!wouldExceedHours) {
+      nextCandidate.reasons.push(`keeps ${workloadPlan.level} workload near budget`);
+    } else {
+      nextCandidate.reasons.push('important requirement, but pushes stated workload budget');
+    }
+    if (technical && plannedTechnicalCount + 1 >= workloadPlan.maxTechnicalCourses) {
+      nextCandidate.reasons.push('technical-course count capped by workload preference');
+    }
+    recommendations.push(nextCandidate);
+    plannedHours += hours;
+    if (technical) plannedTechnicalCount += 1;
+  }
+
+  if (!recommendations.length) {
+    scored.slice(0, maxResults).forEach((candidate) => {
+      recommendations.push({
+        ...candidate,
+        reasons: [...candidate.reasons, 'best available match, but workload fit needs review'],
+      });
+    });
+    plannedHours = scheduledHours + recommendations.reduce((total, course) => total + (Number(course.workload_hours_per_week) || 0), 0);
+    plannedTechnicalCount = technicalCourseCount([...schedule, ...recommendations.map((course) => course.id)]);
+  }
 
   return {
     semesterPlan: schedule,
+    semesterPlanSummary: {
+      workloadPreference: workloadPlan.level,
+      targetWeeklyHours: workloadPlan.targetHours,
+      existingWeeklyHours: Number(scheduledHours.toFixed(1)),
+      addedWeeklyHours: Number((plannedHours - scheduledHours).toFixed(1)),
+      projectedWeeklyHours: Number(plannedHours.toFixed(1)),
+      recommendedCount: recommendations.length,
+      technicalCourseCount: plannedTechnicalCount,
+      warnings: [
+        plannedHours > workloadPlan.targetHours + workloadAllowance
+          ? `Projected weekly workload (${plannedHours.toFixed(1)}h) exceeds ${workloadPlan.level} target (${workloadPlan.targetHours}h).`
+          : null,
+        recommendations.length < requestedMaxResults
+          ? `Returned ${recommendations.length} courses because workload preferences capped the semester bundle.`
+          : null,
+      ].filter(Boolean),
+    },
     targetRequirements,
+    degreeRequirements: {
+      available: requirementStatus.available,
+      title: requirementStatus.title,
+      satisfiedCount: requirementStatus.satisfiedCount,
+      totalCount: requirementStatus.totalCount,
+      unsatisfiedGroups: requirementStatus.unsatisfiedGroups.slice(0, 8),
+      unmetCourseIds: requirementStatus.unmetCourseIds.slice(0, 30),
+    },
+    completedCourseIds: completed,
     recommendations,
+  };
+}
+
+async function getRequirementCoursesTool(args = {}, context = {}) {
+  const profile = profileForTool(args, context);
+  const major = args.major || profile.major;
+  const groupQuery = String(args.group || '').trim();
+  const intersectQuery = String(args.intersect_with || '').trim();
+
+  if (!groupQuery) return { found: false, reason: 'group parameter is required' };
+
+  const matches = getRequirementGroupCourses(major, groupQuery);
+  if (!matches || !matches.length) {
+    return { found: false, reason: `No requirement group matching "${groupQuery}" found in ${major}` };
+  }
+
+  let courseIds = [...new Set(matches.flatMap((m) => m.courses))];
+  let intersectGroups = null;
+
+  if (intersectQuery) {
+    const intersectMatches = getRequirementGroupCourses(major, intersectQuery);
+    if (intersectMatches && intersectMatches.length) {
+      const intersectSet = new Set(intersectMatches.flatMap((m) => m.courses));
+      courseIds = courseIds.filter((id) => intersectSet.has(id));
+      intersectGroups = intersectMatches.map((m) => m.title);
+    }
+  }
+
+  const courses = (await Promise.all(courseIds.map(fetchCurrentCourse))).filter(Boolean);
+  const takenSet = new Set([...asArray(profile.taken).map(normalizeCourseId)]);
+
+  return {
+    found: true,
+    major,
+    matchedGroups: matches.map((m) => m.title),
+    intersectGroup: intersectQuery || null,
+    intersectMatchedGroups: intersectGroups,
+    totalInRequirementJson: courseIds.length,
+    catalogCourses: courses.map((c) => ({
+      ...currentCourseSummary(c),
+      alreadyTaken: takenSet.has(c.id),
+    })),
+    notInCurrentCatalog: courseIds.filter((id) => !courses.some((c) => normalizeCourseId(c.id) === normalizeCourseId(id))),
+  };
+}
+
+async function courseRequirementGroupsTool(args = {}, context = {}) {
+  const profile = profileForTool(args, context);
+  const major = args.major || profile.major;
+  const courseId = normalizeCourseId(args.course_id || '');
+  if (!courseId) return { found: false, reason: 'course_id is required' };
+
+  const groups = getCourseRequirementGroups(major, courseId);
+  if (!groups) return { found: false, reason: `No requirement data for major: ${major}` };
+
+  const course = await fetchCurrentCourse(courseId);
+  return {
+    found: true,
+    courseId,
+    courseName: course ? course.name : null,
+    major,
+    satisfiedGroups: groups,
+    satisfiesCount: groups.length,
+    note: groups.length === 0 ? `${courseId} does not appear in any named requirement group for ${major}` : null,
   };
 }
 
@@ -423,6 +893,16 @@ async function checkScheduleConflictsTool(args = {}, context = {}) {
     conflicts,
     hasConflicts: conflicts.length > 0,
   };
+}
+
+function checkDegreeRequirementsTool(args = {}, context = {}) {
+  const profile = profileForTool(args, context);
+  const personal = personalSummaryFromContext(context);
+  const schedule = scheduleForTool(args, context);
+  const courses = asArray(args.courses).length
+    ? asArray(args.courses).map(normalizeCourseId)
+    : unique([...completedCourseIds(profile, personal), ...schedule]);
+  return requirementStatusForProfile(profile, courses);
 }
 
 async function validateUiAction(action, schedule) {
@@ -520,7 +1000,7 @@ const toolSchemas = [
     type: 'function',
     function: {
       name: 'search_current_courses',
-      description: 'Search the current MIT course catalog by id, name, description, instructor, requirements, area, and workload. Use for current-semester planning only.',
+      description: 'Search the current MIT course catalog by id, name, description, instructor, requirements, area, and workload. Use departments to limit to relevant course numbers (e.g. ["6","18"] for EECS students) — critical with a large catalog.',
       parameters: {
         type: 'object',
         properties: {
@@ -529,6 +1009,7 @@ const toolSchemas = [
           areas: { type: 'array', items: { type: 'string' } },
           requirements: { type: 'array', items: { type: 'string' } },
           max_workload: { type: 'number' },
+          departments: { type: 'array', items: { type: 'string' }, description: 'Filter to courses starting with these prefixes, e.g. ["6","18","8"]. Strongly recommended to avoid irrelevant results from 5000+ course catalog.' },
         },
         required: ['query'],
       },
@@ -567,7 +1048,7 @@ const toolSchemas = [
     type: 'function',
     function: {
       name: 'recommend_courses',
-      description: 'Deterministically rank current catalog courses for the active next-semester plan using match scores, requirements, workload, and profile preferences.',
+      description: 'Build a workload-aware active-semester recommendation bundle using personal_course.md, further personalization, completed courses, current schedule, grading/attendance preferences, degree requirement status, and major department filters.',
       parameters: {
         type: 'object',
         properties: {
@@ -576,8 +1057,23 @@ const toolSchemas = [
           max_results: { type: 'number' },
           max_workload: { type: 'number' },
           target_requirements: { type: 'array', items: { type: 'string' } },
+          departments: { type: 'array', items: { type: 'string' }, description: 'Override department filter, e.g. ["6","18"]. Defaults to major-appropriate departments.' },
         },
         required: ['schedule', 'profile'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'check_degree_requirements',
+      description: 'Check the student major requirements against completed personal_course.md courses plus the active semester schedule.',
+      parameters: {
+        type: 'object',
+        properties: {
+          profile: { type: 'object' },
+          courses: { type: 'array', items: { type: 'string' } },
+        },
       },
     },
   },
@@ -601,6 +1097,37 @@ const toolSchemas = [
           schedule: { type: 'array', items: { type: 'string' } },
         },
         required: ['action', 'schedule'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'course_satisfies',
+      description: 'Look up which named requirement groups a specific course satisfies within a major\'s requirement tree. Use when the user asks "what does 6.3900 satisfy?" or "does this course count for anything?"',
+      parameters: {
+        type: 'object',
+        properties: {
+          course_id: { type: 'string', description: 'Course ID, e.g. "6.3900"' },
+          major: { type: 'string', description: 'Override major. Defaults to profile major.' },
+        },
+        required: ['course_id'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_requirement_courses',
+      description: 'Look up which courses satisfy a named requirement group (e.g. "Data Centric", "Human Centric", "Fundamentals") within a major\'s JSON requirement tree. Use intersect_with to find courses that satisfy two groups at once.',
+      parameters: {
+        type: 'object',
+        properties: {
+          group: { type: 'string', description: 'Partial or full name of the requirement group, e.g. "data", "human centric", "CI-M"' },
+          major: { type: 'string', description: 'Override major (e.g. "Course 6-4"). Defaults to profile major.' },
+          intersect_with: { type: 'string', description: 'Second group name — returns only courses that satisfy BOTH groups.' },
+        },
+        required: ['group'],
       },
     },
   },
@@ -672,7 +1199,10 @@ const toolHandlers = {
   get_current_course: getCurrentCourseTool,
   summarize_semester_plan: summarizeSemesterPlan,
   recommend_courses: recommendCourses,
+  check_degree_requirements: checkDegreeRequirementsTool,
   validate_ui_action: validateUiActionTool,
+  course_satisfies: courseRequirementGroupsTool,
+  get_requirement_courses: getRequirementCoursesTool,
   check_requirements: checkRequirementsTool,
   check_schedule_conflicts: checkScheduleConflictsTool,
   get_course_history_summary: getCourseHistorySummary,
@@ -681,10 +1211,13 @@ const toolHandlers = {
 
 module.exports = {
   asArray,
+  buildStudentPlanningContext,
+  checkDegreeRequirementsTool,
   currentCourseSummary,
   getCourse,
   getCurrentCourseTool,
   getMatch,
+  majorToDepartments,
   mockData,
   normalizeProfile,
   normalizeSchedule,

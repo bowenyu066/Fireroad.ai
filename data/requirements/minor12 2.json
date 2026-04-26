@@ -1,0 +1,111 @@
+{
+  "title-no-degree": "Earth and Planetary Sciences",
+  "list-id": "minor12.reql",
+  "title": "Minor in Earth, Atmospheric, and Planetary Sciences",
+  "medium-title": "12 Minor",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "threshold-desc": "select all",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "12.001"
+            },
+            {
+              "req": "12.002"
+            },
+            {
+              "req": "12.003"
+            },
+            {
+              "req": "12.007"
+            }
+          ],
+          "threshold-desc": "select any 2"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "5.60"
+            },
+            {
+              "req": "18.03"
+            }
+          ],
+          "threshold-desc": "select either"
+        }
+      ],
+      "title": "Core Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "Select at least 24 units in Course 12 subjects, approved by the minor advisor, to provide a depth of understanding and expertise in an EAPS discipline.",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "threshold-desc": "select any",
+              "reqs": [
+                {
+                  "req": "12.115"
+                },
+                {
+                  "req": "12.119"
+                },
+                {
+                  "req": "12.307"
+                },
+                {
+                  "req": "12.335"
+                },
+                {
+                  "req": "12.410"
+                }
+              ],
+              "title": "Laboratory"
+            },
+            {
+              "connection-type": "any",
+              "threshold-desc": "select either",
+              "reqs": [
+                {
+                  "req": "12.IND"
+                },
+                {
+                  "req": "12.UR"
+                }
+              ],
+              "title": "Independent Study"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "threshold": {
+            "cutoff": 24,
+            "criterion": "units",
+            "type": "GTE"
+          },
+          "req": "24 units in Course 12",
+          "plain-string": true,
+          "threshold-desc": "select any 24 units"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Restricted Electives"
+    }
+  ],
+  "short-title": "12",
+  "desc": "The Minor in Earth, Atmospheric, and Planetary Sciences provides an opportunity to complement or expand upon one's major by exploring in depth the natural processes that govern the structure and evolution of the Earth and planets. Areas of study include planetary surfaces, interiors, atmospheres, oceans, and biospheres. The EAPS Minor requires a solid foundation in two core subjects plus electives that create expertise in a particular area. Opportunities for field work, laboratory work, and independent study are an essential component of the minor."
+}

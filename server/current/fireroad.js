@@ -149,9 +149,14 @@ async function searchCurrentCourses(options = {}) {
   const requirements = Array.isArray(options.requirements || options.satisfies)
     ? (options.requirements || options.satisfies).map((req) => String(req).toLowerCase())
     : [];
+  // departments: filter to courses whose ID starts with any of the given prefixes, e.g. ["6", "18"]
+  const departments = Array.isArray(options.departments)
+    ? options.departments.map((d) => String(d).toLowerCase().replace(/\.$/, ''))
+    : [];
 
   const catalog = await getCurrentCatalog();
   const results = catalog.courses
+    .filter((course) => !departments.length || departments.some((d) => course.id.toLowerCase().startsWith(`${d}.`)))
     .filter((course) => !areas.length || areas.includes(String(course.area).toLowerCase()))
     .filter((course) => !requirements.length || requirements.some((req) => course.requirements.map((r) => r.toLowerCase()).includes(req)))
     .filter((course) => !maxWorkload || !course.totalHours || course.totalHours <= maxWorkload)
@@ -164,7 +169,7 @@ async function searchCurrentCourses(options = {}) {
   return {
     query,
     source: catalog.source,
-    filters: { areas, requirements, maxWorkload },
+    filters: { areas, requirements, maxWorkload, departments },
     results,
   };
 }

@@ -1,0 +1,184 @@
+{
+  "title-no-degree": "Music and Theater Arts",
+  "list-id": "minor21M-2.reql",
+  "title": "Minor in Theater Arts",
+  "url": "http://catalog.mit.edu/schools/humanities-arts-social-sciences/music-theater-arts/#theater-arts-minor",
+  "medium-title": "21M Minor (Theater Arts)",
+  "reqs": [
+    {
+      "distinct-threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "threshold-desc": "select any 5 from at least 2 categories",
+      "title": "Tier I and II",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "21M.611"
+            },
+            {
+              "req": "21M.690"
+            },
+            {
+              "req": "21M.700"
+            },
+            {
+              "req": "21M.706"
+            },
+            {
+              "req": "21M.710"
+            },
+            {
+              "req": "21M.711"
+            },
+            {
+              "req": "21M.714"
+            },
+            {
+              "req": "21M.715"
+            },
+            {
+              "req": "21M.800"
+            },
+            {
+              "req": "21M.846"
+            },
+            {
+              "req": "21M.848"
+            }
+          ],
+          "title": "Tier I: Theoretical"
+        },
+        {
+          "threshold": {
+            "cutoff": 1,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "21M.600"
+            },
+            {
+              "req": "21M.601"
+            },
+            {
+              "req": "21M.603"
+            },
+            {
+              "req": "21M.604"
+            },
+            {
+              "req": "21M.605"
+            },
+            {
+              "req": "21M.606"
+            },
+            {
+              "req": "21M.608"
+            },
+            {
+              "req": "21M.623"
+            },
+            {
+              "req": "21M.624"
+            },
+            {
+              "req": "21M.645"
+            },
+            {
+              "req": "21M.704"
+            },
+            {
+              "req": "21M.705"
+            },
+            {
+              "req": "21M.732"
+            },
+            {
+              "req": "21M.733"
+            },
+            {
+              "req": "21M.734"
+            },
+            {
+              "req": "21M.735"
+            },
+            {
+              "req": "21M.737"
+            },
+            {
+              "req": "21M.785"
+            },
+            {
+              "req": "21M.790"
+            },
+            {
+              "req": "21M.830"
+            },
+            {
+              "req": "21M.840"
+            },
+            {
+              "req": "21M.842"
+            },
+            {
+              "req": "21M.861"
+            },
+            {
+              "req": "21M.862"
+            },
+            {
+              "req": "21M.863"
+            }
+          ],
+          "title": "Tier II: Practical"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 5,
+        "criterion": "subjects",
+        "type": "GTE"
+      }
+    },
+    {
+      "threshold": {
+        "cutoff": 9,
+        "criterion": "units",
+        "type": "GTE"
+      },
+      "connection-type": "any",
+      "threshold-desc": "select any 9 units",
+      "reqs": [
+        {
+          "req": "21M.803"
+        },
+        {
+          "req": "21M.806"
+        },
+        {
+          "req": "21M.809"
+        },
+        {
+          "req": "21M.851"
+        }
+      ],
+      "title": "Tier III: Performance and Design"
+    }
+  ],
+  "short-title": "21M-2",
+  "desc": "The Minor in Theater Arts is designed to give students the opportunity to experiment in the making of theater. The flexibility of the minor allows students either to explore the basic principles of several theater disciplines or to concentrate more deeply on one."
+}

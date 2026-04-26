@@ -1,0 +1,247 @@
+{
+  "title-no-degree": "Finance",
+  "list-id": "major15-3old.reql",
+  "title": "Bachelor of Science in Finance (Old)",
+  "url": "https://mitsloan.mit.edu/undergrad/15-3-finance-major-requirements",
+  "medium-title": "15-3 Major (Old)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "Students who take 15.401 MUST take 15.418. \n\nStudents who take 15.402 MUST take 15.417. \n\nStudents who take either 15.401 or 15.402 MUST take 15.276 or 15.279.",
+      "reqs": [
+        {
+          "req": "15.501"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.0111"
+            },
+            {
+              "req": "14.01"
+            }
+          ],
+          "threshold-desc": "select either"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.0791"
+            },
+            {
+              "req": "6.3700"
+            },
+            {
+              "req": "14.30"
+            },
+            {
+              "req": "18.600"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "req": "15.075"
+            },
+            {
+              "req": "14.32"
+            },
+            {
+              "req": "18.650"
+            }
+          ],
+          "threshold-desc": "select any"
+        },
+        {
+          "connection-type": "any",
+          "reqs": [
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "15.417"
+                },
+                {
+                  "req": "15.402"
+                },
+                {
+                  "req": "15.279"
+                }
+              ],
+              "threshold-desc": "select all"
+            },
+            {
+              "connection-type": "all",
+              "reqs": [
+                {
+                  "req": "15.401"
+                },
+                {
+                  "req": "15.418"
+                },
+                {
+                  "req": "15.276"
+                }
+              ],
+              "threshold-desc": "select all"
+            }
+          ],
+          "threshold-desc": "select either"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "threshold-desc": "select any 7 subjects",
+      "title": "Restricted Electives",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 5,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "all",
+          "threshold-desc": "select any 5 subjects",
+          "reqs": [
+            {
+              "connection-type": "any",
+              "threshold-desc": "select any",
+              "reqs": [
+                {
+                  "req": "15.4331"
+                },
+                {
+                  "req": "15.4371"
+                },
+                {
+                  "req": "15.438"
+                }
+              ],
+              "title": "Investments"
+            },
+            {
+              "connection-type": "any",
+              "threshold-desc": "select any",
+              "reqs": [
+                {
+                  "req": "15.4311"
+                },
+                {
+                  "req": "15.4341"
+                },
+                {
+                  "req": "15.4451"
+                }
+              ],
+              "title": "Corporate Finance"
+            },
+            {
+              "threshold": {
+                "cutoff": 5,
+                "criterion": "subjects",
+                "type": "LTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "select at most 5",
+              "reqs": [
+                {
+                  "req": "15.436"
+                },
+                {
+                  "req": "15.447"
+                },
+                {
+                  "req": "15.450"
+                },
+                {
+                  "req": "15.456"
+                },
+                {
+                  "req": "15.457"
+                },
+                {
+                  "req": "15.458"
+                },
+                {
+                  "req": "15.466"
+                },
+                {
+                  "req": "15.467"
+                },
+                {
+                  "req": "15.481"
+                },
+                {
+                  "req": "15.482"
+                },
+                {
+                  "req": "15.5181"
+                },
+                {
+                  "req": "15.535"
+                }
+              ],
+              "title": "Topics in Finance"
+            }
+          ],
+          "title": "Finance Electives"
+        },
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "LTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select at most 2",
+          "reqs": [
+            {
+              "req": "15.053"
+            },
+            {
+              "connection-type": "any",
+              "reqs": [
+                {
+                  "req": "15.301"
+                },
+                {
+                  "req": "15.310"
+                },
+                {
+                  "req": "15.312"
+                }
+              ],
+              "threshold-desc": "select any"
+            },
+            {
+              "req": "15.7611"
+            },
+            {
+              "req": "15.8141"
+            },
+            {
+              "req": "15.9001"
+            }
+          ],
+          "title": "Non-Finance Electives"
+        }
+      ],
+      "connection-type": "all",
+      "threshold": {
+        "cutoff": 7,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Seven subjects from the approved list of subjects. At least one of the electives must be in the area of Investments, at least one of the electives must be in the area of Corporate Finance, and there must be at least five electives in total between the areas of Investments, Corporate Finance, and Topics in Finance."
+    }
+  ],
+  "short-title": "15-3",
+  "desc": ""
+}

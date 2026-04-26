@@ -1,0 +1,265 @@
+{
+  "title-no-degree": "Asian and Asian Diaspora Studies",
+  "list-id": "majorAADS.reql",
+  "title": "Bachelor of Science in Humanities (Asian and Asian Diaspora Studies)",
+  "medium-title": "21 Major (Asian Studies)",
+  "reqs": [
+    {
+      "connection-type": "all",
+      "desc": "With the consent of the faculty advisor in the chosen field, a student may substitute two subjects for the pre-thesis and thesis requirement.",
+      "reqs": [
+        {
+          "req": "21.THT"
+        },
+        {
+          "req": "21.THU"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Required Subjects"
+    },
+    {
+      "connection-type": "all",
+      "desc": "A minimum of nine subjects (108 units) beyond the pre-thesis and thesis, including two language subjects (in the same language) in Area I (or equivalent proficiency), and seven other subjects selected from at least two of the three disciplinary areas (Areas II-IV). The list of restricted electives below is not exhaustive. Additional information can be obtained from the advisor for the program, Professor Hiromu Nagahara, E51-255G, 617-324-4977, or from the SHASS academic administrator, Andrea Wirth, 4-240, 617-253-4441. The language requirement can be satisfied by taking two intermediate (Levels III and IV) subjects in an Asian language. Students with proficiency at this level in the spoken and written language can either take two more advanced language subjects (highly recommended), or two more courses from Areas II, III and IV. Students who are not required to take Area I subjects must take all subjects from Areas II, III, and IV, with at least one subject from each area. Other languages may be taken at Harvard or Wellesley through cross-registration, with the permission of the advisor, or at other institutions during IAP or the summer, with permission from the relevant transfer credit examiner.",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "select any 2",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 2,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "req": "2 intermediate language subjects",
+              "plain-string": true,
+              "threshold-desc": "select any 2"
+            },
+            {
+              "req": "21G.103"
+            },
+            {
+              "req": "21G.104"
+            },
+            {
+              "req": "21G.105"
+            },
+            {
+              "req": "21G.106"
+            },
+            {
+              "req": "21G.109"
+            },
+            {
+              "req": "21G.110"
+            },
+            {
+              "req": "21G.113"
+            },
+            {
+              "req": "21G.503"
+            },
+            {
+              "req": "21G.504"
+            },
+            {
+              "req": "21G.505"
+            },
+            {
+              "req": "21G.506"
+            }
+          ],
+          "title": "Area I: Language"
+        },
+        {
+          "threshold": {
+            "cutoff": 7,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "reqs": [
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "21G.011"
+                },
+                {
+                  "req": "21G.027"
+                },
+                {
+                  "req": "21G.030"
+                },
+                {
+                  "req": "21G.036"
+                },
+                {
+                  "req": "21G.038"
+                },
+                {
+                  "req": "21G.039"
+                },
+                {
+                  "req": "21G.040"
+                },
+                {
+                  "req": "21G.044"
+                },
+                {
+                  "req": "21G.046"
+                },
+                {
+                  "req": "21G.063"
+                },
+                {
+                  "req": "21G.064"
+                },
+                {
+                  "req": "21G.065"
+                },
+                {
+                  "req": "21G.199"
+                },
+                {
+                  "req": "21M.291"
+                },
+                {
+                  "req": "21M.700"
+                },
+                {
+                  "req": "21M.706"
+                },
+                {
+                  "req": "21W.788"
+                },
+                {
+                  "req": "WGS.226"
+                },
+                {
+                  "req": "21G.590"
+                },
+                {
+                  "req": "21G.591"
+                },
+                {
+                  "req": "21G.592"
+                },
+                {
+                  "req": "21G.593"
+                },
+                {
+                  "req": "21G.596"
+                }
+              ],
+              "title": "Area II: Humanities and the Arts"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "17.407"
+                },
+                {
+                  "req": "17.433"
+                },
+                {
+                  "req": "17.486"
+                },
+                {
+                  "req": "17.53"
+                },
+                {
+                  "req": "17.537"
+                },
+                {
+                  "req": "21A.140"
+                },
+                {
+                  "req": "21A.141"
+                }
+              ],
+              "title": "Area III: Social Sciences"
+            },
+            {
+              "threshold": {
+                "cutoff": 0,
+                "criterion": "subjects",
+                "type": "GTE"
+              },
+              "connection-type": "any",
+              "threshold-desc": "optional - select any",
+              "reqs": [
+                {
+                  "req": "21G.043"
+                },
+                {
+                  "req": "21G.045"
+                },
+                {
+                  "req": "21G.075"
+                },
+                {
+                  "req": "21H.151"
+                },
+                {
+                  "req": "21H.152"
+                },
+                {
+                  "req": "21H.154"
+                },
+                {
+                  "req": "21H.155"
+                },
+                {
+                  "req": "21H.157"
+                },
+                {
+                  "req": "21H.351"
+                },
+                {
+                  "req": "21H.354"
+                },
+                {
+                  "req": "21H.357"
+                },
+                {
+                  "req": "21H.358"
+                }
+              ],
+              "title": "Area IV: Historical Studies"
+            }
+          ],
+          "distinct-threshold": {
+            "cutoff": 2,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "threshold-desc": "select any 7 from at least 2 categories"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Restricted Electives"
+    }
+  ],
+  "short-title": "21",
+  "desc": "This program is designed for students interested in serious intensive research on the languages, history, politics, and cultures of Asia and/or the Asian diasporas. The geographic region of Asia includes countries such as Bangladesh, China, India, Japan, Korea, Mongolia, Pakistan, the Philippines, Taiwan, and Vietnam. In consultation with the program advisor, students may focus their coursework on a sub-region of Asia, on one of the Asian diasporas, or design their program to offer a comparative study across different regions and/or cultural groups. The goal of the program is to provide balanced coverage of language, humanistic and social science offerings on the region and to expose students to some comparative perspectives within the region. The MIT Departments of Global Studies and Languages, History, and Political Science offer a substantial number of subjects related to Asia and the Asian diasporas."
+}

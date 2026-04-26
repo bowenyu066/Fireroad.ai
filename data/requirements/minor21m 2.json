@@ -1,0 +1,363 @@
+{
+  "title-no-degree": "Music and Theater Arts",
+  "list-id": "minor21m.reql",
+  "title": "Minor in Music",
+  "url": "http://catalog.mit.edu/schools/humanities-arts-social-sciences/music-theater-arts/#music-minor",
+  "medium-title": "21M Minor (Music)",
+  "reqs": [
+    {
+      "threshold-desc": "select at most 2",
+      "title": "Tier I: Introduction",
+      "reqs": [
+        {
+          "req": "21M.011"
+        },
+        {
+          "req": "21M.013"
+        },
+        {
+          "req": "21M.030"
+        },
+        {
+          "req": "21M.051"
+        },
+        {
+          "req": "21M.065"
+        },
+        {
+          "req": "21M.080"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 2,
+        "criterion": "subjects",
+        "type": "LTE"
+      },
+      "desc": "Select up to two of the following:"
+    },
+    {
+      "connection-type": "all",
+      "desc": "Select three subjects, one from each of the following categories:",
+      "reqs": [
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "21M.215"
+            },
+            {
+              "req": "21M.220"
+            },
+            {
+              "req": "21M.223"
+            },
+            {
+              "req": "21M.226"
+            },
+            {
+              "req": "21M.235"
+            },
+            {
+              "req": "21M.250"
+            },
+            {
+              "req": "21M.260"
+            },
+            {
+              "req": "21M.269"
+            },
+            {
+              "req": "21M.271"
+            },
+            {
+              "req": "21M.273"
+            },
+            {
+              "req": "21M.283"
+            },
+            {
+              "req": "21M.284"
+            },
+            {
+              "req": "21M.289"
+            },
+            {
+              "req": "21M.291"
+            },
+            {
+              "req": "21M.292"
+            },
+            {
+              "req": "21M.293"
+            },
+            {
+              "req": "21M.294"
+            },
+            {
+              "req": "21M.295"
+            },
+            {
+              "req": "21M.296"
+            },
+            {
+              "req": "21M.299"
+            }
+          ],
+          "title": "History/Culture"
+        },
+        {
+          "req": "21M.301",
+          "title": "Composition/Theory"
+        },
+        {
+          "connection-type": "any",
+          "threshold-desc": "select any",
+          "reqs": [
+            {
+              "req": "21M.401"
+            },
+            {
+              "req": "21M.405"
+            },
+            {
+              "req": "21M.410"
+            },
+            {
+              "req": "21M.421"
+            },
+            {
+              "req": "21M.423"
+            },
+            {
+              "req": "21M.426"
+            },
+            {
+              "req": "21M.442"
+            },
+            {
+              "req": "21M.445"
+            },
+            {
+              "req": "21M.450"
+            },
+            {
+              "req": "21M.451"
+            },
+            {
+              "req": "21M.460"
+            },
+            {
+              "req": "21M.480"
+            },
+            {
+              "req": "21M.490"
+            }
+          ],
+          "title": "Performance (12 units)"
+        }
+      ],
+      "threshold-desc": "select all",
+      "title": "Tier II: Breadth"
+    },
+    {
+      "threshold-desc": "select any",
+      "title": "Tier III: Electives",
+      "reqs": [
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21M.215"
+            },
+            {
+              "req": "21M.220"
+            },
+            {
+              "req": "21M.223"
+            },
+            {
+              "req": "21M.226"
+            },
+            {
+              "req": "21M.235"
+            },
+            {
+              "req": "21M.250"
+            },
+            {
+              "req": "21M.260"
+            },
+            {
+              "req": "21M.269"
+            },
+            {
+              "req": "21M.271"
+            },
+            {
+              "req": "21M.273"
+            },
+            {
+              "req": "21M.283"
+            },
+            {
+              "req": "21M.284"
+            },
+            {
+              "req": "21M.289"
+            },
+            {
+              "req": "21M.291"
+            },
+            {
+              "req": "21M.292"
+            },
+            {
+              "req": "21M.293"
+            },
+            {
+              "req": "21M.294"
+            },
+            {
+              "req": "21M.295"
+            },
+            {
+              "req": "21M.296"
+            },
+            {
+              "req": "21M.299"
+            }
+          ],
+          "title": "History/Culture"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21M.302"
+            },
+            {
+              "req": "21M.303"
+            },
+            {
+              "req": "21M.304"
+            },
+            {
+              "req": "21M.310"
+            },
+            {
+              "req": "21M.340"
+            },
+            {
+              "req": "21M.341"
+            },
+            {
+              "req": "21M.342"
+            },
+            {
+              "req": "21M.351"
+            },
+            {
+              "req": "21M.355"
+            },
+            {
+              "req": "21M.359"
+            },
+            {
+              "req": "21M.361"
+            },
+            {
+              "req": "21M.362"
+            },
+            {
+              "req": "21M.380"
+            },
+            {
+              "req": "21M.385"
+            },
+            {
+              "req": "21M.387"
+            }
+          ],
+          "title": "Composition/Theory"
+        },
+        {
+          "threshold": {
+            "cutoff": 0,
+            "criterion": "subjects",
+            "type": "GTE"
+          },
+          "connection-type": "any",
+          "threshold-desc": "optional - select any",
+          "reqs": [
+            {
+              "req": "21M.401"
+            },
+            {
+              "req": "21M.405"
+            },
+            {
+              "req": "21M.410"
+            },
+            {
+              "req": "21M.421"
+            },
+            {
+              "req": "21M.423"
+            },
+            {
+              "req": "21M.426"
+            },
+            {
+              "req": "21M.442"
+            },
+            {
+              "req": "21M.445"
+            },
+            {
+              "req": "21M.450"
+            },
+            {
+              "req": "21M.451"
+            },
+            {
+              "req": "21M.460"
+            },
+            {
+              "req": "21M.480"
+            },
+            {
+              "req": "21M.490"
+            }
+          ],
+          "title": "Performance"
+        },
+        {
+          "req": "21M.500"
+        }
+      ],
+      "connection-type": "any",
+      "threshold": {
+        "cutoff": 1,
+        "criterion": "subjects",
+        "type": "GTE"
+      },
+      "desc": "Select one to three subjects from the following:"
+    }
+  ],
+  "short-title": "21M",
+  "desc": "The Minor in Music requires six subjects that will give students experience within the three main branches of music: history/culture, composition/theory, and performance."
+}
