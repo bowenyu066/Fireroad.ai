@@ -371,6 +371,8 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
         ...current,
         ...Object.fromEntries(courses.map((course) => [course.id, course])),
       }));
+    }).catch((error) => {
+      if (!cancelled) console.warn('[schedule] current catalog preload failed', error);
     });
     return () => { cancelled = true; };
   }, []);

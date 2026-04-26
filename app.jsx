@@ -33,39 +33,79 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
     }]);
   };
 
-  const applyUiActions = (actions) => {
-    if (!Array.isArray(actions) || actions.length === 0) return;
+  const nextScheduleForUiActions = (current, actions) => {
+    let next = [...current];
+    actions.forEach((action) => {
+      const courseId = String(action.courseId || '').trim().toUpperCase();
+      const removeCourseId = String(action.removeCourseId || '').trim().toUpperCase();
+      if (!courseId && action.type !== 'replace_course') return;
 
+      if (action.type === 'add_course' && !next.includes(courseId)) {
+        next = [...next, courseId];
+      }
+
+      if (action.type === 'remove_course') {
+        next = next.filter((id) => id !== courseId);
+      }
+
+      if (action.type === 'replace_course' && removeCourseId && courseId) {
+        next = next.filter((id) => id !== removeCourseId);
+        if (!next.includes(courseId)) next = [...next, courseId];
+      }
+    });
+    return next;
+  };
+
+  const undoScheduleForUiActions = (current, actions, previousSchedule) => {
+    const before = new Set(previousSchedule.map((id) => String(id).toUpperCase()));
+    let next = [...current];
+
+    [...actions].reverse().forEach((action) => {
+      const courseId = String(action.courseId || '').trim().toUpperCase();
+      const removeCourseId = String(action.removeCourseId || '').trim().toUpperCase();
+
+      if (action.type === 'add_course' && courseId && !before.has(courseId)) {
+        next = next.filter((id) => String(id).toUpperCase() !== courseId);
+      }
+
+      if (action.type === 'remove_course' && courseId && before.has(courseId) && !next.map((id) => String(id).toUpperCase()).includes(courseId)) {
+        next = [...next, courseId];
+      }
+
+      if (action.type === 'replace_course' && courseId && removeCourseId) {
+        if (!before.has(courseId)) {
+          next = next.filter((id) => String(id).toUpperCase() !== courseId);
+        }
+        if (before.has(removeCourseId) && !next.map((id) => String(id).toUpperCase()).includes(removeCourseId)) {
+          next = [...next, removeCourseId];
+        }
+      }
+    });
+
+    return [
+      ...previousSchedule.filter((id) => next.map((courseId) => String(courseId).toUpperCase()).includes(String(id).toUpperCase())),
+      ...next.filter((id) => !previousSchedule.map((courseId) => String(courseId).toUpperCase()).includes(String(id).toUpperCase())),
+    ];
+  };
+
+  const applyUiActions = (actions) => {
+    if (!Array.isArray(actions) || actions.length === 0) return null;
+
+    const previousSchedule = [...schedule];
     const addActions = actions.filter((action) => action.type === 'add_course' || action.type === 'replace_course');
     const lastAdded = addActions.length ? addActions[addActions.length - 1].courseId : null;
 
-    setSchedule((current) => {
-      let next = [...current];
-      actions.forEach((action) => {
-        const courseId = String(action.courseId || '').trim().toUpperCase();
-        const removeCourseId = String(action.removeCourseId || '').trim().toUpperCase();
-        if (!courseId && action.type !== 'replace_course') return;
-
-        if (action.type === 'add_course' && !next.includes(courseId)) {
-          next = [...next, courseId];
-        }
-
-        if (action.type === 'remove_course') {
-          next = next.filter((id) => id !== courseId);
-        }
-
-        if (action.type === 'replace_course' && removeCourseId && courseId) {
-          next = next.filter((id) => id !== removeCourseId);
-          if (!next.includes(courseId)) next = [...next, courseId];
-        }
-      });
-      return next;
-    });
+    setSchedule((current) => nextScheduleForUiActions(current, actions));
 
     if (lastAdded) {
       setJustAddedId(lastAdded);
       setTimeout(() => setJustAddedId(null), 800);
     }
+
+    return () => {
+      setSchedule((current) => undoScheduleForUiActions(current, actions, previousSchedule));
+      setJustAddedId(null);
+    };
   };
 
   const onOpenCourse = (id) => setRoute({ name: 'course', id });

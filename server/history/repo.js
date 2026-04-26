@@ -97,6 +97,20 @@ function mapGradingPolicy(row) {
   };
 }
 
+function mapExtractionRun(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    documentId: row.document_id,
+    model: row.model,
+    promptVersion: row.prompt_version,
+    rawModelOutput: row.raw_model_output,
+    parsedJson: row.parsed_json,
+    status: row.status,
+    createdAt: row.created_at,
+  };
+}
+
 function createHistoryRepo(database = getDb()) {
   return {
     getCourseById(courseId) {
@@ -107,6 +121,11 @@ function createHistoryRepo(database = getDb()) {
     getCourseAliases(courseId) {
       const id = normalizeCourseId(courseId);
       return database.prepare('SELECT * FROM course_aliases WHERE course_id = ? ORDER BY alias_id').all(id).map(mapAlias);
+    },
+
+    deleteCourseHistory(courseId) {
+      const id = normalizeCourseId(courseId);
+      database.prepare('DELETE FROM courses WHERE id = ?').run(id);
     },
 
     listCourseOfferings(courseId) {
@@ -140,6 +159,10 @@ function createHistoryRepo(database = getDb()) {
 
     listOfferingDocuments(offeringId) {
       return database.prepare('SELECT * FROM documents WHERE offering_id = ? ORDER BY id DESC').all(Number(offeringId)).map(mapDocument);
+    },
+
+    getLatestExtractionRun(documentId) {
+      return mapExtractionRun(database.prepare('SELECT * FROM extraction_runs WHERE document_id = ? ORDER BY id DESC LIMIT 1').get(Number(documentId)));
     },
 
     getLatestAttendancePolicy(offeringId) {
