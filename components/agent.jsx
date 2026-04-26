@@ -1,6 +1,22 @@
 /* global React, FRDATA, Icon, MatchBar, AreaDot, useApp */
 const { useState, useEffect, useRef } = React;
 
+const coerceText = (value) => {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) return value.map(coerceText).join('');
+  if (typeof value === 'object') {
+    if (value.text !== undefined) return coerceText(value.text);
+    if (value.content !== undefined) return coerceText(value.content);
+    if (value.message !== undefined) return coerceText(value.message);
+    if (value.label !== undefined) return coerceText(value.label);
+    if (value.name !== undefined) return coerceText(value.name);
+    if (value.title !== undefined) return coerceText(value.title);
+  }
+  return '';
+};
+
 // ============== Agent / chat panel (top-right) ==============
 const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onOpenCourse, onApplyUiActions }) => {
   const [input, setInput] = useState('');
@@ -65,6 +81,12 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
       status: 'Thinking...',
       suggestions: [],
       streaming: true,
+      progress: {
+        latestInterimText: '',
+        latestToolActivity: null,
+      },
+      traceSummary: null,
+      proposal: null,
     };
     setMessages([...nextMessages, placeholder]);
     setInput('');
@@ -99,40 +121,100 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
         throw new Error(`The agent returned HTTP ${response.status}. Check the server logs for this request.`);
       }
 
+      let sawFinalTextDelta = false;
+      const updateProgressText = (text, append = true) => {
+        const safeText = coerceText(text);
+        updateStreamingMessage(agentMessageId, (message) => ({
+          progress: {
+            ...(message.progress || {}),
+            latestInterimText: append
+              ? `${coerceText(message.progress?.latestInterimText)}${safeText}`
+              : safeText,
+          },
+          status: '',
+        }));
+      };
+      const updateToolActivity = (activity) => {
+        updateStreamingMessage(agentMessageId, (message) => ({
+          progress: {
+            ...(message.progress || {}),
+            latestToolActivity: {
+              ...(message.progress?.latestToolActivity || {}),
+              ...(activity || {}),
+            },
+          },
+          status: '',
+        }));
+      };
+
       await readAgentStream(response, {
         status: ({ text }) => {
           console.debug('[agent stream] status', { clientRequestId, text });
+          const safeText = coerceText(text);
           updateStreamingMessage(agentMessageId, (message) => ({
-            status: message.text ? '' : text,
+            status: coerceText(message.text) ? '' : safeText,
           }));
         },
-        delta: ({ text }) => updateStreamingMessage(agentMessageId, (message) => ({
-          text: `${message.text || ''}${text || ''}`,
-          status: '',
-        })),
+        final_text_delta: ({ text }) => {
+          sawFinalTextDelta = true;
+          const safeText = coerceText(text);
+          updateStreamingMessage(agentMessageId, (message) => ({
+            text: `${coerceText(message.text)}${safeText}`,
+            status: '',
+          }));
+        },
+        delta: ({ text }) => {
+          if (sawFinalTextDelta) return;
+          const safeText = coerceText(text);
+          updateStreamingMessage(agentMessageId, (message) => ({
+            text: `${coerceText(message.text)}${safeText}`,
+            status: '',
+          }));
+        },
+        text_delta: ({ text }) => {
+          const safeText = coerceText(text);
+          updateStreamingMessage(agentMessageId, (message) => ({
+            text: `${coerceText(message.text)}${safeText}`,
+            status: '',
+          }));
+        },
+        progress_text: ({ text }) => updateProgressText(text, false),
+        progress_text_delta: ({ text }) => updateProgressText(text, true),
+        tool_activity_start: updateToolActivity,
+        tool_activity_input: updateToolActivity,
+        tool_activity_running: updateToolActivity,
+        tool_activity_result: updateToolActivity,
+        tool_activity_error: updateToolActivity,
+        trace_summary: (traceSummary) => updateStreamingMessage(agentMessageId, () => ({ traceSummary })),
+        proposal: (proposal) => updateStreamingMessage(agentMessageId, () => ({ proposal })),
         final: (payload) => {
           console.debug('[agent stream] final', {
             clientRequestId,
             textLength: payload?.message?.text?.length || 0,
             suggestions: payload?.message?.suggestions || [],
             uiActions: payload?.uiActions || [],
+            proposal: payload?.proposal || payload?.message?.proposal || null,
             debug: payload?.debug,
           });
           if (payload?.message) {
+            const finalText = coerceText(payload.message.text || payload.message.content);
+            const proposal = payload.proposal || payload.message.proposal || proposalFromUiActions(payload.uiActions);
+            const traceSummary = payload.traceSummary || payload.message.traceSummary || null;
             updateStreamingMessage(agentMessageId, () => ({
               ...payload.message,
               id: agentMessageId,
+              text: finalText,
               streaming: false,
               status: '',
+              progress: null,
+              traceSummary,
+              proposal,
             }));
-          }
-          if (Array.isArray(payload?.uiActions) && payload.uiActions.length > 0) {
-            onApplyUiActions(payload.uiActions);
           }
         },
         error: (payload) => {
           console.error('[agent stream] sse error', { clientRequestId, payload });
-          throw new Error(payload?.message?.text || payload?.error || 'The agent is unavailable right now. Manual planning still works.');
+          throw new Error(coerceText(payload?.message?.text || payload?.error) || 'The agent is unavailable right now. Manual planning still works.');
         },
       });
     } catch (error) {
@@ -142,10 +224,11 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
         role: 'agent',
         text: failedToFetch
           ? 'Failed to reach /api/chat/stream. Restart the dev server and check the server terminal logs.'
-          : (error.message || 'The agent is unavailable right now. Manual planning still works.'),
+          : (coerceText(error.message) || 'The agent is unavailable right now. Manual planning still works.'),
         suggestions: [],
         streaming: false,
         status: '',
+        progress: null,
       }));
     } finally {
       setTyping(false);
@@ -181,7 +264,16 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
 
       {/* Messages */}
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {messages.map((m, i) => <MessageBubble key={i} msg={m} onAddCourse={onAddCourse} onOpenCourse={onOpenCourse} />)}
+        {messages.map((m, i) => (
+          <MessageBubble
+            key={m.id || i}
+            msg={m}
+            schedule={schedule}
+            onAddCourse={onAddCourse}
+            onOpenCourse={onOpenCourse}
+            onApplyUiActions={onApplyUiActions}
+          />
+        ))}
         {typing && !messages.some((message) => message.streaming) && <TypingDots />}
       </div>
 
@@ -215,7 +307,7 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
   );
 };
 
-const escapeHtml = (value) => String(value || '')
+const escapeHtml = (value) => coerceText(value)
   .replace(/&/g, '&amp;')
   .replace(/</g, '&lt;')
   .replace(/>/g, '&gt;')
@@ -232,7 +324,7 @@ const renderInlineMarkdown = (value) => {
 };
 
 const renderMarkdown = (value) => {
-  const lines = String(value || '').split('\n');
+  const lines = coerceText(value).split('\n');
   const blocks = [];
   let paragraph = [];
   let listItems = [];
@@ -291,27 +383,218 @@ const renderMarkdown = (value) => {
   return blocks.join('');
 };
 
-const ToolStatusRow = ({ text }) => (
-  <div style={{
-    display: 'flex', alignItems: 'center', gap: 6,
-    marginTop: 8, color: 'var(--text-tertiary)', fontSize: 11,
-    fontFamily: 'var(--font-mono)',
-  }}>
-    <span style={{
-      width: 5, height: 5, borderRadius: '50%',
-      background: 'var(--accent)', flexShrink: 0,
-      animation: 'pulse 1s infinite',
-    }} />
-    {text}
-  </div>
-);
+const uiActionLabel = (action) => {
+  if (!action || typeof action !== 'object') return 'Update plan';
+  const courseId = String(action.courseId || '').toUpperCase();
+  const removeCourseId = String(action.removeCourseId || '').toUpperCase();
+  if (action.type === 'remove_course') return `Remove ${courseId}`;
+  if (action.type === 'replace_course') return `Replace ${removeCourseId || 'course'} with ${courseId}`;
+  return `Add ${courseId}`;
+};
 
-const MessageBubble = ({ msg, onAddCourse, onOpenCourse }) => {
+const proposalFromUiActions = (uiActions) => {
+  const actions = Array.isArray(uiActions) ? uiActions : [];
+  if (!actions.length) return null;
+  return {
+    type: 'ui_actions',
+    title: 'Proposed changes',
+    actions,
+    actionItems: actions.map(uiActionLabel),
+    assumptions: ['Applies only to the active semester.'],
+    warnings: [],
+    source: 'legacy_ui_actions',
+  };
+};
+
+const normalizeProposal = (proposal, legacyUiActions) => {
+  if (proposal && typeof proposal === 'object') return proposal;
+  return proposalFromUiActions(legacyUiActions);
+};
+
+const ToolActivityCard = ({ activity }) => {
+  if (!activity) return null;
+  const isError = activity.state === 'error';
+  const isDone = activity.state === 'done';
+  const displayName = coerceText(activity.displayName || activity.toolName) || 'Checking data';
+  const inputPreview = coerceText(activity.inputPreview);
+  const resultSummary = coerceText(activity.resultSummary);
+  return (
+    <div style={{
+      marginTop: 8,
+      padding: '8px 10px',
+      borderRadius: 8,
+      border: '1px solid var(--border)',
+      background: 'var(--bg)',
+      color: 'var(--text-secondary)',
+      fontSize: 12,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+        <span style={{
+          width: 7,
+          height: 7,
+          borderRadius: '50%',
+          background: isError ? 'var(--accent)' : isDone ? 'var(--success)' : 'var(--text-tertiary)',
+          animation: isDone || isError ? 'none' : 'pulse 1s infinite',
+          flexShrink: 0,
+        }} />
+        <span style={{ color: 'var(--text)', fontWeight: 600 }}>{displayName}</span>
+      </div>
+      {inputPreview && (
+        <div className="mono" style={{ marginTop: 5, color: 'var(--text-tertiary)', fontSize: 11 }}>
+          {inputPreview}
+        </div>
+      )}
+      {resultSummary && (
+        <div style={{ marginTop: 5, color: isError ? 'var(--accent)' : 'var(--text-secondary)' }}>
+          {resultSummary}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ProgressBlock = ({ progress, fallback }) => {
+  const interim = coerceText(progress?.latestInterimText);
+  const activity = progress?.latestToolActivity;
+  return (
+    <div>
+      {interim ? (
+        <div className="chat-markdown" dangerouslySetInnerHTML={{ __html: renderMarkdown(interim) }} />
+      ) : (
+        <div style={{ color: 'var(--text-secondary)' }}>{fallback || 'Thinking...'}</div>
+      )}
+      {activity && <ToolActivityCard activity={activity} />}
+    </div>
+  );
+};
+
+const TraceSummary = ({ traceSummary }) => {
+  const [expanded, setExpanded] = useState(false);
+  const checked = Array.isArray(traceSummary?.checked) ? traceSummary.checked : [];
+  if (!checked.length) return null;
+  const labels = [...new Set(checked.map((item) => coerceText(item.label)).filter(Boolean))];
+
+  return (
+    <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+      <button
+        onClick={() => setExpanded((value) => !value)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          color: 'var(--text-tertiary)', fontSize: 11,
+        }}
+      >
+        <Icon name={expanded ? 'chevronUp' : 'chevronDown'} size={11} />
+        <span>Checked: {labels.join(' · ')}</span>
+      </button>
+      {expanded && (
+        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {checked.map((item, index) => (
+            <div key={`${item.toolName || 'tool'}-${index}`} style={{
+              padding: '7px 8px',
+              borderRadius: 7,
+              border: '1px solid var(--border)',
+              background: 'var(--bg)',
+              fontSize: 11,
+            }}>
+              <div style={{ color: 'var(--text)', fontWeight: 600 }}>{coerceText(item.displayName || item.toolName)}</div>
+              {item.inputPreview && <div className="mono" style={{ color: 'var(--text-tertiary)', marginTop: 3 }}>{coerceText(item.inputPreview)}</div>}
+              {item.resultSummary && <div style={{ color: 'var(--text-secondary)', marginTop: 3 }}>{coerceText(item.resultSummary)}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ProposalCard = ({ proposal, onApplyUiActions }) => {
+  const [state, setState] = useState('applying');
+  const undoRef = useRef(null);
+  const appliedRef = useRef(false);
+  const actions = Array.isArray(proposal?.actions) ? proposal.actions : [];
+  const actionItems = Array.isArray(proposal?.actionItems) && proposal.actionItems.length
+    ? proposal.actionItems
+    : actions.map(uiActionLabel);
+  const displayActionItems = actionItems
+    .map((item, index) => coerceText(item) || uiActionLabel(actions[index]))
+    .filter(Boolean);
+  const displayAssumptions = (Array.isArray(proposal.assumptions) ? proposal.assumptions : [])
+    .map(coerceText)
+    .filter(Boolean);
+  const displayWarnings = (Array.isArray(proposal.warnings) ? proposal.warnings : [])
+    .map(coerceText)
+    .filter(Boolean);
+
+  useEffect(() => {
+    if (!proposal || appliedRef.current || !actions.length || typeof onApplyUiActions !== 'function') {
+      if (!actions.length || typeof onApplyUiActions !== 'function') setState('applied');
+      return;
+    }
+    appliedRef.current = true;
+    const undo = onApplyUiActions(actions);
+    undoRef.current = typeof undo === 'function' ? undo : null;
+    setState('applied');
+  }, [proposal, actions, onApplyUiActions]);
+
+  if (!proposal || state === 'dismissed') return null;
+
+  return (
+    <div style={{
+      maxWidth: '88%',
+      marginTop: 8,
+      padding: 12,
+      borderRadius: 'var(--r-md)',
+      border: '1px solid var(--border)',
+      background: 'var(--surface)',
+      fontSize: 12,
+    }}>
+      <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>
+        {state === 'cancelled' ? 'Cancelled changes' : 'Applied changes'}
+      </div>
+      <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--text)' }}>
+        {displayActionItems.map((item, index) => <li key={index}>{item}</li>)}
+      </ul>
+      {displayAssumptions.length > 0 && (
+        <div style={{ marginTop: 8, color: 'var(--text-tertiary)', lineHeight: 1.45 }}>
+          {displayAssumptions.join(' · ')}
+        </div>
+      )}
+      {displayWarnings.length > 0 && (
+        <div style={{ marginTop: 8, color: 'var(--accent)', lineHeight: 1.45 }}>
+          {displayWarnings.join(' · ')}
+        </div>
+      )}
+      <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+        <span className="mono" style={{ alignSelf: 'center', color: 'var(--text-tertiary)', fontSize: 11 }}>
+          {state === 'applying' ? 'applying...' : state === 'cancelled' ? 'cancelled' : 'applied'}
+        </span>
+        {state === 'applied' && (
+          <button
+            onClick={() => {
+              if (undoRef.current) undoRef.current();
+              setState('cancelled');
+            }}
+            className="btn-ghost"
+            style={{ padding: '6px 11px', borderRadius: 7, fontSize: 12, border: '1px solid var(--border)' }}
+          >
+            Cancel
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const MessageBubble = ({ msg, schedule, onAddCourse, onOpenCourse, onApplyUiActions }) => {
   const isUser = msg.role === 'user';
   const [suggestedCourses, setSuggestedCourses] = useState([]);
-  const suggestionsKey = (msg.suggestions || []).join('|');
-  const displayText = msg.text || (msg.streaming ? msg.status || 'Thinking...' : '');
+  const [locallyAdded, setLocallyAdded] = useState([]);
+  const suggestionsKey = (msg.suggestions || []).map(coerceText).join('|');
+  const scheduled = new Set((schedule || []).map((id) => String(id).toUpperCase()));
+  const displayText = isUser ? coerceText(msg.text) : coerceText(msg.text);
   const messageHtml = renderMarkdown(displayText);
+  const showProgressOnly = !isUser && msg.streaming && !displayText;
+  const proposal = !isUser && !msg.streaming ? normalizeProposal(msg.proposal, msg.uiActions) : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -330,21 +613,34 @@ const MessageBubble = ({ msg, onAddCourse, onOpenCourse }) => {
         maxWidth: '88%',
         padding: '10px 14px', borderRadius: 'var(--r-md)',
         background: isUser ? 'var(--accent)' : 'var(--surface)',
-        color: isUser ? '#fff' : (msg.streaming && !msg.text ? 'var(--text-secondary)' : 'var(--text)'),
+        color: isUser ? '#fff' : 'var(--text)',
         border: isUser ? 'none' : '1px solid var(--border)',
         fontSize: 13, lineHeight: 1.55,
       }}>
-        {isUser ? displayText : (
+        {isUser ? displayText : showProgressOnly ? (
+          <ProgressBlock progress={msg.progress} fallback={msg.status} />
+        ) : (
           <>
             <div className="chat-markdown" dangerouslySetInnerHTML={{ __html: messageHtml }} />
-            {msg.streaming && msg.status && msg.text && <ToolStatusRow text={msg.status} />}
+            {msg.streaming && msg.progress?.latestToolActivity && (
+              <ToolActivityCard activity={msg.progress.latestToolActivity} />
+            )}
+            {!msg.streaming && msg.traceSummary?.checked?.length > 0 && (
+              <TraceSummary traceSummary={msg.traceSummary} />
+            )}
           </>
         )}
       </div>
 
+      {proposal && (
+        <ProposalCard proposal={proposal} onApplyUiActions={onApplyUiActions} />
+      )}
+
       {suggestedCourses.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
           {suggestedCourses.map((c) => {
+            const courseId = String(c.id || '').toUpperCase();
+            const isAdded = scheduled.has(courseId) || locallyAdded.includes(courseId);
             return (
               <div key={c.id} style={{
                 display: 'flex', alignItems: 'center', gap: 8,
@@ -358,13 +654,22 @@ const MessageBubble = ({ msg, onAddCourse, onOpenCourse }) => {
                   <span style={{ color: 'var(--text-secondary)' }}>{c.name}</span>
                 </button>
                 <button
-                  onClick={() => onAddCourse(c.id)}
+                  onClick={() => {
+                    setLocallyAdded((current) => current.includes(courseId) ? current : [...current, courseId]);
+                    onAddCourse(c.id);
+                  }}
+                  disabled={isAdded}
                   style={{
                     padding: '3px 9px', borderRadius: 999,
-                    background: 'var(--accent)', color: '#fff', fontSize: 11, fontWeight: 500,
+                    background: isAdded ? 'var(--surface)' : 'var(--accent)',
+                    color: isAdded ? 'var(--text-tertiary)' : '#fff',
+                    border: isAdded ? '1px solid var(--border)' : '1px solid var(--accent)',
+                    fontSize: 11,
+                    fontWeight: 500,
+                    cursor: isAdded ? 'default' : 'pointer',
                   }}
                 >
-                  Add
+                  {isAdded ? 'Added' : 'Add'}
                 </button>
               </div>
             );

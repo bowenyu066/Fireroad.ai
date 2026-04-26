@@ -34,6 +34,7 @@ router.get('/catalog', asyncHandler(async (req, res) => {
   res.json({
     source: catalog.source,
     sourcePath: catalog.sourcePath,
+    demoMode: Boolean(catalog.demoMode),
     loadedAt: new Date(catalog.loadedAt).toISOString(),
     courses: catalog.courses.slice(0, maxResults),
     total: catalog.courses.length,

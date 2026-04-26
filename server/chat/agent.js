@@ -16,6 +16,235 @@ const { checkMajorRequirements } = require('../requirements');
 
 const MAX_TOOL_ROUNDS = 5;
 
+const TOOL_DISPLAY_NAMES = {
+  search_current_courses: 'Searching current MIT catalog',
+  search_courses: 'Searching current MIT catalog',
+  get_current_course: 'Looking up course details',
+  get_course: 'Looking up course details',
+  summarize_semester_plan: 'Checking current semester plan',
+  summarize_schedule: 'Checking current semester plan',
+  recommend_courses: 'Ranking course recommendations',
+  validate_ui_action: 'Validating proposed plan change',
+  get_course_history_summary: 'Checking historical offerings',
+  get_offering_history: 'Reading historical offering details',
+  check_requirements: 'Checking degree requirements',
+  check_schedule_conflicts: 'Checking schedule conflicts',
+};
+
+const TOOL_TRACE_LABELS = {
+  search_current_courses: 'current catalog',
+  search_courses: 'current catalog',
+  get_current_course: 'current catalog',
+  get_course: 'current catalog',
+  summarize_semester_plan: 'current semester plan',
+  summarize_schedule: 'current semester plan',
+  recommend_courses: 'course recommendations',
+  validate_ui_action: 'proposed plan change',
+  get_course_history_summary: 'historical offerings',
+  get_offering_history: 'historical offerings',
+  check_requirements: 'degree requirements',
+  check_schedule_conflicts: 'schedule conflicts',
+};
+
+function normalizeContentText(content) {
+  if (content === null || content === undefined) return '';
+  if (typeof content === 'string') return content;
+  if (typeof content === 'number' || typeof content === 'boolean') return String(content);
+  if (Array.isArray(content)) return content.map(normalizeContentText).join('');
+  if (typeof content === 'object') {
+    if (content.text !== undefined) return normalizeContentText(content.text);
+    if (content.content !== undefined) return normalizeContentText(content.content);
+    if (content.message !== undefined) return normalizeContentText(content.message);
+    if (content.label !== undefined) return normalizeContentText(content.label);
+    if (content.name !== undefined) return normalizeContentText(content.name);
+    if (content.title !== undefined) return normalizeContentText(content.title);
+  }
+  return '';
+}
+
+function textForPreview(value) {
+  const text = normalizeContentText(value);
+  if (text) return text;
+  if (value && typeof value === 'object') {
+    try {
+      return JSON.stringify(value);
+    } catch (error) {
+      return '';
+    }
+  }
+  return String(value === null || value === undefined ? '' : value);
+}
+
+function compactText(value, max = 160) {
+  const text = textForPreview(value).replace(/\s+/g, ' ').trim();
+  if (text.length <= max) return text;
+  return `${text.slice(0, Math.max(0, max - 3)).trim()}...`;
+}
+
+function displayNameForTool(toolName) {
+  return TOOL_DISPLAY_NAMES[toolName] || `Running ${toolName || 'tool'}`;
+}
+
+function traceLabelForTool(toolName) {
+  return TOOL_TRACE_LABELS[toolName] || 'course data';
+}
+
+function previewToolInput(toolName, args = {}) {
+  if (!args || typeof args !== 'object') return '';
+  if (args._parseError) return 'Invalid tool input';
+
+  if (toolName === 'search_current_courses' || toolName === 'search_courses') {
+    const parts = [];
+    if (args.query) parts.push(`query "${compactText(args.query, 60)}"`);
+    if (asArray(args.requirements || args.satisfies).length) parts.push(`requirements ${asArray(args.requirements || args.satisfies).slice(0, 4).join(', ')}`);
+    if (asArray(args.areas).length) parts.push(`areas ${asArray(args.areas).slice(0, 4).join(', ')}`);
+    if (args.max_workload) parts.push(`max ${args.max_workload}h/wk`);
+    return parts.join(' · ') || 'broad current catalog search';
+  }
+
+  if (toolName === 'get_current_course' || toolName === 'get_course') {
+    return compactText(args.course_id || args.courseId || 'course detail lookup', 80);
+  }
+
+  if (toolName === 'summarize_semester_plan' || toolName === 'summarize_schedule') {
+    const schedule = asArray(args.schedule);
+    return schedule.length ? `${schedule.length} courses: ${schedule.slice(0, 6).join(', ')}` : 'active semester plan';
+  }
+
+  if (toolName === 'recommend_courses') {
+    const requirements = asArray(args.target_requirements);
+    const parts = [];
+    if (requirements.length) parts.push(`targets ${requirements.slice(0, 5).join(', ')}`);
+    if (args.max_results) parts.push(`${args.max_results} results`);
+    return parts.join(' · ') || 'personalized ranking';
+  }
+
+  if (toolName === 'validate_ui_action') {
+    const action = args.action || {};
+    const courseId = action.courseId || action.course_id;
+    const removeCourseId = action.removeCourseId || action.remove_course_id;
+    return compactText([action.type, removeCourseId && `remove ${removeCourseId}`, courseId && `course ${courseId}`].filter(Boolean).join(' · ') || 'plan change', 120);
+  }
+
+  if (toolName === 'get_course_history_summary') {
+    return compactText(args.course_id || args.courseId || 'course history summary', 80);
+  }
+
+  if (toolName === 'get_offering_history') {
+    return compactText(args.offering_id || args.offeringId || 'offering history', 80);
+  }
+
+  if (toolName === 'check_requirements') {
+    const schedule = asArray(args.schedule);
+    return compactText([args.major, schedule.length ? `${schedule.length} active courses` : 'student profile'].filter(Boolean).join(' · '), 120);
+  }
+
+  if (toolName === 'check_schedule_conflicts') {
+    const ids = asArray(args.course_ids);
+    return ids.length ? `${ids.length} courses: ${ids.slice(0, 6).join(', ')}` : 'active semester plan';
+  }
+
+  return compactText(JSON.stringify(args), 140);
+}
+
+function summarizeToolResultForUi(toolName, result) {
+  if (!result || typeof result !== 'object') return compactText(result || 'Done', 160);
+  if (result.error) return `Error: ${compactText(result.error, 140)}`;
+
+  if (toolName === 'search_current_courses' || toolName === 'search_courses') {
+    const ids = asArray(result.results).map((course) => course && course.id).filter(Boolean);
+    return ids.length
+      ? `Found ${ids.length} courses: ${ids.slice(0, 6).join(', ')}${ids.length > 6 ? ', ...' : ''}`
+      : 'Found 0 courses';
+  }
+
+  if (toolName === 'get_current_course' || toolName === 'get_course') {
+    if (!result.found) return `Not found: ${compactText(result.reason || 'course unavailable', 120)}`;
+    const course = result.course || {};
+    return `Found ${course.id || 'course'}${course.name ? `: ${course.name}` : ''}`;
+  }
+
+  if (toolName === 'summarize_semester_plan' || toolName === 'summarize_schedule') {
+    return `${Number(result.courseCount) || asArray(result.courses).length} courses, ${Number(result.totalUnits) || 0} units, ${Number(result.estimatedWorkloadHours) || 0} estimated hours, ${asArray(result.conflicts).length} conflicts`;
+  }
+
+  if (toolName === 'recommend_courses') {
+    return `Ranked ${asArray(result.recommendations).length} recommendations`;
+  }
+
+  if (toolName === 'validate_ui_action') {
+    return result.ok ? 'Valid' : `Rejected: ${compactText(result.reason || 'invalid action', 140)}`;
+  }
+
+  if (toolName === 'get_course_history_summary') {
+    if (!result.found) return `Not found: ${compactText(result.reason || 'history unavailable', 120)}`;
+    const offerings = asArray(result.offerings).length;
+    const stats = result.stats || {};
+    const policyCount = Number(stats.attendancePolicyCount || 0) + Number(stats.gradingPolicyCount || 0);
+    return `Found ${offerings} historical offerings; ${policyCount} policy records`;
+  }
+
+  if (toolName === 'get_offering_history') {
+    if (!result.found) return `Not found: ${compactText(result.reason || 'offering unavailable', 120)}`;
+    const documents = asArray(result.documents).length;
+    const policies = [result.attendancePolicy, result.gradingPolicy].filter(Boolean).length;
+    return `Found ${documents} documents; ${policies} policy records`;
+  }
+
+  if (toolName === 'check_requirements') {
+    if (!result.found) return `Not found: ${compactText(result.reason || 'requirements unavailable', 120)}`;
+    const groups = asArray(result.groups);
+    const unmet = groups.filter((group) => !group.satisfied).length;
+    return `Checked ${result.satisfiedCount || 0}/${result.totalCount || groups.length} requirement groups; ${unmet} unmet`;
+  }
+
+  if (toolName === 'check_schedule_conflicts') {
+    return `${Number(result.conflictCount) || 0} conflicts`;
+  }
+
+  return compactText(JSON.stringify(summarizeToolResult(result)), 160);
+}
+
+function toolActivityFromExecution(toolCall, args, result, state = 'running') {
+  const toolName = toolCall.function && toolCall.function.name;
+  return {
+    toolCallId: toolCall.id,
+    toolName,
+    displayName: displayNameForTool(toolName),
+    inputPreview: previewToolInput(toolName, args),
+    resultSummary: result ? summarizeToolResultForUi(toolName, result) : '',
+    state,
+  };
+}
+
+function buildTraceSummary(toolExecutions = []) {
+  const checked = asArray(toolExecutions).map((entry) => ({
+    label: traceLabelForTool(entry.name),
+    toolName: entry.name,
+    displayName: displayNameForTool(entry.name),
+    inputPreview: previewToolInput(entry.name, entry.args),
+    resultSummary: summarizeToolResultForUi(entry.name, entry.result),
+  }));
+  return checked.length ? { checked } : null;
+}
+
+function publicDebug(debug = {}) {
+  return {
+    ...debug,
+    toolCalls: asArray(debug.toolCalls).map((entry) => ({
+      name: entry.name,
+      inputPreview: previewToolInput(entry.name, entry.args),
+      resultSummary: summarizeToolResultForUi(entry.name, entry.result),
+    })),
+    finalActionValidation: asArray(debug.finalActionValidation).map((entry) => ({
+      action: entry.action,
+      ok: Boolean(entry.validation && entry.validation.ok),
+      reason: entry.validation && entry.validation.reason,
+      courseId: entry.validation && entry.validation.course && entry.validation.course.id,
+    })),
+  };
+}
+
 function summarizeToolResult(result) {
   if (!result || typeof result !== 'object') return result;
   if (result.error) return { error: result.error };
@@ -53,7 +282,7 @@ function summarizeToolResult(result) {
 }
 
 function summarizeMessage(content) {
-  const text = String(content || '');
+  const text = normalizeContentText(content);
   return {
     length: text.length,
     preview: text.slice(0, 240),
@@ -81,7 +310,7 @@ function buildContext({ profile, personalization, personalCourseMarkdown, schedu
 
 function latestUserText(messages) {
   const last = [...asArray(messages)].reverse().find((message) => message && message.role === 'user');
-  return String(last && (last.text || last.content) ? last.text || last.content : '');
+  return normalizeContentText(last && (last.text ?? last.content));
 }
 
 function latestAssistantBeforeLastUser(messages) {
@@ -143,7 +372,7 @@ function buildModelMessages(messages, context) {
     .slice(-12)
     .map((message) => {
       const role = message.role === 'user' ? 'user' : 'assistant';
-      const content = String(message.text || message.content || '').trim();
+      const content = normalizeContentText(message.text ?? message.content).trim();
       return content ? { role, content } : null;
     })
     .filter(Boolean);
@@ -233,35 +462,6 @@ async function executeToolCall(toolCall, context) {
   }
 }
 
-function parseFinalJson(content) {
-  const text = Array.isArray(content)
-    ? content.map((part) => (typeof part === 'string' ? part : part.text || '')).join('')
-    : String(content || '');
-  const trimmed = text.trim();
-  if (!trimmed) return { parsed: null, raw: '' };
-
-  const candidates = [
-    trimmed,
-    trimmed.replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim(),
-  ];
-
-  const firstBrace = trimmed.indexOf('{');
-  const lastBrace = trimmed.lastIndexOf('}');
-  if (firstBrace >= 0 && lastBrace > firstBrace) {
-    candidates.push(trimmed.slice(firstBrace, lastBrace + 1));
-  }
-
-  for (const candidate of candidates) {
-    try {
-      return { parsed: JSON.parse(candidate), raw: text };
-    } catch (error) {
-      // Try the next candidate.
-    }
-  }
-
-  return { parsed: null, raw: text };
-}
-
 function isAffirmativeScheduleConfirmation(text, messages) {
   const lower = String(text || '').trim().toLowerCase();
   if (!/^(y|yes|yeah|yep|sure|ok|okay|please|please do|do it|go ahead|sounds good|add it)[.! ]*$/.test(lower)) {
@@ -271,7 +471,7 @@ function isAffirmativeScheduleConfirmation(text, messages) {
   const previousAgent = latestAssistantBeforeLastUser(messages);
   if (!previousAgent || !asArray(previousAgent.suggestions).length) return false;
 
-  const agentText = String(previousAgent.text || previousAgent.content || '').toLowerCase();
+  const agentText = normalizeContentText(previousAgent.text ?? previousAgent.content).toLowerCase();
   return /\b(add|want me to add|put|include)\b/.test(agentText);
 }
 
@@ -354,32 +554,72 @@ async function validateFinalActions(actions, context, debug, allowActions) {
   return validated;
 }
 
-async function buildApiResponse(content, context, debug, requestMessages) {
+async function describeUiAction(action) {
+  const course = action.courseId ? await resolveCurrentCourseSummary(action.courseId) : null;
+  const courseLabel = `${action.courseId || 'course'}${course && course.name ? ` (${course.name})` : ''}`;
+
+  if (action.type === 'remove_course') {
+    return `Remove ${courseLabel}`;
+  }
+
+  if (action.type === 'replace_course') {
+    const removed = action.removeCourseId ? await resolveCurrentCourseSummary(action.removeCourseId) : null;
+    const removedLabel = `${action.removeCourseId || 'course'}${removed && removed.name ? ` (${removed.name})` : ''}`;
+    return `Replace ${removedLabel} with ${courseLabel}`;
+  }
+
+  return `Add ${courseLabel}`;
+}
+
+async function buildProposalFromActions(actions, context, options = {}) {
+  const validActions = asArray(actions);
+  if (!validActions.length) return null;
+  const actionItems = await Promise.all(validActions.map(describeUiAction));
+  const termLabel = context.planningTermLabel || context.activeSem || 'the active semester';
+  const assumptions = [
+    `Applies only to ${termLabel}.`,
+    'Catalog availability was validated for this proposal.',
+    ...(asArray(options.assumptions)),
+  ];
+  const warnings = [
+    ...(asArray(options.warnings)),
+  ];
+
+  return {
+    type: 'ui_actions',
+    title: 'Proposed changes',
+    actions: validActions,
+    actionItems,
+    assumptions,
+    warnings,
+    source: options.source || 'validated_active_semester_request',
+  };
+}
+
+async function buildApiResponse(content, context, debug, requestMessages, options = {}) {
   const log = context.log || (() => {});
-  const { parsed, raw } = parseFinalJson(content);
+  const raw = normalizeContentText(content);
   log('final:raw', {
-    parsed: Boolean(parsed),
+    mode: 'markdown',
     ...summarizeMessage(raw),
   });
-  const final = parsed && typeof parsed === 'object'
-    ? {
-        ...(parsed.message && typeof parsed.message === 'object' ? parsed.message : parsed),
-        uiActions: parsed.uiActions || (parsed.message && parsed.message.uiActions),
-      }
-    : { text: raw };
   const latestText = latestUserText(requestMessages);
   const allowActions = explicitScheduleChangeRequested(latestText, requestMessages);
-  let uiActions = await validateFinalActions(final.uiActions, context, debug, allowActions);
-  if (allowActions && uiActions.length === 0) {
+  let uiActions = [];
+  if (allowActions) {
     const fallbackActions = await extractRequestedUiActions(latestText, context.schedule, requestMessages);
     debug.fallbackActionExtraction = fallbackActions;
     uiActions = await validateFinalActions(fallbackActions, context, debug, true);
   }
-  const text = String(final.text || raw || 'I found a grounded answer from the course data, but could not format it cleanly.').trim();
+  const text = (raw || 'I found a grounded answer from the course data, but could not format it cleanly.').trim();
+  const suggestions = await sanitizeSuggestions(extractCourseIdsFromText(text));
+  const traceSummary = options.traceSummary || buildTraceSummary(debug.toolCalls);
+  const proposal = options.proposal || await buildProposalFromActions(uiActions, context);
   log('final:validated', {
     allowActions,
-    suggestions: final.suggestions || [],
+    suggestions,
     uiActions,
+    proposal: Boolean(proposal),
     validation: debug.finalActionValidation.map((entry) => ({
       action: entry.action,
       ok: entry.validation && entry.validation.ok,
@@ -392,64 +632,14 @@ async function buildApiResponse(content, context, debug, requestMessages) {
     message: {
       role: 'agent',
       text,
-      suggestions: await sanitizeSuggestions(final.suggestions),
+      suggestions,
+      traceSummary,
+      proposal,
     },
     uiActions,
-    debug,
-  };
-}
-
-function createJsonTextFieldStreamer(onTextDelta = () => {}) {
-  let raw = '';
-  let position = 0;
-  let textStarted = false;
-  let textDone = false;
-
-  const decodeEscape = (text, index) => {
-    const next = text[index + 1];
-    if (!next) return null;
-    if (next === 'n') return { value: '\n', length: 2 };
-    if (next === 'r') return { value: '\r', length: 2 };
-    if (next === 't') return { value: '\t', length: 2 };
-    if (next === '"' || next === '\\' || next === '/') return { value: next, length: 2 };
-    if (next === 'u') {
-      const hex = text.slice(index + 2, index + 6);
-      if (hex.length < 4) return null;
-      return { value: String.fromCharCode(parseInt(hex, 16)), length: 6 };
-    }
-    return { value: next, length: 2 };
-  };
-
-  return {
-    feed(chunk) {
-      if (textDone || !chunk) return;
-      raw += chunk;
-      if (!textStarted) {
-        const match = raw.match(/"text"\s*:\s*"/);
-        if (!match) return;
-        textStarted = true;
-        position = match.index + match[0].length;
-      }
-
-      let emitted = '';
-      while (position < raw.length) {
-        const char = raw[position];
-        if (char === '"') {
-          textDone = true;
-          break;
-        }
-        if (char === '\\') {
-          const decoded = decodeEscape(raw, position);
-          if (!decoded) break;
-          emitted += decoded.value;
-          position += decoded.length;
-          continue;
-        }
-        emitted += char;
-        position += 1;
-      }
-      if (emitted) onTextDelta(emitted);
-    },
+    proposal,
+    traceSummary,
+    debug: publicDebug(debug),
   };
 }
 
@@ -481,15 +671,21 @@ async function buildLocalActionFallback(body = {}, reason) {
     const verb = action.type === 'add_course' ? 'add' : action.type === 'remove_course' ? 'remove' : 'replace with';
     return `${verb} ${action.courseId}${course ? ` (${course.name})` : ''}`;
   }));
+  const proposal = await buildProposalFromActions(uiActions, context, {
+    source: 'local_fallback_validated_action',
+    warnings: ['The model did not answer; this proposal was validated locally from your explicit request.'],
+  });
 
   return {
     message: {
       role: 'agent',
-      text: `The model is unavailable, but I validated this active-semester schedule change locally: ${descriptions.join(', ')}.`,
+      text: `The model is unavailable, but I validated this active-semester proposal locally: ${descriptions.join(', ')}.`,
       suggestions: [],
+      proposal,
     },
     uiActions,
-    debug,
+    proposal,
+    debug: publicDebug(debug),
   };
 }
 
@@ -504,7 +700,7 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
 
   const modelMessages = buildModelMessages(messages, context);
   context.log('agent:start', {
-    mode: 'json',
+    mode: 'markdown',
     activeSem: context.activeSem,
     planningTermLabel: context.planningTermLabel,
     schedule: context.schedule,
@@ -515,7 +711,7 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
   });
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
-    context.log('model:request', { mode: 'json', round, messages: modelMessages.length, tools: toolSchemas.length });
+    context.log('model:request', { mode: 'markdown', round, messages: modelMessages.length, tools: toolSchemas.length });
     const completion = await callOpenRouter({
       messages: modelMessages,
       tools: toolSchemas,
@@ -531,9 +727,9 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
 
     const toolCalls = responseMessage.tool_calls || [];
     context.log('model:response', {
-      mode: 'json',
+      mode: 'markdown',
       round,
-      contentLength: String(responseMessage.content || '').length,
+      contentLength: normalizeContentText(responseMessage.content).length,
       toolCalls: toolCalls.map((call) => ({
         id: call.id,
         name: call.function && call.function.name,
@@ -541,12 +737,12 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
       })),
     });
     if (!toolCalls.length) {
-      return buildApiResponse(responseMessage.content, context, debug, messages);
+      return buildApiResponse(normalizeContentText(responseMessage.content), context, debug, messages);
     }
 
     modelMessages.push({
       role: 'assistant',
-      content: responseMessage.content || '',
+      content: normalizeContentText(responseMessage.content),
       tool_calls: toolCalls,
     });
 
@@ -563,7 +759,7 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
 
   modelMessages.push({
     role: 'system',
-    content: 'The tool round limit was reached. Return the final answer now as only the required JSON object.',
+    content: 'The tool round limit was reached. Return the final answer now as concise Markdown text. Do not output JSON.',
   });
 
   const completion = await callOpenRouter({
@@ -573,7 +769,7 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
   });
   const responseMessage = completion.choices && completion.choices[0] && completion.choices[0].message;
   if (!responseMessage) throw new Error('OpenRouter returned no final assistant message.');
-  return buildApiResponse(responseMessage.content, context, debug, messages);
+  return buildApiResponse(normalizeContentText(responseMessage.content), context, debug, messages);
 }
 
 async function runAgentChatStream(body = {}, onEvent = () => {}) {
@@ -601,7 +797,7 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
   emit({ type: 'status', text: 'Thinking...' });
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
-    const textStreamer = createJsonTextFieldStreamer((text) => emit({ type: 'delta', text }));
+    let streamedContent = '';
     context.log('model:request', { mode: 'stream', round, messages: modelMessages.length, tools: toolSchemas.length });
     const completion = await callOpenRouterStream({
       messages: modelMessages,
@@ -610,7 +806,9 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
       parallel_tool_calls: false,
       temperature: 0.2,
       max_tokens: 1000,
-    }, (chunk) => textStreamer.feed(chunk));
+    }, (chunk) => {
+      streamedContent += chunk || '';
+    });
 
     const choice = completion.choices && completion.choices[0];
     const responseMessage = choice && choice.message;
@@ -620,7 +818,7 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
     context.log('model:response', {
       mode: 'stream',
       round,
-      contentLength: String(responseMessage.content || '').length,
+      contentLength: normalizeContentText(responseMessage.content).length,
       toolCalls: toolCalls.map((call) => ({
         id: call.id,
         name: call.function && call.function.name,
@@ -628,32 +826,33 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
       })),
     });
     if (!toolCalls.length) {
-      return buildApiResponse(responseMessage.content, context, debug, messages);
+      const finalText = normalizeContentText(responseMessage.content) || streamedContent;
+      if (finalText) emit({ type: 'final_text_delta', text: finalText });
+      return buildApiResponse(finalText, context, debug, messages);
     }
 
-    const TOOL_STATUS_LABELS = {
-      check_requirements: 'Checking requirements...',
-      recommend_courses: 'Finding recommendations...',
-      search_current_courses: 'Searching catalog...',
-      get_current_course: 'Looking up course...',
-      summarize_semester_plan: 'Summarizing plan...',
-      check_schedule_conflicts: 'Checking schedule conflicts...',
-      validate_ui_action: 'Validating action...',
-      get_course_history_summary: 'Fetching course history...',
-      get_offering_history: 'Fetching offering details...',
-    };
-
+    const interimText = compactText(responseMessage.content || streamedContent, 500);
+    if (interimText) emit({ type: 'progress_text', text: interimText });
+    emit({ type: 'status', text: 'Checking course data...' });
     modelMessages.push({
       role: 'assistant',
-      content: responseMessage.content || '',
+      content: normalizeContentText(responseMessage.content),
       tool_calls: toolCalls,
     });
 
     for (const toolCall of toolCalls) {
       const toolName = toolCall.function && toolCall.function.name;
-      emit({ type: 'status', text: TOOL_STATUS_LABELS[toolName] || `Running ${toolName}...` });
+      const args = parseToolArguments(toolCall.function && toolCall.function.arguments);
+      emit({ type: 'status', text: displayNameForTool(toolName) });
+      const startActivity = toolActivityFromExecution(toolCall, args, null, 'running');
+      emit({ type: 'tool_activity_start', ...startActivity });
       const executed = await executeToolCall(toolCall, context);
       debug.toolCalls.push(executed);
+      const resultActivity = toolActivityFromExecution(toolCall, executed.args, executed.result, executed.result && executed.result.error ? 'error' : 'done');
+      emit({
+        type: resultActivity.state === 'error' ? 'tool_activity_error' : 'tool_activity_result',
+        ...resultActivity,
+      });
       modelMessages.push({
         role: 'tool',
         tool_call_id: toolCall.id,
@@ -665,18 +864,22 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
 
   modelMessages.push({
     role: 'system',
-    content: 'The tool round limit was reached. Return the final answer now as only the required JSON object.',
+    content: 'The tool round limit was reached. Return the final answer now as concise Markdown text. Do not output JSON.',
   });
 
-  const textStreamer = createJsonTextFieldStreamer((text) => emit({ type: 'delta', text }));
+  let finalStreamedContent = '';
   const completion = await callOpenRouterStream({
     messages: modelMessages,
     temperature: 0.2,
     max_tokens: 700,
-  }, (chunk) => textStreamer.feed(chunk));
+  }, (chunk) => {
+    finalStreamedContent += chunk || '';
+  });
   const responseMessage = completion.choices && completion.choices[0] && completion.choices[0].message;
   if (!responseMessage) throw new Error('OpenRouter returned no final assistant message.');
-  return buildApiResponse(responseMessage.content, context, debug, messages);
+  const finalText = normalizeContentText(responseMessage.content) || finalStreamedContent;
+  if (finalText) emit({ type: 'final_text_delta', text: finalText });
+  return buildApiResponse(finalText, context, debug, messages);
 }
 
 module.exports = {

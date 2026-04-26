@@ -324,28 +324,14 @@ const PastOfferingsView = ({ historyState }) => {
     );
   }
 
-  const { course, summary = {}, offerings = [] } = historyState.payload || {};
+  const { course, offerings = [] } = historyState.payload || {};
   return (
     <div style={{ maxWidth: 1120, margin: '0 auto', padding: '34px 32px 56px' }}>
-      <SectionBlock eyebrow="Course-level history" title={`${course?.id || 'Course'} past offerings`}>
-        <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.65, maxWidth: 820 }}>
-          {summary.topSummaryText || 'No course-level history summary is available yet.'}
-        </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', gap: 10, marginTop: 20 }}>
-          <Stat label="Offerings" value={summary.offeringCount} />
-          <Stat label="Homepages" value={summary.homepageCount} />
-          <Stat label="Syllabi" value={summary.syllabusCount} />
-          <Stat label="Archives" value={summary.archiveCount} />
-          <Stat label="Attendance" value={summary.attendancePolicyCount} />
-          <Stat label="Grading" value={summary.gradingPolicyCount} />
-        </div>
-      </SectionBlock>
-
-      <SectionBlock eyebrow="Offering-first history" title="Terms and teaching context">
+      <SectionBlock eyebrow="Past offerings" title={`${course?.id || 'Course'} teaching history`}>
         {!offerings.length ? (
           <EmptyBox>No past offerings have been seeded for this course yet.</EmptyBox>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {offerings.map((offering) => <OfferingCard key={offering.id} offering={offering} />)}
           </div>
         )}
@@ -366,135 +352,58 @@ const OfferingPreview = ({ offering }) => (
       <SourceBadgeRow sourceTypes={offering.sourceTypes} />
     </div>
     <p style={{ margin: '10px 0 0', color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.55 }}>
-      {offering.offeringSummaryText || 'No offering summary available yet.'}
+      {offeringDescription(offering)}
     </p>
   </div>
 );
 
 const OfferingCard = ({ offering }) => {
-  const [expanded, setExpanded] = useState(false);
-  const [detail, setDetail] = useState({ loading: false, payload: null, error: '' });
-
-  useEffect(() => {
-    if (!expanded || detail.payload || detail.loading) return undefined;
-    let cancelled = false;
-    setDetail({ loading: true, payload: null, error: '' });
-    fetch(`/api/history/offering/${encodeURIComponent(offering.id)}`)
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error(`Offering detail unavailable (${response.status})`)))
-      .then((payload) => {
-        if (!cancelled) setDetail({ loading: false, payload, error: '' });
-      })
-      .catch((error) => {
-        if (!cancelled) setDetail({ loading: false, payload: null, error: error.message });
-      });
-    return () => { cancelled = true; };
-  }, [expanded, offering.id]);
+  const details = offeringDetailsForDisplay(offering);
+  const linkItems = sourceLinksForOffering(offering);
 
   return (
-    <div style={{
+    <article style={{
+      display: 'grid',
+      gridTemplateColumns: '150px minmax(0, 1fr)',
+      gap: 18,
       background: 'var(--surface)',
       border: '1px solid var(--border)',
-      borderRadius: 12,
-      padding: 18,
-      boxShadow: expanded ? '0 18px 42px rgba(15, 23, 42, 0.06)' : 'none',
+      borderRadius: 10,
+      padding: '18px 20px',
     }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 18 }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <div className="mono" style={{ fontSize: 16, fontWeight: 700 }}>{termLabel(offering.term)}</div>
-            <SourceBadge>{offering.sourceCount || 0} sources</SourceBadge>
-            <SourceBadge>{offering.hasAttendancePolicy ? 'attendance extracted' : 'attendance unknown'}</SourceBadge>
-            <SourceBadge>{offering.hasGradingPolicy ? 'grading extracted' : 'grading unknown'}</SourceBadge>
-          </div>
-          <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 7 }}>
-            {offering.instructorText || 'Instructor unknown'} · {offering.titleSnapshot || offering.courseId}
-          </div>
+      <div>
+        <div className="mono" style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>
+          {termLabel(offering.term)}
         </div>
-        <SourceBadgeRow sourceTypes={offering.sourceTypes} />
       </div>
 
-      <p style={{ margin: '14px 0 0', color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.6 }}>
-        {offering.offeringSummaryText || 'No offering-level summary available yet.'}
-      </p>
-      {offering.notes && (
-        <p style={{ margin: '8px 0 0', color: 'var(--text-tertiary)', fontSize: 12, lineHeight: 1.5 }}>
-          {offering.notes}
-        </p>
-      )}
+      <div style={{ minWidth: 0 }}>
+        <div style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.45 }}>
+          {offering.instructorText || 'Instructor unknown'}
+          {offering.titleSnapshot ? ` · ${offering.titleSnapshot}` : ''}
+        </div>
 
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 14 }}>
-        {offering.homepageUrl && <HistoryLink href={offering.homepageUrl}>Homepage</HistoryLink>}
-        {offering.syllabusUrl && <HistoryLink href={offering.syllabusUrl}>Syllabus</HistoryLink>}
-        {offering.ocwUrl && <HistoryLink href={offering.ocwUrl}>OCW</HistoryLink>}
-        <button
-          type="button"
-          className="btn btn-ghost"
-          onClick={() => setExpanded((value) => !value)}
-          style={{ marginLeft: 'auto', padding: '7px 11px', fontSize: 12 }}
-        >
-          {expanded ? 'Collapse details' : 'Expand offering'}
-        </button>
-      </div>
+        <OfferingDetailRows details={details} />
 
-      {expanded && <OfferingDetailPanel state={detail} />}
-    </div>
-  );
-};
-
-const OfferingDetailPanel = ({ state }) => {
-  if (state.loading) return <div style={{ marginTop: 14, color: 'var(--text-secondary)', fontSize: 12 }}>Loading source details...</div>;
-  if (state.error) return <div style={{ marginTop: 14, color: 'var(--warning)', fontSize: 12 }}>{state.error}</div>;
-  if (!state.payload) return null;
-
-  const { sources = [], attendancePolicy, gradingPolicy } = state.payload;
-  return (
-    <div style={{ marginTop: 18, borderTop: '1px solid var(--border)', paddingTop: 18 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
-        <PolicyBlock
-          title="Attendance"
-          primary={attendancePolicy ? `Required: ${attendancePolicy.attendanceRequired || 'unknown'}` : 'No extracted attendance policy yet'}
-          secondary={attendancePolicy?.attendanceNotes || attendancePolicy?.attendanceCountsTowardGrade || ''}
-          evidence={attendancePolicy?.evidenceText}
-          confidence={attendancePolicy?.confidence}
-          reviewStatus={attendancePolicy?.reviewStatus}
-        />
-        <PolicyBlock
-          title="Grading"
-          primary={gradingPolicy ? gradingText(gradingPolicy) : 'No extracted grading policy yet'}
-          secondary={gradingPolicy?.gradingNotes || gradingPolicy?.latePolicyText || gradingPolicy?.collaborationPolicyText || ''}
-          evidence={gradingPolicy?.evidenceText}
-          confidence={gradingPolicy?.confidence}
-          reviewStatus={gradingPolicy?.reviewStatus}
-        />
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {sources.length ? sources.map((source) => <SourceCard key={source.id} source={source} />) : (
-          <Muted>No source documents fetched for this offering yet.</Muted>
+        {linkItems.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 14 }}>
+            {linkItems.slice(0, 3).map((item, index) => (
+              <HistoryLink key={`${item.href}-${index}`} href={item.href}>{item.label}</HistoryLink>
+            ))}
+          </div>
         )}
       </div>
-    </div>
+    </article>
   );
 };
 
-const SourceCard = ({ source }) => (
-  <div style={{ border: '1px solid var(--border)', borderRadius: 10, padding: 13, background: 'var(--bg)' }}>
-    <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 9 }}>
-      <SourceBadge>{sourceLabel(source.docType)}</SourceBadge>
-      {source.url && <HistoryLink href={source.url}>Open source</HistoryLink>}
-      {source.archivedUrl && <HistoryLink href={source.archivedUrl}>Archive</HistoryLink>}
-      <span className="mono" style={{ color: 'var(--text-tertiary)', fontSize: 11, marginLeft: 'auto' }}>
-        {source.contentType || 'unknown type'}
-      </span>
-    </div>
-    <div style={{ color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.5 }}>
-      {source.sourceSummaryText || 'Source captured.'}
-    </div>
-    {source.evidencePreview && (
-      <div style={{ color: 'var(--text-tertiary)', fontSize: 12, lineHeight: 1.55, marginTop: 9, borderLeft: '2px solid var(--border-strong)', paddingLeft: 10 }}>
-        {source.evidencePreview}
-      </div>
-    )}
+const OfferingDetailRows = ({ details }) => (
+  <div style={{ marginTop: 14, maxWidth: 900 }}>
+    {details.map((detail, index) => (
+      <p key={detail.label} style={{ margin: index ? '8px 0 0' : 0, color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.5 }}>
+        <strong style={{ color: 'var(--text)' }}>{detail.label}:</strong> {detail.text}
+      </p>
+    ))}
   </div>
 );
 
@@ -539,25 +448,6 @@ const SideRow = ({ k, v }) => (
   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, padding: '8px 0', borderTop: '1px solid var(--border)', fontSize: 13 }}>
     <span style={{ color: 'var(--text-secondary)' }}>{k}</span>
     <span className="mono" style={{ color: 'var(--text)', textAlign: 'right' }}>{v}</span>
-  </div>
-);
-
-const Stat = ({ label, value }) => (
-  <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: 13 }}>
-    <div className="mono" style={{ fontSize: 22, color: 'var(--text)' }}>{value || 0}</div>
-    <div className="eyebrow" style={{ marginTop: 6 }}>{label}</div>
-  </div>
-);
-
-const PolicyBlock = ({ title, primary, secondary, evidence, confidence, reviewStatus }) => (
-  <div style={{ border: '1px solid var(--border)', borderRadius: 10, padding: 13, background: 'var(--bg)' }}>
-    <div className="eyebrow" style={{ marginBottom: 8 }}>{title}</div>
-    <div style={{ fontSize: 13 }}>{primary}</div>
-    {secondary && <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: 6 }}>{secondary}</div>}
-    {evidence && <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: 8, borderLeft: '2px solid var(--border-strong)', paddingLeft: 10 }}>{evidence}</div>}
-    <div className="mono" style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 8 }}>
-      {confidence != null ? `confidence ${confidence}` : 'confidence unknown'} · {reviewStatus || 'unreviewed'}
-    </div>
   </div>
 );
 
@@ -687,6 +577,7 @@ function areaLabel(area) {
 
 function termLabel(term) {
   const raw = String(term || '').toUpperCase();
+  if (raw === 'UNKNOWN') return 'Term unknown';
   const match = raw.match(/^(\d{4})(FA|SP|SU|IAP)$/);
   if (!match) return term || 'Unknown term';
   const names = { FA: 'Fall', SP: 'Spring', SU: 'Summer', IAP: 'IAP' };
@@ -727,11 +618,205 @@ function policyTrend(summary, offerings, kind) {
   return 'Evidence available';
 }
 
-function gradingText(grading) {
-  if (!grading) return 'Unknown';
-  if (grading.hasParticipationComponent) return `Participation: ${grading.hasParticipationComponent}`;
-  if (grading.letterGrade) return `Letter grade: ${grading.letterGrade}`;
-  return 'Grading policy found';
+function sourceLinksForOffering(offering) {
+  const fromApi = (offering.sourceLinks || []).map((link) => ({
+    href: link.url || link.href || link.archivedUrl,
+    label: link.label || link.name || link.title || sourceLabel(link.docType || link.type),
+    docType: link.docType || link.type || 'source',
+  }));
+  const fallback = [
+    offering.homepageUrl && { href: offering.homepageUrl, label: 'Homepage', docType: 'homepage' },
+    offering.syllabusUrl && { href: offering.syllabusUrl, label: 'Syllabus', docType: 'syllabus' },
+    offering.ocwUrl && { href: offering.ocwUrl, label: 'OCW', docType: 'ocw' },
+  ].filter(Boolean);
+
+  const seen = new Set();
+  return [...fromApi, ...fallback].filter((item) => {
+    const key = String(item.href || '').trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function offeringDescription(offering) {
+  return compactCourseFormat(offering);
+}
+
+function offeringDetailsForDisplay(offering) {
+  const attendance = compactAttendance(offering);
+  const grading = compactGrading(offering);
+  return [
+    { label: 'Course Format', text: compactCourseFormat(offering) },
+    attendance && { label: 'Attendance', text: attendance },
+    grading && { label: 'Grading', text: grading },
+  ].filter(Boolean);
+}
+
+function compactCourseFormat(offering) {
+  const courseFormat = extractMarkdownField(offering.offeringMarkdownText || offering.notes, 'Course Format');
+  const gradingText = [
+    offering.gradingPolicySummary?.summaryText,
+    extractMarkdownField(offering.offeringMarkdownText || offering.notes, 'Grading Policy'),
+  ].filter(Boolean).join(' ');
+  const text = `${courseFormat} ${offering.offeringSummaryText || ''} ${gradingText}`.toLowerCase();
+  const parts = [];
+
+  const meetings = [];
+  if (/\blectures?\b/.test(text)) meetings.push('lectures');
+  if (/\brecitations?\b|\btutorials?\b/.test(text)) meetings.push('recitations/tutorials');
+  if (/\blabs?\b|laborator/.test(text)) meetings.push('labs');
+  if (meetings.length) parts.push(meetings.join(' + '));
+
+  const work = [];
+  if (/\bhome\s?works?\b|\bproblem sets?\b|\bpsets?\b/.test(text)) work.push('homework');
+  if (/\bprogramming projects?\b/.test(text)) work.push('programming projects');
+  else if (/\bprojects?\b/.test(text)) work.push('projects');
+  if (/\bassignments?\b/.test(text) && !work.length) work.push('assignments');
+  if (/\bin-class problems?\b/.test(text)) work.push(text.includes('not graded') ? 'ungraded in-class problems' : 'in-class problems');
+  if (work.length) parts.push(work.join(' + '));
+
+  const exams = [];
+  if (/\bmidterm\b/.test(text)) exams.push('midterm');
+  if (/\bfinal\b/.test(text)) exams.push('final');
+  if (!exams.length && /\bexams?\b|\bquizzes?\b/.test(text)) exams.push('exams/quizzes');
+  if (exams.length) parts.push(`${exams.join(' + ')} exams`);
+
+  return parts.length ? sentenceCase(parts.join('; ')) : 'Format not specified in available source.';
+}
+
+function compactAttendance(offering) {
+  const summary = offering.attendancePolicySummary || {};
+  const markdownText = extractMarkdownField(offering.offeringMarkdownText || offering.notes, 'Attendance Policy');
+  const text = summary.summaryText || markdownText;
+  const lower = String(text || '').toLowerCase();
+  if (!text || /not specified|not extracted|unavailable|requirement unknown/.test(lower)) {
+    if (/not graded/.test(lower)) return 'In-class work not graded.';
+    return '';
+  }
+  return trimSentence(text.replace(/^attendance:\s*/i, ''), 150);
+}
+
+function compactGrading(offering) {
+  const summary = offering.gradingPolicySummary || {};
+  const weights = summary.weights || {};
+  const pieces = [];
+  const numberValue = (value) => Number.isFinite(Number(value)) ? Number(value) : null;
+  const percent = (value) => {
+    const numeric = numberValue(value);
+    if (numeric === null) return '';
+    return `${numeric > 0 && numeric <= 1 ? Math.round(numeric * 100) : Math.round(numeric)}%`;
+  };
+
+  const midterm = numberValue(weights.midterm);
+  const final = numberValue(weights.final);
+  if (midterm !== null || final !== null) {
+    const total = [midterm, final].filter((value) => value !== null).reduce((sum, value) => sum + value, 0);
+    const bits = [
+      midterm !== null ? `midterm ${percent(midterm)}` : null,
+      final !== null ? `final ${percent(final)}` : null,
+    ].filter(Boolean).join(', ');
+    pieces.push(`exams ${percent(total)}${bits ? ` (${bits})` : ''}`);
+  }
+
+  const homework = numberValue(weights.homework);
+  if (homework !== null) pieces.push(`homework ${percent(homework)}`);
+
+  const project = numberValue(weights.project);
+  if (project !== null) pieces.push(`projects ${percent(project)}`);
+
+  const lab = numberValue(weights.lab);
+  if (lab !== null) pieces.push(`labs ${percent(lab)}`);
+
+  const quiz = numberValue(weights.quiz);
+  if (quiz !== null) pieces.push(`quizzes ${percent(quiz)}`);
+
+  const raw = [
+    summary.summaryText,
+    extractMarkdownField(offering.offeringMarkdownText || offering.notes, 'Grading Policy'),
+  ].filter(Boolean).join(' ');
+  const noLatePattern = /late .*not\s+(?:be\s+)?accepted|not\s+(?:be\s+)?accepted.*late/i;
+  if (noLatePattern.test(raw)) pieces.push('no late assignments');
+
+  if (pieces.length) return sentenceCase(pieces.join('; '));
+
+  const parsedPieces = compactGradingFromText(raw);
+  if (parsedPieces.length) return sentenceCase(parsedPieces.join('; '));
+
+  const cleaned = String(raw || '')
+    .replace(/^grading:\s*/i, '')
+    .replace(/^grading policy:\s*/i, '')
+    .replace(/not specified in the available source\.?/i, '')
+    .trim();
+  return cleaned ? trimSentence(cleaned, 180) : '';
+}
+
+function compactGradingFromText(raw) {
+  const text = String(raw || '').replace(/\s+/g, ' ').trim();
+  if (!text) return [];
+  const pieces = [];
+  const percent = (value) => value ? `${Number(value)}%` : '';
+  const firstMatch = (patterns) => {
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) return match.slice(1).find(Boolean);
+    }
+    return '';
+  };
+
+  const examTotal = firstMatch([
+    /\bexams?(?:\s+\w+){0,3}\s+(\d+)%/i,
+    /(\d+)%\s+(?:of\s+the\s+grade\s+)?(?:for\s+)?exams?/i,
+  ]);
+  const midterm = firstMatch([/\bmidterm(?:\s+exam)?\s+(\d+)%/i]);
+  const final = firstMatch([/\bfinal(?:\s+exam)?\s+(\d+)%/i]);
+  if (examTotal || midterm || final) {
+    const bits = [
+      midterm ? `midterm ${percent(midterm)}` : null,
+      final ? `final ${percent(final)}` : null,
+    ].filter(Boolean).join(', ');
+    pieces.push(`exams ${percent(examTotal)}${bits ? ` (${bits})` : ''}`.replace(/\s+\(/, ' (').trim());
+  }
+
+  const homework = firstMatch([
+    /\bhomeworks?\s*=\s*(\d+)%/i,
+    /\bhomeworks?(?:\s+\w+){0,4}\s+(\d+)%/i,
+    /\bhomework\s+sets?(?:\s+\w+){0,4}\s+(\d+)%/i,
+    /(\d+)%\s+(?:combined\s+)?(?:for\s+)?(?:homeworks?|homework sets?)/i,
+  ]);
+  if (homework) pieces.push(`homework ${percent(homework)}`);
+
+  const projects = firstMatch([
+    /\bprojects?\s*=\s*(\d+)%/i,
+    /\bprojects?(?:\s+\w+){0,4}\s+(\d+)%/i,
+    /\b(?:three|3)\s+(?:programming\s+)?projects?\s+each\s+worth\s+(\d+)%/i,
+  ]);
+  if (projects) {
+    const eachProject = /each\s+worth/i.test(text) ? Number(projects) * 3 : Number(projects);
+    pieces.push(`projects ${percent(eachProject)}`);
+  }
+
+  if (/late .*not\s+(?:be\s+)?accepted|not\s+(?:be\s+)?accepted.*late/i.test(text)) pieces.push('no late assignments');
+  return pieces;
+}
+
+function sentenceCase(text) {
+  const value = String(text || '').trim();
+  return value ? value.charAt(0).toUpperCase() + value.slice(1) + (/[.!?]$/.test(value) ? '' : '.') : '';
+}
+
+function trimSentence(text, maxLength = 160) {
+  const value = String(text || '').replace(/\s+/g, ' ').trim();
+  if (value.length <= maxLength) return value;
+  return `${value.slice(0, maxLength - 3).trim()}...`;
+}
+
+function extractMarkdownField(markdown, label) {
+  const text = String(markdown || '');
+  if (!text.includes(`**${label}:**`)) return '';
+  const pattern = new RegExp(`\\*\\*${label}:\\*\\*\\s*([\\s\\S]*?)(?=\\n\\n\\*\\*|$)`, 'i');
+  const match = text.match(pattern);
+  return match ? match[1].replace(/\s+/g, ' ').trim() : '';
 }
 
 function sourceLabel(type) {
@@ -741,6 +826,7 @@ function sourceLabel(type) {
     catalog: 'Catalog',
     homepage: 'Homepage',
     html: 'HTML',
+    open_learning: 'Open Learning',
     ocw: 'OCW',
     pdf: 'PDF',
     syllabus: 'Syllabus',
