@@ -49,90 +49,67 @@ const exportToICS = (courses) => {
 };
 
 // ============== Schedule course card (left panel) ==============
-const ScheduleCard = ({ course, match, onRemove, onOpen, justAdded }) => {
+const ScheduleCard = ({ course, onRemove, onOpen, justAdded }) => {
   const [removing, setRemoving] = useState(false);
-  const lastClick = useRef(0);
+  const [hover, setHover] = useState(false);
   const removingRef = useRef(false);
 
   const requestRemove = () => {
     if (removingRef.current) return;
     removingRef.current = true;
     setRemoving(true);
-    setTimeout(() => onRemove(course.id), 280);
-  };
-
-  const handleClick = (e) => {
-    const now = Date.now();
-    if (now - lastClick.current < 350) {
-      requestRemove();
-    } else {
-      lastClick.current = now;
-    }
+    setTimeout(() => onRemove(course.id), 240);
   };
 
   return (
     <div
-      onClick={handleClick}
-      onDoubleClick={requestRemove}
+      onClick={() => onOpen(course.id)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       className={justAdded ? 'slide-up' : ''}
       style={{
-        position: 'relative', background: 'var(--surface)',
-        border: '1px solid var(--border)', borderRadius: 'var(--r-md)',
-        padding: '14px 16px 14px 18px', cursor: 'pointer',
+        position: 'relative', background: hover ? 'var(--surface-2)' : 'var(--surface)',
+        border: `1px solid ${hover ? 'var(--border-strong)' : 'var(--border)'}`,
+        borderRadius: 8,
+        padding: '8px 10px 8px 12px', cursor: 'pointer',
+        display: 'flex', alignItems: 'center', gap: 10,
         opacity: removing ? 0 : 1,
-        transform: removing ? 'translateX(-8px) scale(0.98)' : 'translateX(0) scale(1)',
-        transition: 'opacity 260ms, transform 260ms, border-color 160ms, background 160ms',
+        transform: removing ? 'translateX(-8px)' : 'translateX(0)',
+        transition: 'opacity 220ms, transform 220ms, border-color 140ms, background 140ms',
       }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'var(--border-strong)';
-        e.currentTarget.style.background = 'var(--surface-2)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'var(--border)';
-        e.currentTarget.style.background = 'var(--surface)';
-      }}
+      title={course.name}
     >
-      {/* Left accent stripe */}
       <span style={{
-        position: 'absolute', left: 0, top: 10, bottom: 10, width: 3,
-        background: `var(--course-${course.area})`, borderRadius: '0 3px 3px 0',
+        width: 3, height: 22, flexShrink: 0,
+        background: `var(--course-${course.area || 'other'})`,
+        borderRadius: 2,
       }} />
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-            <span className="mono" style={{ fontSize: 14, fontWeight: 600 }}>{course.id}</span>
-            <span style={{ fontSize: 14, color: 'var(--text)' }}>{course.name}</span>
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <span className="mono">{course.schedule}</span>
-            <span>·</span>
-            <span>{course.units} units</span>
-            {course.satisfies.length > 0 && <>
-              <span>·</span>
-              <span>Satisfies <span style={{ color: 'var(--text)' }}>{course.satisfies.join(', ')}</span></span>
-            </>}
-          </div>
-        </div>
-        <button
-          onClick={(e) => { e.stopPropagation(); onOpen(course.id); }}
-          className="btn-ghost"
-          style={{ fontSize: 11, color: 'var(--text-tertiary)', padding: '4px 8px', borderRadius: 6 }}
-          title="Open detail"
-        >
-          Details →
-        </button>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--text-secondary)' }}>
-        <MatchBar score={match.total} width={140} compact />
-        <span>·</span>
-        <span>Est. workload <span className="mono" style={{ color: 'var(--text)' }}>~{course.hydrant.toFixed(1)}h/wk</span></span>
-      </div>
-
-      <div style={{ position: 'absolute', bottom: 6, right: 12, fontSize: 10, color: 'var(--text-tertiary)', opacity: 0.6 }}>
-        double-click to remove
-      </div>
+      <span className="mono" style={{ fontSize: 12.5, fontWeight: 600, flexShrink: 0 }}>{course.id}</span>
+      <span style={{
+        flex: 1, minWidth: 0, fontSize: 12.5, color: 'var(--text-secondary)',
+        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+      }}>
+        {course.name}
+      </span>
+      <span className="mono" style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>
+        {course.units}u
+      </span>
+      <button
+        onClick={(e) => { e.stopPropagation(); requestRemove(); }}
+        title="Remove from schedule"
+        style={{
+          width: 22, height: 22, padding: 0, borderRadius: 6,
+          background: 'transparent', color: 'var(--text-tertiary)',
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          opacity: hover ? 1 : 0,
+          transition: 'opacity 140ms, color 140ms',
+          flexShrink: 0,
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--accent)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-tertiary)'; }}
+      >
+        <Icon name="x" size={13} />
+      </button>
     </div>
   );
 };
@@ -415,70 +392,69 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <div style={{ padding: '20px 24px 14px', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <div>
-            <div className="display" style={{ fontSize: 22, fontWeight: 600, color: 'var(--text)' }}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+          <div style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: 8, overflow: 'hidden' }}>
+            <span className="display" style={{
+              fontSize: 15, fontWeight: 600, color: 'var(--text)',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
               {planningTermLabel}
-            </div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 4 }}>
-              Active semester plan
-            </div>
+            </span>
+            <span className="mono" style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>
+              {courses.length} {courses.length === 1 ? 'course' : 'courses'}
+            </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
             {courses.length > 0 && (
               <button
                 onClick={() => exportToICS(courses)}
                 className="btn-ghost"
-                title="Export to .ics"
+                title="Export schedule to .ics"
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  fontSize: 12, padding: '4px 10px', borderRadius: 6,
-                  border: '1px solid var(--border)', color: 'var(--text-secondary)',
+                  width: 26, height: 24, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  borderRadius: 6, border: '1px solid var(--border)', color: 'var(--text-secondary)',
                 }}
               >
                 <Icon name="download" size={13} />
-                Export .ics
               </button>
             )}
             <div style={{ display: 'flex', gap: 2, padding: 2, background: 'var(--surface-2)', borderRadius: 8, border: '1px solid var(--border)' }}>
               {[['list', 'list'], ['cal', 'grid']].map(([k, ic]) => (
                 <button key={k} onClick={() => setViewMode(k)} title={k === 'list' ? 'List' : 'Calendar'}
                   style={{
-                    width: 26, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    borderRadius: 6, background: viewMode === k ? 'var(--bg)' : 'transparent',
+                    width: 22, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    borderRadius: 5, background: viewMode === k ? 'var(--bg)' : 'transparent',
                     color: viewMode === k ? 'var(--text)' : 'var(--text-tertiary)',
                     border: viewMode === k ? '1px solid var(--border)' : '1px solid transparent',
                   }}
                 >
-                  <Icon name={ic} size={13} />
+                  <Icon name={ic} size={12} />
                 </button>
               ))}
             </div>
           </div>
         </div>
-        <div className="eyebrow" style={{ marginTop: 6 }}>Your schedule · {courses.length} {courses.length === 1 ? 'course' : 'courses'}</div>
       </div>
 
       {/* Body */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px' }}>
         {courses.length === 0 ? (
           <div style={{
             border: '1.5px dashed var(--border-strong)', borderRadius: 'var(--r-md)',
-            padding: '40px 20px', textAlign: 'center',
+            padding: '32px 16px', textAlign: 'center',
           }}>
-            <div style={{ fontSize: 14, fontWeight: 500 }}>Your schedule is empty</div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.6 }}>
-              Add courses from the recommendations panel,<br/>or chat with the agent to get started.
+            <div style={{ fontSize: 13, fontWeight: 500 }}>Your schedule is empty</div>
+            <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.6 }}>
+              Add courses from the agent panel,<br/>or use the manual search below.
             </div>
           </div>
         ) : viewMode === 'list' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {courses.map((c) => (
               <ScheduleCard
                 key={c.id}
                 course={c}
-                match={FRDATA.getMatch(c.id)}
                 onRemove={removeCourse}
                 onOpen={onOpenCourse}
                 justAdded={justAddedId === c.id}
@@ -493,12 +469,12 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
           className="btn"
           onClick={() => { setShowCoursePicker(v => !v); }}
           style={{
-            width: '100%', marginTop: 14, padding: '12px',
+            width: '100%', marginTop: 10, padding: '8px',
             border: '1px dashed var(--border-strong)', background: 'transparent',
-            color: 'var(--text-secondary)', fontSize: 13,
+            color: 'var(--text-tertiary)', fontSize: 12,
           }}
         >
-          <Icon name="plus" size={14} /> Add course manually
+          <Icon name="plus" size={12} /> Add course
         </button>
         {showCoursePicker && (
           <ManualCourseSearch
@@ -522,9 +498,9 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
           <RequirementsPanel schedule={schedule} />
         </div>
       ) : (
-        <div style={{ borderTop: '1px solid var(--border)', padding: '10px 20px', background: 'var(--bg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span className="eyebrow">This semester</span>
-          <span className="mono" style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+        <div style={{ borderTop: '1px solid var(--border)', padding: '8px 16px', background: 'var(--bg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span className="eyebrow" style={{ fontSize: 10 }}>This semester</span>
+          <span className="mono" style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
             <span style={{ color: 'var(--text)' }}>{totalUnits}</span> units
           </span>
         </div>

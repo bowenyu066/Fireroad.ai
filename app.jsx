@@ -5,11 +5,14 @@ const { useState, useEffect, useRef, useCallback } = React;
 const ColumnResizer = ({ onDrag, onDragEnd }) => {
   const draggingRef = useRef(false);
   const lastXRef = useRef(0);
+  const [active, setActive] = useState(false);
+  const [hover, setHover] = useState(false);
 
   const handleMouseDown = (event) => {
     event.preventDefault();
     draggingRef.current = true;
     lastXRef.current = event.clientX;
+    setActive(true);
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
   };
@@ -24,6 +27,7 @@ const ColumnResizer = ({ onDrag, onDragEnd }) => {
     const handleUp = () => {
       if (!draggingRef.current) return;
       draggingRef.current = false;
+      setActive(false);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
       if (onDragEnd) onDragEnd();
@@ -36,23 +40,31 @@ const ColumnResizer = ({ onDrag, onDragEnd }) => {
     };
   }, [onDrag, onDragEnd]);
 
+  const highlight = active || hover;
+
   return (
     <div
       onMouseDown={handleMouseDown}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       style={{
-        flex: '0 0 6px',
-        width: 6,
+        flex: '0 0 8px',
+        width: 8,
         cursor: 'col-resize',
         background: 'transparent',
         position: 'relative',
         zIndex: 5,
-        margin: '0 -3px',
+        margin: '0 -4px',
       }}
       title="Drag to resize"
     >
       <div style={{
-        position: 'absolute', top: 0, bottom: 0, left: 3, width: 1,
-        background: 'var(--border)', pointerEvents: 'none',
+        position: 'absolute', top: 0, bottom: 0, left: 4,
+        width: highlight ? 2 : 1,
+        marginLeft: highlight ? -0.5 : 0,
+        background: highlight ? 'var(--accent)' : 'var(--border)',
+        transition: 'background 120ms, width 120ms',
+        pointerEvents: 'none',
       }} />
     </div>
   );
@@ -61,9 +73,9 @@ const ColumnResizer = ({ onDrag, onDragEnd }) => {
 // Section panel header, also resizable for requirements column
 const SectionHeader = ({ label, right }) => (
   <div style={{
-    padding: '14px 18px', borderBottom: '1px solid var(--border)',
+    padding: '12px 16px', borderBottom: '1px solid var(--border)',
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    minHeight: 50, boxSizing: 'border-box',
+    minHeight: 44, boxSizing: 'border-box',
   }}>
     <div className="eyebrow">{label}</div>
     {right || null}
@@ -140,9 +152,9 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
   const onOpenCourse = (id) => setRoute({ name: 'course', id });
 
   const containerRef = useRef(null);
-  const STORAGE_KEY = 'fr-planner-pane-fractions-v1';
-  const DEFAULTS = { left: 0.32, middle: 0.30 };
-  const MIN_FRACTIONS = { left: 0.16, middle: 0.18, right: 0.20 };
+  const STORAGE_KEY = 'fr-planner-pane-fractions-v2';
+  const DEFAULTS = { left: 0.30, middle: 0.32 };
+  const MIN_PANE = 0.06;
 
   const [fractions, setFractions] = useState(() => {
     try {
@@ -159,23 +171,19 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
   const adjustFraction = useCallback((boundary, deltaPx) => {
     const total = containerRef.current ? containerRef.current.clientWidth : 1200;
     if (!total) return;
-    const deltaFr = deltaPx / total;
+    const dF = deltaPx / total;
     setFractions((current) => {
-      const right = Math.max(0, 1 - current.left - current.middle);
-      let { left, middle } = current;
+      const left = current.left;
+      const middle = current.middle;
+      const right = 1 - left - middle;
+      // Each boundary only moves its two adjacent panes; the third stays put.
       if (boundary === 'left-middle') {
-        const next = Math.min(1 - MIN_FRACTIONS.middle - MIN_FRACTIONS.right, Math.max(MIN_FRACTIONS.left, left + deltaFr));
-        const consumed = next - left;
-        const newMiddle = Math.max(MIN_FRACTIONS.middle, middle - consumed);
-        return { left: next, middle: newMiddle };
+        const newLeft = Math.max(MIN_PANE, Math.min(1 - right - MIN_PANE, left + dF));
+        return { left: newLeft, middle: 1 - newLeft - right };
       }
       if (boundary === 'middle-right') {
-        const newMiddle = Math.min(1 - MIN_FRACTIONS.left - MIN_FRACTIONS.right, Math.max(MIN_FRACTIONS.middle, middle + deltaFr));
-        // right shrinks to absorb; left stays fixed
-        const newRight = Math.max(MIN_FRACTIONS.right, right - (newMiddle - middle));
-        // re-derive middle from the actual constrained right so totals stay consistent
-        const realMiddle = Math.max(MIN_FRACTIONS.middle, 1 - left - newRight);
-        return { left, middle: realMiddle };
+        const newMiddle = Math.max(MIN_PANE, Math.min(1 - left - MIN_PANE, middle + dF));
+        return { left, middle: newMiddle };
       }
       return current;
     });
