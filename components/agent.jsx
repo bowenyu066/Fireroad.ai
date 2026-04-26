@@ -181,7 +181,15 @@ const AgentPanel = ({ messages, setMessages, profile, schedule, onAddCourse, onO
 
       {/* Messages */}
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {messages.map((m, i) => <MessageBubble key={i} msg={m} onAddCourse={onAddCourse} onOpenCourse={onOpenCourse} />)}
+        {messages.map((m, i) => (
+          <MessageBubble
+            key={i}
+            msg={m}
+            schedule={schedule}
+            onAddCourse={onAddCourse}
+            onOpenCourse={onOpenCourse}
+          />
+        ))}
         {typing && !messages.some((message) => message.streaming) && <TypingDots />}
       </div>
 
@@ -291,10 +299,12 @@ const renderMarkdown = (value) => {
   return blocks.join('');
 };
 
-const MessageBubble = ({ msg, onAddCourse, onOpenCourse }) => {
+const MessageBubble = ({ msg, schedule, onAddCourse, onOpenCourse }) => {
   const isUser = msg.role === 'user';
   const [suggestedCourses, setSuggestedCourses] = useState([]);
+  const [locallyAdded, setLocallyAdded] = useState([]);
   const suggestionsKey = (msg.suggestions || []).join('|');
+  const scheduled = new Set((schedule || []).map((id) => String(id).toUpperCase()));
   const displayText = msg.text || (msg.streaming ? msg.status || 'Thinking...' : '');
   const messageHtml = renderMarkdown(displayText);
 
@@ -327,6 +337,8 @@ const MessageBubble = ({ msg, onAddCourse, onOpenCourse }) => {
       {suggestedCourses.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
           {suggestedCourses.map((c) => {
+            const courseId = String(c.id || '').toUpperCase();
+            const isAdded = scheduled.has(courseId) || locallyAdded.includes(courseId);
             return (
               <div key={c.id} style={{
                 display: 'flex', alignItems: 'center', gap: 8,
@@ -340,13 +352,22 @@ const MessageBubble = ({ msg, onAddCourse, onOpenCourse }) => {
                   <span style={{ color: 'var(--text-secondary)' }}>{c.name}</span>
                 </button>
                 <button
-                  onClick={() => onAddCourse(c.id)}
+                  onClick={() => {
+                    setLocallyAdded((current) => current.includes(courseId) ? current : [...current, courseId]);
+                    onAddCourse(c.id);
+                  }}
+                  disabled={isAdded}
                   style={{
                     padding: '3px 9px', borderRadius: 999,
-                    background: 'var(--accent)', color: '#fff', fontSize: 11, fontWeight: 500,
+                    background: isAdded ? 'var(--surface)' : 'var(--accent)',
+                    color: isAdded ? 'var(--text-tertiary)' : '#fff',
+                    border: isAdded ? '1px solid var(--border)' : '1px solid var(--accent)',
+                    fontSize: 11,
+                    fontWeight: 500,
+                    cursor: isAdded ? 'default' : 'pointer',
                   }}
                 >
-                  Add
+                  {isAdded ? 'Added' : 'Add'}
                 </button>
               </div>
             );
