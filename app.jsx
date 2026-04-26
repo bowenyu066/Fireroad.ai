@@ -2,11 +2,40 @@
 const { useState, useEffect, useRef, useCallback } = React;
 
 // ============== Draggable column resizer ==============
-const ColumnResizer = ({ onDrag, onDragEnd }) => {
+// Designed to sit inside a CSS grid column of fixed 8px width — no
+// negative margins, no flex-basis tricks. The mousedown handler captures
+// drag start; the mousemove listener is attached once and reads the
+// latest onDrag from a ref so re-renders don't churn listeners.
+const ColumnResizer = ({ onDrag }) => {
   const draggingRef = useRef(false);
   const lastXRef = useRef(0);
+  const onDragRef = useRef(onDrag);
   const [active, setActive] = useState(false);
   const [hover, setHover] = useState(false);
+
+  useEffect(() => { onDragRef.current = onDrag; }, [onDrag]);
+
+  useEffect(() => {
+    const handleMove = (event) => {
+      if (!draggingRef.current) return;
+      const delta = event.clientX - lastXRef.current;
+      lastXRef.current = event.clientX;
+      if (delta !== 0) onDragRef.current(delta);
+    };
+    const handleUp = () => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      setActive(false);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+    };
+  }, []);
 
   const handleMouseDown = (event) => {
     event.preventDefault();
@@ -17,29 +46,6 @@ const ColumnResizer = ({ onDrag, onDragEnd }) => {
     document.body.style.userSelect = 'none';
   };
 
-  useEffect(() => {
-    const handleMove = (event) => {
-      if (!draggingRef.current) return;
-      const delta = event.clientX - lastXRef.current;
-      lastXRef.current = event.clientX;
-      if (delta !== 0) onDrag(delta);
-    };
-    const handleUp = () => {
-      if (!draggingRef.current) return;
-      draggingRef.current = false;
-      setActive(false);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-      if (onDragEnd) onDragEnd();
-    };
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup', handleUp);
-    return () => {
-      window.removeEventListener('mousemove', handleMove);
-      window.removeEventListener('mouseup', handleUp);
-    };
-  }, [onDrag, onDragEnd]);
-
   const highlight = active || hover;
 
   return (
@@ -48,20 +54,18 @@ const ColumnResizer = ({ onDrag, onDragEnd }) => {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
-        flex: '0 0 8px',
-        width: 8,
+        height: '100%',
         cursor: 'col-resize',
-        background: 'transparent',
         position: 'relative',
+        background: 'transparent',
         zIndex: 5,
-        margin: '0 -4px',
       }}
       title="Drag to resize"
     >
       <div style={{
-        position: 'absolute', top: 0, bottom: 0, left: 4,
+        position: 'absolute', top: 0, bottom: 0, left: '50%',
+        transform: `translateX(-50%)`,
         width: highlight ? 2 : 1,
-        marginLeft: highlight ? -0.5 : 0,
         background: highlight ? 'var(--accent)' : 'var(--border)',
         transition: 'background 120ms, width 120ms',
         pointerEvents: 'none',
@@ -152,45 +156,44 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
   const onOpenCourse = (id) => setRoute({ name: 'course', id });
 
   const containerRef = useRef(null);
-  const STORAGE_KEY = 'fr-planner-pane-fractions-v2';
-  const DEFAULTS = { left: 0.30, middle: 0.32 };
-  const MIN_PANE = 0.06;
+  const STORAGE_KEY = 'fr-planner-pane-pixels-v1';
+  const DEFAULTS = { leftPx: 360, middlePx: 380 };
+  const MIN_PX = 60;
+  const RESIZER_PX = 8;
 
-  const [fractions, setFractions] = useState(() => {
+  const [paneWidths, setPaneWidths] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-      if (saved && typeof saved.left === 'number' && typeof saved.middle === 'number') return saved;
+      if (saved && typeof saved.leftPx === 'number' && typeof saved.middlePx === 'number') return saved;
     } catch (_) {}
     return DEFAULTS;
   });
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(fractions));
-  }, [fractions]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(paneWidths));
+  }, [paneWidths]);
 
-  const adjustFraction = useCallback((boundary, deltaPx) => {
-    const total = containerRef.current ? containerRef.current.clientWidth : 1200;
-    if (!total) return;
-    const dF = deltaPx / total;
-    setFractions((current) => {
-      const left = current.left;
-      const middle = current.middle;
-      const right = 1 - left - middle;
-      // Each boundary only moves its two adjacent panes; the third stays put.
+  // Each boundary only moves its two adjacent panes:
+  //   left-middle  → adjusts leftPx and middlePx; right (1fr) is untouched.
+  //   middle-right → adjusts middlePx only; right (1fr) absorbs the change.
+  const adjustWidth = useCallback((boundary, deltaPx) => {
+    setPaneWidths((current) => {
+      const total = containerRef.current ? containerRef.current.clientWidth : 1200;
       if (boundary === 'left-middle') {
-        const newLeft = Math.max(MIN_PANE, Math.min(1 - right - MIN_PANE, left + dF));
-        return { left: newLeft, middle: 1 - newLeft - right };
+        const sum = current.leftPx + current.middlePx;
+        const newLeft = Math.max(MIN_PX, Math.min(sum - MIN_PX, current.leftPx + deltaPx));
+        return { leftPx: newLeft, middlePx: sum - newLeft };
       }
       if (boundary === 'middle-right') {
-        const newMiddle = Math.max(MIN_PANE, Math.min(1 - left - MIN_PANE, middle + dF));
-        return { left, middle: newMiddle };
+        const maxMiddle = Math.max(MIN_PX, total - current.leftPx - 2 * RESIZER_PX - MIN_PX);
+        const newMiddle = Math.max(MIN_PX, Math.min(maxMiddle, current.middlePx + deltaPx));
+        return { leftPx: current.leftPx, middlePx: newMiddle };
       }
       return current;
     });
   }, []);
 
-  const leftPct = `${(fractions.left * 100).toFixed(3)}%`;
-  const middlePct = `${(fractions.middle * 100).toFixed(3)}%`;
+  const gridTemplate = `${paneWidths.leftPx}px ${RESIZER_PX}px ${paneWidths.middlePx}px ${RESIZER_PX}px minmax(${MIN_PX}px, 1fr)`;
 
   return (
     <div className="fade-in" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -198,10 +201,16 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
 
       <div
         ref={containerRef}
-        style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 'calc(100vh - 65px)' }}
+        style={{
+          flex: 1,
+          display: 'grid',
+          gridTemplateColumns: gridTemplate,
+          overflow: 'hidden',
+          minHeight: 'calc(100vh - 65px)',
+        }}
       >
         {/* LEFT — schedule (course cards only) */}
-        <div style={{ width: leftPct, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <SchedulePanel
             schedule={schedule} setSchedule={setSchedule}
             justAddedId={justAddedId} onOpenCourse={onOpenCourse}
@@ -212,20 +221,20 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
           />
         </div>
 
-        <ColumnResizer onDrag={(delta) => adjustFraction('left-middle', delta)} />
+        <ColumnResizer onDrag={(delta) => adjustWidth('left-middle', delta)} />
 
         {/* MIDDLE — course requirements */}
-        <div style={{ width: middlePct, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <SectionHeader label="Course requirements" />
-          <div style={{ flex: 1, overflowY: 'auto', padding: '14px 18px', background: 'var(--bg)' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', background: 'var(--bg)' }}>
             <RequirementsPanel schedule={schedule} />
           </div>
         </div>
 
-        <ColumnResizer onDrag={(delta) => adjustFraction('middle-right', delta)} />
+        <ColumnResizer onDrag={(delta) => adjustWidth('middle-right', delta)} />
 
         {/* RIGHT — agent */}
-        <div style={{ flex: '1 1 auto', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <AgentPanel
             messages={messages} setMessages={setMessages}
             profile={profile} schedule={schedule}
