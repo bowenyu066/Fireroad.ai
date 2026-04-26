@@ -70,7 +70,7 @@ const exportToICS = (courses) => {
 };
 
 // ============== Schedule course card (left panel) ==============
-const ScheduleCard = ({ course, onRemove, onOpen, justAdded }) => {
+const ScheduleCard = ({ course, onRemove, onOpen, justAdded, notOffered }) => {
   const [removing, setRemoving] = useState(false);
   const [hover, setHover] = useState(false);
   const removingRef = useRef(false);
@@ -112,6 +112,9 @@ const ScheduleCard = ({ course, onRemove, onOpen, justAdded }) => {
       }}>
         {course.name}
       </span>
+      {notOffered && (
+        <span title="Not offered this semester" style={{ fontSize: 13, color: '#e6a817', flexShrink: 0, lineHeight: 1 }}>⚠</span>
+      )}
       <span className="mono" style={{ fontSize: 11, color: 'var(--text-tertiary)', flexShrink: 0 }}>
         {course.units}u
       </span>
@@ -621,6 +624,8 @@ const ManualCourseSearch = ({ schedule, onAddCourse, onOpenCourse, onCoursesLoad
 
 // ============== Schedule panel (left) ==============
 const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAddCourse, onRemoveCourse, viewMode, setViewMode, planningTermLabel = 'Next Semester', hideRequirements = false, compact = false }) => {
+  const { activeSem } = useApp();
+  const activeSeason = semSeason(activeSem);
   const [showCoursePicker, setShowCoursePicker] = useState(false);
   const [courseMap, setCourseMap] = useState(() => Object.fromEntries(FRDATA.catalog.map((course) => [course.id, course])));
 
@@ -744,6 +749,7 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
                 onRemove={removeCourse}
                 onOpen={onOpenCourse}
                 justAdded={justAddedId === c.id}
+                notOffered={activeSeason && c.offered && c.offered[activeSeason] === false}
               />
             ))}
           </div>
