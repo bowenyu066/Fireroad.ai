@@ -1,21 +1,9 @@
-/* global React, FRDATA, Icon, ThemeToggle, Logo, useApp */
+/* global React, FRDATA, Icon, ThemeToggle, Logo, useApp, ALL_MAJORS, MajorSearch */
 const { useState, useEffect, useMemo, useRef } = React;
 
 const MIT_GRADES_URL = 'https://registrar.mit.edu/classes-grades-evaluations/grades';
 const MIT_WEBSIS_URL = 'https://student.mit.edu/';
 
-const MAJORS = [
-  ['6-2', 'Course 6-2: Electrical Engineering and Computer Science'],
-  ['6-3', 'Course 6-3: Computer Science and Engineering'],
-  ['6-4', 'Course 6-4: Artificial Intelligence and Decision Making'],
-  ['6-7', 'Course 6-7: Computer Science and Molecular Biology'],
-  ['6-9', 'Course 6-9: Computation and Cognition'],
-  ['18', 'Course 18: Mathematics'],
-  ['8', 'Course 8: Physics'],
-  ['15', 'Course 15: Management'],
-  ['undecided', 'Undecided / exploring'],
-  ['other', 'Other'],
-];
 
 const STANDINGS = [
   ['prefrosh', 'Pre-freshman'],
@@ -46,7 +34,7 @@ const SKILL_LEVELS = [
 
 const emptyData = {
   name: '',
-  major: '6-3',
+  major: 'major6-3',
   futureProgram: '',
   standing: 'sophomore',
   gpa: '',
@@ -122,7 +110,7 @@ const onboardingFetchJson = async (url, options = {}) => {
 const profileForPrompt = (data) => ({
   name: data.name,
   major: data.major,
-  majorLabel: MAJORS.find(([id]) => id === data.major)?.[1] || data.major,
+  majorLabel: ALL_MAJORS.find(([id]) => id === data.major)?.[1] || data.major,
   futureProgram: data.futureProgram,
   academicStanding: data.standing,
   gpa: data.standing === 'prefrosh' ? 'N/A' : data.gpa,
@@ -384,11 +372,11 @@ const Onboarding = () => {
       }
 
       const taken = courses.map((course) => course.id);
-      const majorLabel = MAJORS.find(([id]) => id === data.major)?.[1] || data.major;
+      const majorLabel = ALL_MAJORS.find(([id]) => id === data.major)?.[1] || data.major;
       const nextProfile = {
         ...profile,
         name: data.name || profile.name,
-        major: data.major === 'undecided' ? 'Undecided' : data.major.startsWith('Course') ? data.major : `Course ${data.major}`,
+        major: data.major === 'undecided' ? 'Undecided' : data.major,
         majorLabel,
         year: STANDINGS.find(([id]) => id === data.standing)?.[1] || data.standing,
         taken,
@@ -783,7 +771,7 @@ const StepProfile = ({ data, upd, goNext }) => (
     </Field>
     <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 16 }}>
       <Field label="Major / intended major">
-        <Select value={data.major} onChange={(value) => upd('major', value)} options={MAJORS} />
+        <MajorSearch value={data.major} onChange={(value) => upd('major', value)} />
       </Field>
       <Field label="Year">
         <Select value={data.standing} onChange={(value) => upd('standing', value)} options={STANDINGS} />

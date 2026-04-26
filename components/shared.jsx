@@ -234,5 +234,105 @@ const TopBar = ({ planningTermLabel }) => {
   );
 };
 
+// ============== All MIT majors (from data/reqs.json, medium-title) ==============
+const ALL_MAJORS = [
+  ['major1-12','1-12 Major'],['major1','1-ENG Major'],['major10','10 Major'],
+  ['major10b','10-B Major'],['major10c','10-C Major'],['major10-ENG','10-ENG Major'],
+  ['major11','11 Major'],['major11-6','11-6 Major'],['major12','12 Major'],
+  ['major14-1','14-1 Major'],['major14-2','14-2 Major'],
+  ['major15-1','15-1 Major'],['major15-2','15-2 Major'],['major15-3','15-3 Major'],
+  ['major16','16 Major'],['major16-ENG','16-ENG Major'],['major17','17 Major'],
+  ['major18am','18 Major (Applied)'],['major18gm','18 Major (General)'],['major18pm','18 Major (Pure)'],['major18c','18-C Major'],
+  ['major2','2 Major'],['major2a','2-A Major'],['major2oe','2-OE Major'],
+  ['major20','20 Major'],
+  ['majorAFADS','21 Major (African Studies)'],['majorAS','21 Major (American Studies)'],
+  ['majorAMS','21 Major (AMS)'],['majorAADS','21 Major (Asian Studies)'],
+  ['majorLALS','21 Major (LALS)'],['majorRES','21 Major (RES)'],['majorWGS','21 Major (WGS)'],
+  ['major21a','21A Major'],['major21e','21E Major'],
+  ['majorFrench','21G Major (French)'],['majorGerman','21G Major (German)'],['majorSpanish','21G Major (Spanish)'],
+  ['major21h','21H Major'],['major21L','21L Major'],
+  ['major21M-1','21M-1 Major'],['major21M-2','21M-2 Major'],
+  ['major21S','21S Major'],['major21w','21W Major'],
+  ['major22','22 Major - Focused'],['major22-ENG','22-ENG Major - Flexible'],
+  ['major24-1','24-1 Major'],['major24-2Ling','24-2 Major (Linguistics)'],['major24-2Phil','24-2 Major (Philosophy)'],
+  ['major3','3 Major'],['major3a','3-A Major'],['major3c','3-C Major'],
+  ['major4','4 Major'],['major4b','4-B Major'],
+  ['major5','5 Major'],['major5-7','5-7 Major'],['major5-flex','5-Flex Major'],
+  ['major6-1','6-1 Major'],['major6-1-8-flex','6-1/8-Flex Major'],['major6-14','6-14 Major'],
+  ['major6-2','6-2 Major'],['major6-2new','6-2 Major (New)'],
+  ['major6-3','6-3 Major'],['major6-3new','6-3 Major (New)'],
+  ['major6-4','6-4 Major'],['major6-5','6-5 Major'],['major6-7','6-7 Major'],['major6-9','6-9 Major'],
+  ['major7','7 Major'],['major7a','7-A Major'],
+  ['major8','8 Major'],['major8flex','8-Flex Major'],
+  ['major9','9 Major'],
+  ['majorCMS','CMS Major'],['majorSTS','STS Major'],
+  ['undecided','Undecided / Exploring'],
+];
+
+// ============== Searchable major dropdown ==============
+const MajorSearch = ({ value, onChange, placeholder = 'Search majors…' }) => {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  const selectedLabel = ALL_MAJORS.find(([k]) => k === value)?.[1] || value || '';
+  const filtered = query.trim()
+    ? ALL_MAJORS.filter(([k, label]) =>
+        label.toLowerCase().includes(query.toLowerCase()) ||
+        k.toLowerCase().includes(query.toLowerCase()))
+    : ALL_MAJORS;
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        border: '1px solid var(--border)', borderRadius: 8,
+        background: 'var(--surface)', padding: '8px 10px',
+      }}>
+        <input
+          value={open ? query : selectedLabel}
+          onFocus={() => { setOpen(true); setQuery(''); }}
+          onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+          placeholder={placeholder}
+          style={{ flex: 1, background: 'transparent', border: 0, outline: 0, fontSize: 13, color: 'var(--text)' }}
+        />
+        <Icon name={open ? 'chevronUp' : 'chevronDown'} size={13} style={{ color: 'var(--text-tertiary)', flexShrink: 0, pointerEvents: 'none' }} />
+      </div>
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 200,
+          background: 'var(--bg)', border: '1px solid var(--border)',
+          borderRadius: 8, maxHeight: 220, overflowY: 'auto',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+        }}>
+          {filtered.length === 0
+            ? <div style={{ padding: '10px 14px', fontSize: 12, color: 'var(--text-tertiary)' }}>No matches</div>
+            : filtered.map(([key, label]) => (
+              <button
+                key={key}
+                onMouseDown={(e) => { e.preventDefault(); onChange(key); setOpen(false); setQuery(''); }}
+                style={{
+                  width: '100%', textAlign: 'left', padding: '9px 14px', fontSize: 13,
+                  background: value === key ? 'var(--accent-soft)' : 'transparent',
+                  color: value === key ? 'var(--accent)' : 'var(--text)',
+                  borderBottom: '1px solid var(--border)',
+                }}
+              >
+                {label}
+              </button>
+            ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Export to window for other scripts
-Object.assign(window, { Icon, Logo, MatchBar, AreaDot, ThemeToggle, TopBar, AppCtx, useApp });
+Object.assign(window, { Icon, Logo, MatchBar, AreaDot, ThemeToggle, TopBar, AppCtx, useApp, ALL_MAJORS, MajorSearch });

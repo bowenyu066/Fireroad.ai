@@ -11,7 +11,7 @@ const unique = (items) => [...new Set(items)];
 // Return the most relevant course departments for a given major so searches
 // don't scan all 5000+ courses unnecessarily.
 function majorToDepartments(major) {
-  const code = String(major || '').replace(/^course\s+/i, '').trim().split(/[:\s]/)[0].toLowerCase();
+  const code = String(major || '').replace(/^course\s+/i, '').replace(/^major/i, '').trim().split(/[:\s]/)[0].toLowerCase();
   if (code.startsWith('6')) return ['6', '18', '8'];
   if (code === '18') return ['18', '6', '8'];
   if (code === '8') return ['8', '18', '6'];

@@ -1,19 +1,6 @@
-/* global React, Icon, TopBar, useApp */
+/* global React, Icon, TopBar, useApp, ALL_MAJORS, MajorSearch */
 const { useState, useEffect } = React;
 
-// Mirror the major options from onboarding so stored values match
-const PROFILE_MAJORS = [
-  ['Course 6-2', 'Course 6-2: Electrical Engineering and Computer Science'],
-  ['Course 6-3', 'Course 6-3: Computer Science and Engineering'],
-  ['Course 6-4', 'Course 6-4: Artificial Intelligence and Decision Making'],
-  ['Course 6-7', 'Course 6-7: Computer Science and Molecular Biology'],
-  ['Course 6-9', 'Course 6-9: Computation and Cognition'],
-  ['Course 18',  'Course 18: Mathematics'],
-  ['Course 8',   'Course 8: Physics'],
-  ['Course 15',  'Course 15: Management'],
-  ['Undecided',  'Undecided / exploring'],
-  ['Other',      'Other'],
-];
 
 const SKILL_LEVELS = [
   ['pre-cracked',       'Olympiad / competition background — hard classes feel approachable'],
@@ -34,7 +21,7 @@ function makeDraft(profile) {
   return {
     ...profile,
     name:        profile.name        || '',
-    major:       profile.major       || 'Course 6-3',
+    major:       profile.major       || 'major6-3',
     year:        profile.year        || 'Sophomore',
     taken:       [...(profile.taken  || [])],
     preferences: { ...(profile.preferences || {}) },
@@ -103,11 +90,7 @@ const ProfilePage = () => {
           </PField>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <PField label="Major / Program">
-              <PSelect
-                value={draft.major}
-                onChange={v => upd('major', v)}
-                options={PROFILE_MAJORS}
-              />
+              <MajorSearch value={draft.major} onChange={v => upd('major', v)} />
             </PField>
             <PField label="Year">
               <PSelect

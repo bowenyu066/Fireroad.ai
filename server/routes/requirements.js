@@ -37,24 +37,82 @@ function loadJson(majorKey) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return null; }
 }
 
-// Expand a list of course IDs with the GIR/HASS codes they satisfy,
-// so the GIR checker can match GIR:PHY1 etc. against the takenSet.
+// Build GIR expansion + reverse map (code → actual course IDs taken).
 async function expandWithGirCodes(courseIds) {
   const catalog = await getCurrentCatalog();
   const extra = new Set();
+  const countMap = {};
+  const codeToIds = {};   // GIR/HASS code → real course IDs that satisfy it
+
+  const add = (code, realId) => {
+    extra.add(code);
+    if (!codeToIds[code]) codeToIds[code] = [];
+    if (!codeToIds[code].includes(realId)) codeToIds[code].push(realId);
+  };
+
   courseIds.forEach((raw) => {
-    const course = catalog.coursesById[normalizeCourseId(raw)];
+    const id = normalizeCourseId(raw);
+    const course = catalog.coursesById[id];
     if (!course) return;
+
+    let addedToHass = false;
     course.requirements.forEach((req) => {
-      if (GIR_ATTR_CODES.has(req)) extra.add(`GIR:${req}`);
-      if (HASS_CODES.has(req)) extra.add(req);
+      if (GIR_ATTR_CODES.has(req)) {
+        add(`GIR:${req}`, id);
+      }
+      if (HASS_CODES.has(req)) {
+        if (req !== 'HASS') {
+          add(req, id);
+          countMap[req] = (countMap[req] || 0) + 1;
+        }
+        // Each course counts toward the 8-subject HASS total at most once,
+        // regardless of how many HASS attribute codes it carries.
+        if (!addedToHass) {
+          addedToHass = true;
+          add('HASS', id);
+          countMap['HASS'] = (countMap['HASS'] || 0) + 1;
+        }
+      }
     });
   });
-  return [...new Set([...courseIds, ...extra])];
+
+  return {
+    courses: [...new Set([...courseIds, ...extra])],
+    countMap,
+    codeToIds,
+  };
+}
+
+const GIR_CODE_LABELS = {
+  'GIR:PHY1': 'Physics I',   'GIR:PHY2': 'Physics II',
+  'GIR:CAL1': 'Calculus I',  'GIR:CAL2': 'Calculus II',
+  'GIR:CHEM': 'Chemistry',   'GIR:BIOL': 'Biology',
+  'GIR:REST': 'REST Subject', 'GIR:LAB': 'Lab Subject',
+  'HASS': 'HASS (8 subjects)',
+  'HASS-A': 'HASS-A',  'HASS-S': 'HASS-S',  'HASS-H': 'HASS-H',
+  'CI-H': 'CI-H',      'CI-HW': 'CI-HW',
+};
+
+// Replace abstract GIR/HASS codes with real course IDs (matched) or readable names (labels/unmet).
+function resolveMatchedCodes(node, codeToIds) {
+  const label = GIR_CODE_LABELS[node.label] || node.label;
+  const matched = [...new Set(node.matched.flatMap((c) => codeToIds[c] || [c]))];
+  // Resolve unmet codes to readable names; suppress any item that just restates the label.
+  const unmet = node.unmet
+    .map((c) => GIR_CODE_LABELS[c] || c)
+    .filter((c) => c !== label);
+  return {
+    ...node,
+    label,
+    matched,
+    unmet,
+    subGroups: node.subGroups
+      ? node.subGroups.map((sub) => resolveMatchedCodes(sub, codeToIds))
+      : null,
+  };
 }
 
 // POST /api/requirements/check
-// Body: { major: "Course 6-3" | "girs", courses: ["6.100A", ...] }
 router.post('/check', async (req, res) => {
   try {
     const { major, majorKey, courses = [] } = req.body || {};
@@ -69,8 +127,18 @@ router.post('/check', async (req, res) => {
       return res.status(404).json({ error: `No requirements found for "${key}"` });
     }
 
-    const expandedCourses = key === 'girs' ? await expandWithGirCodes(courses) : courses;
-    res.json(checkRequirements(reqJson, expandedCourses));
+    const { courses: expandedCourses, countMap, codeToIds } = key === 'girs'
+      ? await expandWithGirCodes(courses)
+      : { courses, countMap: {}, codeToIds: {} };
+
+    const result = checkRequirements(reqJson, expandedCourses, countMap);
+
+    // For GIR checks, replace abstract codes (GIR:PHY1, HASS-A …) with real course IDs.
+    if (key === 'girs' && Object.keys(codeToIds).length) {
+      result.groups = result.groups.map((g) => resolveMatchedCodes(g, codeToIds));
+    }
+
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
