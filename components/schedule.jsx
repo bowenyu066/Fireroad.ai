@@ -1,4 +1,4 @@
-/* global React, FRDATA, useApp, Icon, MatchBar, AreaDot */
+/* global React, FRDATA, PersonalCourse, useApp, Icon, MatchBar, AreaDot */
 const { useState, useEffect, useRef } = React;
 
 // ============== ICS export ==============
@@ -817,3 +817,95 @@ const FourYearPlanPage = () => {
 };
 
 window.FourYearPlanPage = FourYearPlanPage;
+
+// ============== Prior Credit page ==============
+const PriorCreditPage = () => {
+  const { personalCourseMarkdown, setRoute, profile } = useApp();
+  const summary = PersonalCourse.summarize(personalCourseMarkdown || '');
+  const priorCredits = summary.priorCreditCourses || [];
+  const excluded = [...(summary.listenerCourses || []), ...(summary.droppedCourses || [])];
+
+  const CreditTable = ({ title, subtitle, rows, empty }) => (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 12 }}>
+        <h2 className="display" style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{title}</h2>
+        <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginTop: 3 }}>{subtitle}</div>
+      </div>
+      <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--r-md)', overflow: 'hidden', background: 'var(--surface)' }}>
+        <div className="mono" style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 2.2fr 1fr 1.2fr 1.4fr',
+          gap: 12,
+          padding: '10px 14px',
+          background: 'var(--surface-2)',
+          color: 'var(--text-tertiary)',
+          fontSize: 10,
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+        }}>
+          <span>Course</span>
+          <span>Title</span>
+          <span>Grade</span>
+          <span>Term</span>
+          <span>Status</span>
+        </div>
+        {rows.length ? rows.map((course) => (
+          <div key={`${course.status}-${course.id}-${course.term}-${course.grade}`} style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 2.2fr 1fr 1.2fr 1.4fr',
+            gap: 12,
+            padding: '12px 14px',
+            borderTop: '1px solid var(--border)',
+            alignItems: 'center',
+            fontSize: 13,
+          }}>
+            <span className="mono" style={{ fontWeight: 600 }}>{course.id}</span>
+            <span style={{ color: 'var(--text-secondary)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{course.name || 'Untitled course'}</span>
+            <span className="mono" style={{ color: 'var(--text)' }}>{course.grade || '-'}</span>
+            <span style={{ color: 'var(--text-secondary)' }}>{course.term || '-'}</span>
+            <span style={{ color: 'var(--text-secondary)' }}>
+              {course.status === 'prior_credit' ? 'Prior credit' : course.status === 'listener' ? 'Listener' : 'Dropped'}
+            </span>
+          </div>
+        )) : (
+          <div style={{ padding: 22, color: 'var(--text-tertiary)', fontSize: 13 }}>{empty}</div>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="fade-in" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <TopBar showTabs={false} />
+
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '36px 32px 72px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 28 }}>
+          <div>
+            <h1 className="display" style={{ fontSize: 24, fontWeight: 600, margin: 0 }}>Prior Credit</h1>
+            <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>
+              {profile?.name ? `${profile.name} · ` : ''}{priorCredits.length} requirement-counting prior credits
+            </div>
+          </div>
+          <button className="btn" onClick={() => setRoute({ name: 'planner' })} style={{ fontSize: 13, padding: '8px 16px' }}>
+            ← Back to planner
+          </button>
+        </div>
+
+        <CreditTable
+          title="Requirement-counting prior credit"
+          subtitle="Transfer credit marked S and ASE/advanced standing grades ending in & count toward requirements, but do not appear in any semester."
+          rows={priorCredits}
+          empty="No transfer credit or ASE credit found in personal_course.md."
+        />
+        <CreditTable
+          title="Excluded transcript entries"
+          subtitle="Listener (LIS) and dropped (DR) entries are kept visible here, but do not count toward requirements or semester plans."
+          rows={excluded}
+          empty="No listener or dropped transcript entries found."
+        />
+      </div>
+    </div>
+  );
+};
+
+window.PriorCreditPage = PriorCreditPage;

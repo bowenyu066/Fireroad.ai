@@ -118,7 +118,7 @@ const ThemeToggle = () => {
 };
 
 const TopBar = ({ planningTermLabel }) => {
-  const { setRoute, profile, authState, signOut, resetOnboarding, activeSem, setActiveSem, termOptions, planningTermLabel: activePlanningTermLabel } = useApp();
+  const { setRoute, profile, authState, signOut, resetOnboarding, reparseTranscript, activeSem, setActiveSem, termOptions, planningTermLabel: activePlanningTermLabel } = useApp();
   const isLocalDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
   const displayName = profile?.name || authState?.user?.email?.split('@')[0] || 'User';
   const initials = displayName.split(' ').map((s) => s[0]).join('');
@@ -145,6 +145,14 @@ const TopBar = ({ planningTermLabel }) => {
         >
           <Icon name="grid" size={13} />
           4-Year Plan
+        </button>
+        <button
+          onClick={() => setRoute({ name: 'priorcredit' })}
+          className="btn-ghost"
+          style={{ fontSize: 12, padding: '5px 10px', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-secondary)' }}
+        >
+          <Icon name="file" size={13} />
+          Prior Credit
         </button>
       </div>
 
@@ -194,6 +202,19 @@ const TopBar = ({ planningTermLabel }) => {
             }}
           >
             <Icon name="rotateCcw" size={15} />
+          </button>
+        )}
+        {isLocalDev && reparseTranscript && (
+          <button
+            className="btn-ghost"
+            onClick={reparseTranscript}
+            title="Re-parse transcript for this account"
+            style={{
+              width: 32, height: 32, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              borderRadius: 8, color: 'var(--text-secondary)',
+            }}
+          >
+            <Icon name="upload" size={15} />
           </button>
         )}
         <button
