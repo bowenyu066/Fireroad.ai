@@ -869,7 +869,7 @@ const CourseMentionMenu = ({ courseId, position, schedule, onAddCourse, onRemove
   const handleScheduleAction = () => {
     if (isScheduled) {
       if (typeof onRemoveCourse === 'function') onRemoveCourse(actionId);
-    } else if (!notOffered && typeof onAddCourse === 'function') {
+    } else if (typeof onAddCourse === 'function') {
       onAddCourse(actionId);
     }
     if (typeof onClose === 'function') onClose();
@@ -887,18 +887,15 @@ const CourseMentionMenu = ({ courseId, position, schedule, onAddCourse, onRemove
           type="button"
           className={isScheduled ? 'btn-ghost' : 'btn-primary'}
           onClick={handleScheduleAction}
-          disabled={!isScheduled && notOffered}
-          title={!isScheduled && notOffered ? `Not offered in ${activeSem}` : undefined}
+          title={!isScheduled && notOffered ? `Not listed as offered in ${activeSem}` : undefined}
           style={{
             padding: '6px 11px',
             borderRadius: 999,
             border: isScheduled ? '1px solid var(--border)' : '1px solid var(--accent)',
             fontSize: 12,
-            opacity: !isScheduled && notOffered ? 0.55 : 1,
-            cursor: !isScheduled && notOffered ? 'not-allowed' : 'pointer',
           }}
         >
-          {isScheduled ? 'Remove' : (notOffered ? 'Not offered' : 'Add')}
+          {isScheduled ? 'Remove' : (notOffered ? 'Add anyway' : 'Add')}
         </button>
         <button
           type="button"

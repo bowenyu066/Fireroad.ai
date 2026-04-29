@@ -801,7 +801,7 @@ const ManualCourseSearch = ({ schedule, onAddCourse, onOpenCourse, onCoursesLoad
           const isAdded = scheduled.has(course.id);
           const tags = Array.isArray(course.satisfies) ? course.satisfies.slice(0, 3) : [];
           const notOffered = season && course.offered && course.offered[season] === false;
-          const addDisabled = isAdded || notOffered;
+          const addDisabled = isAdded;
           return (
             <div
               key={course.id}
@@ -858,7 +858,7 @@ const ManualCourseSearch = ({ schedule, onAddCourse, onOpenCourse, onCoursesLoad
                 <button
                   onClick={() => onAddCourse(course.id)}
                   disabled={addDisabled}
-                  title={notOffered ? `Not offered in ${activeSem}` : undefined}
+                  title={notOffered ? `Not listed as offered in ${activeSem}` : undefined}
                   style={{
                     fontSize: 11, padding: '6px 9px', borderRadius: 6,
                     background: addDisabled ? 'var(--surface-2)' : 'var(--accent)',
@@ -867,7 +867,7 @@ const ManualCourseSearch = ({ schedule, onAddCourse, onOpenCourse, onCoursesLoad
                     cursor: addDisabled ? 'not-allowed' : 'pointer',
                   }}
                 >
-                  {isAdded ? 'Added' : (notOffered ? 'Not offered' : 'Add')}
+                  {isAdded ? 'Added' : (notOffered ? 'Add anyway' : 'Add')}
                 </button>
               </div>
             </div>

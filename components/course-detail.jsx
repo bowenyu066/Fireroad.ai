@@ -87,8 +87,8 @@ const CourseHero = ({ course, summary, tab, setTab, onBack, onAdd, onRemove, inS
   const enrollment = course.enrollmentNumber ? Math.round(course.enrollmentNumber) : null;
   const season = semesterSeasonForDetail(activeSem);
   const notOffered = !inSchedule && season && course?.offered && course.offered[season] === false;
-  const canAct = inSchedule ? Boolean(onRemove) : Boolean(onAdd) && !notOffered;
-  const buttonLabel = inSchedule ? '- Remove from schedule' : (notOffered ? 'Not offered this semester' : '+ Add to schedule');
+  const canAct = inSchedule ? Boolean(onRemove) : Boolean(onAdd);
+  const buttonLabel = inSchedule ? '- Remove from schedule' : (notOffered ? '+ Add anyway' : '+ Add to schedule');
   return (
     <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
       <div style={{ maxWidth: 1220, margin: '0 auto', padding: '18px 32px 30px' }}>
@@ -118,7 +118,7 @@ const CourseHero = ({ course, summary, tab, setTab, onBack, onAdd, onRemove, inS
           <button
             onClick={() => inSchedule ? onRemove(course.id) : onAdd(course.id)}
             disabled={!canAct}
-            title={notOffered ? `Not offered in ${activeSem}` : undefined}
+            title={notOffered ? `Not listed as offered in ${activeSem}` : undefined}
             className={inSchedule ? 'btn' : 'btn btn-primary'}
             style={{
               minWidth: 220,

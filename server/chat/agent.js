@@ -764,6 +764,7 @@ async function buildProposalFromActions(actions, context, options = {}) {
   ];
   const warnings = [
     ...(asArray(options.warnings)),
+    ...validActions.map((action) => action && action.warning).filter(Boolean),
   ];
 
   return {

@@ -67,6 +67,12 @@ function isOfferedInSemester(course, semId) {
   return !season || !course || !course.offered || course.offered[season] !== false;
 }
 
+function offTermPlanningWarning(course, context = {}) {
+  if (isOfferedInSemester(course, context.activeSem)) return null;
+  const term = context.planningTermLabel || context.activeSem || 'the active semester';
+  return `${course.id} is not listed as offered in ${term}; keep it only for a past offering, petition, or manual exception.`;
+}
+
 function normalizeProfile(profile) {
   const incoming = profile && typeof profile === 'object' ? profile : {};
   return {
@@ -394,6 +400,7 @@ function currentCourseSummary(course) {
     rating: course.rating,
     enrollmentNumber: course.enrollmentNumber,
     desc: course.desc,
+    offered: course.offered || null,
   };
 }
 
@@ -999,10 +1006,7 @@ async function validateUiAction(action, schedule, context = {}) {
     return { ok: false, reason: `Course ${courseId || 'unknown'} does not exist in the current catalog.` };
   }
 
-  if ((type === 'add_course' || type === 'replace_course') && !isOfferedInSemester(course, context.activeSem)) {
-    const term = context.planningTermLabel || context.activeSem || 'the active semester';
-    return { ok: false, reason: `${course.id} is not offered in ${term}.` };
-  }
+  const warning = (type === 'add_course' || type === 'replace_course') ? offTermPlanningWarning(course, context) : null;
 
   if (type === 'replace_course') {
     const removeCourseId = normalizeCourseId(action.removeCourseId || action.remove_course_id);
@@ -1014,14 +1018,15 @@ async function validateUiAction(action, schedule, context = {}) {
     }
     return {
       ok: true,
-      action: { type: 'replace_course', removeCourseId, courseId: course.id },
+      action: { type: 'replace_course', removeCourseId, courseId: course.id, warning },
       course: currentCourseSummary(course),
+      warning,
     };
   }
 
   if (type === 'add_course') {
     if (currentSchedule.includes(course.id)) return { ok: false, reason: `${course.id} is already in the current semester plan.` };
-    return { ok: true, action: { type, courseId: course.id }, course: currentCourseSummary(course) };
+    return { ok: true, action: { type, courseId: course.id, warning }, course: currentCourseSummary(course), warning };
   }
 
   if (!currentSchedule.includes(course.id)) {
@@ -1167,7 +1172,7 @@ const toolSchemas = [
     type: 'function',
     function: {
       name: 'validate_ui_action',
-      description: 'Validate a current-semester add/remove/replace UI action. Reject future-term, multi-semester, and roadmap mutations.',
+      description: 'Validate an active-semester add/remove/replace UI action. Allow courses not listed for the active term, but return a warning so the user can plan around petitions, past offerings, or manual exceptions.',
       parameters: {
         type: 'object',
         properties: {
