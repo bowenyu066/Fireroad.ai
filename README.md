@@ -1,102 +1,240 @@
-# Fireroad.ai Prototype
+# Fireroad.ai
 
-Static React prototype served by a tiny Node/Express backend. The backend keeps the OpenRouter key server-side and exposes a tool-calling course-planning chat route.
+Fireroad.ai is a prototype MIT course planner focused on active-semester planning. It combines a no-build React frontend with a small Node/Express backend for current course search, requirement checks, historical course context, onboarding document parsing, and an OpenRouter-backed planning agent.
 
-## Product Direction
+The planner treats `fourYearPlan[activeSem]` as the single editable schedule. Recommendations, workload summaries, requirement progress, and chat-driven add/remove proposals are all grounded in the active term.
 
-The current product scope is active-semester planning. The editable plan is `fourYearPlan[activeSem]`; recommendations, requirement checks, workload summaries, and agent plan-change proposals all target that active semester.
+## Features
 
-The app keeps the `fourYearPlan` object in state and persistence so term-aware data can survive future work. There is still no user-facing cross-semester drag/drop workflow in the main product path. A legacy read-only `FourYearPlan` component is kept as an internal display interface for future work, but it is not mounted from the planner.
+- Active-semester schedule planning with current MIT course data
+- AI chat assistant for course search, recommendations, schedule summaries, and validated active-semester changes
+- Current course detail views backed by a normalized local Fireroad catalog snapshot
+- Historical course detail views backed by a local SQLite history database
+- Requirement checking against local `.reql` requirement data
+- First-entry onboarding with transcript/resume parsing and course preference capture
+- Optional Firebase client auth and persistence, with localStorage mock auth fallback
 
-Course detail is split into `Current` and `Historical` views. Current data comes from the server-side normalized local catalog snapshot at `data/courses.json`. Historical data comes from the SQLite-backed history subsystem and is read-only reference.
+## Quick Start
 
-The active term selector is generated from the current date in `data.js`, similar to Hydrant's rolling term picker. Users can still manually choose another term; do not hardcode stale semester labels or default active terms.
+Requirements:
 
-Manual course search in the planner uses `FRDATA.fetchCurrentSearch(...)`, which calls `/api/current/search` and caches normalized current courses for schedule display. The chat agent's course lookup, search, recommendation, schedule summary, and UI action validation tools also use the server-side current catalog. `shared/mock-data.js` is seed/demo data, including legacy mock match scores that must not be exposed as real current or personalized scores. Current-catalog load failures only fall back to mock data when `DEMO_MODE=true`.
-
-## Setup
+- Node.js 18 or newer
+- npm
+- Optional: an OpenRouter API key for AI chat and onboarding prompt routes
 
 ```bash
 npm install
+cp .env.example .env
+```
+
+Set at least the OpenRouter key if you want the chat agent and onboarding prompt pipeline:
+
+```bash
 export OPENROUTER_API_KEY="your_openrouter_key"
-# Optional:
-export OPENROUTER_MODEL="openai/gpt-4.1-mini"
-export OPENROUTER_TIMEOUT_MS=120000
-# Optional local demo fallback when data/courses.json cannot load:
-export DEMO_MODE=true
+```
+
+Then run:
+
+```bash
 npm run dev
 ```
 
-Open http://localhost:3000.
+Open [http://localhost:3000](http://localhost:3000). If port 3000 is already in use and `PORT` is not set, the server tries the next ports automatically.
 
-`npm run dev` initializes and seeds the local history database before starting the server.
+`npm run dev` initializes and seeds the local history database before starting the app.
 
-## API
+## Environment
 
-- `GET /api/health` checks server status and whether an OpenRouter key is configured.
-- `POST /api/chat` accepts `{ messages, profile, schedule, activeSem, studentName }` where `schedule` is `fourYearPlan[activeSem]`, and returns an agent message plus any pending proposal. Final agent text is ordinary Markdown, not a JSON string.
-- `POST /api/chat/stream` accepts the same payload and returns Server-Sent Events for ephemeral progress and final text: `status`, `progress_text`, `progress_text_delta`, `tool_activity_start`, `tool_activity_result`, `tool_activity_error`, `final_text_delta`, `trace_summary`, `proposal`, `final`, `error`, and `done`. `delta` remains a backward-compatible alias for final text deltas.
-- Tool calls stay in the model tool-calling channel. The browser shows compact in-progress tool activity while the assistant is working, then hides it when the final answer arrives. Completed answers may show a collapsed `Checked: ...` trace summary with safe tool input/result summaries, never full raw tool output by default.
-- For explicit validated active-semester mutations, the UI optimistically applies the change and shows an Applied changes card with Cancel/Undo. Recommendation-only answers do not mutate the plan.
-- Chat requests log request-scoped diagnostics in the server terminal as `[agent <id>] ...`, including model rounds, tool call arguments, current-catalog result summaries, trace/proposal generation, and UI action validation. The browser console also logs `[agent stream] ...` for stream start/status/final/failure events.
-- Agent message text is rendered as a small safe Markdown subset in the chat UI, so model responses should use real newline-separated Markdown bullets instead of one-line pseudo-lists.
-- `GET /api/current/course/:courseId` returns normalized current catalog data.
-- `GET /api/current/search?q=...` searches current catalog data.
-- `GET /api/current/catalog` returns a normalized current catalog snapshot.
-- `GET /api/history/stats` reports history database counts.
-- `GET /api/history/course/:courseId` returns seeded history course metadata.
-- `GET /api/history/course/:courseId/offerings` returns known historical offerings for a course.
-- `GET /api/history/offering/:offeringId` returns an offering with documents and extracted policies when available.
+Common variables:
 
-The browser never reads `OPENROUTER_API_KEY`; only backend OpenRouter code reads it from the server environment.
+```bash
+OPENROUTER_API_KEY=your_openrouter_key
+OPENROUTER_MODEL=openai/gpt-4.1-mini
+OPENROUTER_TIMEOUT_MS=120000
+OPENROUTER_SITE_URL=http://localhost:3000
+DEMO_MODE=false
+CURRENT_CATALOG_PATH=data/courses.json
+HISTORY_DB_PATH=data/course_history.db
+PORT=3000
+```
 
-### Onboarding Prompt Pipeline
+Firebase variables are optional. If they are omitted, the app uses localStorage-backed mock auth:
 
-First-entry onboarding uses backend prompt routes under `/api/onboarding`. The browser sends PDFs or JSON inputs to the server, the server extracts searchable PDF text with `pdf-parse`, runs the prompt Markdown files through OpenRouter, and returns updated `personal_course.md` content for the browser to save in the signed-in user's Firestore document.
+```bash
+FIREBASE_API_KEY=
+FIREBASE_AUTH_DOMAIN=
+FIREBASE_PROJECT_ID=
+FIREBASE_STORAGE_BUCKET=
+FIREBASE_MESSAGING_SENDER_ID=
+FIREBASE_APP_ID=
+FIREBASE_MEASUREMENT_ID=
 
-- `POST /api/onboarding/profile` accepts `{ profile, transcriptText?, courseworkText? }` and generates the base `personal_course.md`.
-- `POST /api/onboarding/transcript` accepts multipart field `file` plus `profile` JSON and optional `courseworkText`; PDFs are limited to 10MB.
-- `POST /api/onboarding/resume` accepts multipart field `file` plus `personalCourseMarkdown`, `profile`, optional background text, and academic evidence.
-- `POST /api/onboarding/coursework` accepts `{ profile, transcriptText?, courseworkText }` and refreshes the base course file from imported coursework.
-- `POST /api/onboarding/preferences` accepts `{ personalCourseMarkdown, courses }` and applies thumbs-up / neutral / thumbs-down course ratings.
-- `POST /api/onboarding/personalization-prefill` accepts `{ profile, personalCourseMarkdown }` and asks the model to infer an initial further-personalization draft from completed courses, course preferences, background, and skill-level sections.
-- `POST /api/onboarding/more-preferences` accepts `{ personalCourseMarkdown, questionnaire, freeformNotes?, normalizedData? }` and updates the optional `Course Planning Preferences and Constraints` section. The planner also stores the structured answer under `profile.preferences.personalization` so recommendation ranking can use it directly. If the model is unavailable, the structured profile save still works and Markdown regeneration is skipped or falls back to a deterministic section writer.
-- `POST /api/onboarding/personalization-questions` accepts `{ profile, personalCourseMarkdown?, personalization? }` and returns optional model-generated copy for the guided further-personalization flow. The browser keeps a built-in fallback question set, so this endpoint never blocks answering or saving preferences.
-- `POST /api/onboarding/personalization-followups` accepts the same personalization context and returns 1-3 optional agent follow-up questions after the fixed guided flow. Users can skip the follow-up; any answers are saved under structured `agentFollowUps` and written into `personal_course.md`.
+FIREBASE_REQUIRE_MIT_EMAIL=true
+FIREBASE_REQUIRE_EMAIL_VERIFICATION=false
+FIREBASE_ALLOW_NON_MIT_EMAILS=false
+```
 
-The server does not store raw uploaded files. OCR for scanned PDFs is not implemented; users need searchable PDFs for transcript/resume parsing.
+Do not commit backend secrets, service account JSON, or private API keys. The browser never reads `OPENROUTER_API_KEY`; only the backend OpenRouter modules use it.
 
-## Current Catalog Data
+## Scripts
 
-Current catalog data lives in `data/courses.json` by default. Override with `CURRENT_CATALOG_PATH` if needed. The file is generated by `scripts/fetch_courses.py`, not hand-authored:
+```bash
+npm run dev                       # initialize history DB, then start the server
+npm start                         # same as dev
+npm run history:setup             # initialize and seed history DB
+npm run history:init              # create/update SQLite schema
+npm run history:seed              # seed demo course rows
+npm run history:import-manifest -- 6.3900
+npm run history:fetch-docs -- 6.3900
+npm run history:extract-policies -- 6.3900
+npm run history:collect -- 6.3900
+npm run history:ablate-markdown -- 6.3900 --limit 4 --jobs 4
+npm run history:rewrite-markdown -- 6.3900 --jobs 4
+```
+
+Current catalog refresh:
 
 ```bash
 python3 scripts/fetch_courses.py
 ```
 
-The script fetches `https://fireroad.mit.edu/courses/all?full=true`, prints the raw course count, then writes only courses that are not historical and are offered in fall or spring:
+That script fetches `https://fireroad.mit.edu/courses/all?full=true`, excludes historical subjects, keeps subjects offered in fall or spring, and writes `data/courses.json`.
 
-```python
-not course.get("is_historical", False) and (course.get("offered_fall") or course.get("offered_spring"))
+## Architecture
+
+There is no frontend bundler or build step. The browser loads React, ReactDOM, Babel standalone, and project files directly from ordered `<script>` tags in `index.html`. JSX is transpiled at runtime.
+
+Load order matters:
+
+1. `shared/mock-data.js`
+2. `shared/personal-course.js`
+3. `data.js`
+4. `/firebase-config.js`
+5. `components/auth-service.js`
+6. `components/shared.jsx`
+7. `components/auth.jsx`
+8. `components/onboarding.jsx`
+9. `components/schedule.jsx`
+10. `components/agent.jsx`
+11. `components/course-detail.jsx`
+12. `components/profile.jsx`
+13. `app.jsx`
+
+The backend starts from `server.js`, creates the Express app in `server/app.js`, serves static files from the repo root, and mounts API routes under `/api/*`.
+
+## Frontend State
+
+Global state lives in `App` and is exposed through `AppCtx`:
+
+- `theme`
+- `route`
+- `profile`
+- `fourYearPlan`
+- `activeSem`
+- `messages`
+
+Routing is a plain object such as `{ name: 'planner' }` or `{ name: 'course', id }`; there is no router library. The editable schedule is always `fourYearPlan[activeSem]`.
+
+The active term selector is generated in `data.js` from the current date. Do not hardcode stale term defaults such as `S25`.
+
+## Data
+
+Important local data files:
+
+- `data/courses.json`: generated current catalog snapshot
+- `data/reqs.json`: index of MIT requirement programs
+- `data/requirements/`: generated requirement files and parsed JSON
+- `data/course_history.db`: local SQLite history database
+- `data/history_manifests/`: manual historical offering manifests
+- `data/most_taken.json`: parsed EECSIS "Who's Taken What" data
+
+`window.FRDATA` in `data.js` is the browser data adapter and seed layer. Current catalog UI paths should use server-backed helpers such as `FRDATA.fetchCurrentSearch(...)`, `FRDATA.fetchCurrentCourse(...)`, and `FRDATA.fetchCurrentCatalog()`.
+
+Mock data and legacy match scores are for demos only. Current catalog or agent-facing paths should not silently fall back to mock data unless `DEMO_MODE=true`.
+
+## API Overview
+
+Health:
+
+- `GET /api/health`
+
+Chat:
+
+- `POST /api/chat`
+- `POST /api/chat/stream`
+
+Chat requests include `messages`, `profile`, `schedule`, `activeSem`, and `studentName`. `schedule` should be the active-semester array, not the full four-year plan.
+
+The streaming route uses Server-Sent Events. Final assistant text is Markdown, while progress and tool activity are separate temporary events.
+
+Current catalog:
+
+- `GET /api/current/course/:courseId`
+- `GET /api/current/search?q=...`
+- `GET /api/current/catalog`
+- `POST /api/current/recommendations`
+
+Requirements:
+
+- `POST /api/requirements/check`
+
+Example body:
+
+```json
+{
+  "major": "Course 6-3",
+  "courses": ["6.100A", "6.1010", "18.06"]
+}
 ```
 
-This means `data/courses.json` is a filtered current catalog snapshot, not a per-semester offering history and not the full Fireroad catalog. Re-run the script when the upstream Fireroad catalog should be refreshed, review the resulting diff, and update this section if the source URL, filtering rule, output path, or schema changes.
+History:
 
-If the current catalog cannot be loaded, `/api/current/*` fails by default so production-like paths do not silently mix in mock data. Set `DEMO_MODE=true` only for local demo sessions where falling back to `shared/mock-data.js` is intentional.
+- `GET /api/history/stats`
+- `GET /api/history/course/:courseId`
+- `GET /api/history/course/:courseId/offerings`
+- `GET /api/history/offering/:offeringId`
 
-## History Database
+Onboarding:
 
-History data lives in `data/course_history.db` by default. Override with `HISTORY_DB_PATH` if needed.
+- `POST /api/onboarding/profile`
+- `POST /api/onboarding/transcript`
+- `POST /api/onboarding/resume`
+- `POST /api/onboarding/coursework`
+- `POST /api/onboarding/preferences`
+- `POST /api/onboarding/personalization-prefill`
+- `POST /api/onboarding/more-preferences`
+- `POST /api/onboarding/personalization-questions`
+- `POST /api/onboarding/personalization-followups`
 
-```bash
-npm run history:setup
-```
+The server does not store raw uploaded files. PDF parsing requires searchable PDFs; OCR for scanned PDFs is not implemented.
 
-The seed script currently imports the demo `6.*` courses from `shared/mock-data.js` as canonical course rows only. Offerings, documents, attendance policies, grading policies, and extraction runs are schema-ready for future import/fetch/extract jobs.
+## Chat Agent Contract
 
-## Manual History Collection
+The chat agent is active-semester-first. It may recommend courses, summarize workload, check current catalog facts, and propose validated add/remove actions for the active schedule.
 
-Course history is offering-first and updated manually from manifests in `data/history_manifests/`.
+`POST /api/chat/stream` emits progress and final events including:
+
+- `progress_text`
+- `progress_text_delta`
+- `tool_activity_start`
+- `tool_activity_result`
+- `tool_activity_error`
+- `final_text_delta`
+- `trace_summary`
+- `proposal`
+- `final`
+- `error`
+- `done`
+
+`delta` remains as a backward-compatible alias for final text. Tool progress should stay temporary in the UI; final answers should render ordinary Markdown and not require JSON parsing from prose.
+
+Server logs are request-scoped as `[agent <id>] ...` and are the main debugging path for model rounds, tool calls, current-catalog lookups, proposal generation, and UI action validation.
+
+## Historical Course Workflow
+
+History collection is offering-first and mostly manual. Add or update manifests in `data/history_manifests/`, then run the relevant history scripts.
+
+Typical flow:
 
 ```bash
 npm run history:import-manifest -- 6.3900
@@ -104,17 +242,31 @@ npm run history:fetch-docs -- 6.3900
 OPENROUTER_API_KEY="your_openrouter_key" npm run history:extract-policies -- 6.3900
 OPENROUTER_API_KEY="your_openrouter_key" npm run history:ablate-markdown -- 6.3900 --limit 4 --jobs 4
 OPENROUTER_API_KEY="your_openrouter_key" npm run history:rewrite-markdown -- 6.3900 --jobs 4
-
-# Or run the full manual pipeline:
-npm run history:collect -- 6.3900
 ```
 
-`history:ablate-markdown` is read-only: it samples cached history documents, runs several prompt variants in parallel, scores whether the model produced concise display-ready offering Markdown, and prints comparison outputs. It does not write to `data/course_history.db`.
+`history:ablate-markdown` is read-only. `history:rewrite-markdown` rewrites display-ready offering Markdown from cached documents without changing source coverage.
 
-`history:rewrite-markdown` reuses cached source documents and rewrites only each offering's display Markdown. Use it after prompt ablation when the source coverage is acceptable but the displayed wording needs regeneration.
+## Firebase Persistence
 
-The `/api/history/*` routes are read-only. Chat and planner flows do not write history data.
+When Firebase config is present, the frontend stores user data in:
+
+```text
+users/{uid}
+```
+
+Fields include `email`, `onboardingCompleted`, `profile`, `fourYearPlan`, `activeSem`, `onboarding`, `personalCourseMarkdown`, and `schemaVersion`.
+
+See `docs/firebase-auth.md` for setup and persistence details.
+
+## Development Notes
+
+- Minimum viewport is 1100px wide; mobile layout is not supported.
+- Local script and stylesheet URLs in `index.html` use manual cache-busting query params. Bump the relevant `?v=` value after frontend changes that may be cached.
+- Dark mode and light mode tokens live in `styles.css`; MIT red is the primary accent.
+- Keep `FourYearPlan` as a legacy read-only export unless future portfolio planning is explicitly requested.
+- Keep current course search and agent tools grounded in `server/current/*`.
+- Do not expose `FRDATA.matchScores` as real personalized current-course scoring.
 
 ## Documentation Maintenance
 
-Multiple agents may work in this repository at the same time. Any change that alters setup, data generation, API contracts, product scope, scripts, schemas, prompt assets, or agent behavior must update the relevant docs in the same change (`README.md`, `CLAUDE.md`, prompt files, or the closest domain doc). Treat generated-data provenance, including the `data/courses.json` generation rule above, as maintained project state.
+When changing setup, scripts, generated data, API contracts, schemas, product scope, prompt assets, agent behavior, or data provenance, update the relevant documentation in the same change. At minimum, keep `README.md`, `AGENTS.md`, prompt files, and nearby domain docs consistent with the code.
