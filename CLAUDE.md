@@ -61,10 +61,10 @@ The active term selector is generated in `data.js` from the current date, using 
 - `FRDATA.matchScores` — legacy mock/demo match score breakdowns. Do not expose these through current catalog or agent tool summaries as real current/personalized scores.
 - `FRDATA.fourYearPlan`, `FRDATA.semesterLabels`, `FRDATA.semesterOrder`, `FRDATA.defaultActiveSem` — term-aware seed plan data; the editable schedule is `fourYearPlan[activeSem]`
 - `FRDATA.termOptions` — rolling term picker options generated from the current date
-- `FRDATA.fetchCurrentCourse(id)` / `FRDATA.fetchCurrentSearch(q)` / `FRDATA.fetchCurrentCatalog()` — server-backed current catalog helpers. Do not silently fall back to mock data when these APIs fail.
+- `FRDATA.fetchCurrentCourse(id)` / `FRDATA.fetchCurrentSearch(query, maxResults, filters)` / `FRDATA.fetchCurrentCatalog()` — server-backed current catalog helpers. Search filters support `semester`, `includeUnavailable`, `departments`, `requirements`, `areas`, and `maxWorkload`. Do not silently fall back to mock data when these APIs fail.
 - `FRDATA.getCourse(id)` / `FRDATA.getMatch(id)` — legacy fallback lookup helpers for demo UI only
 
-The planner's manual course search path must call `FRDATA.fetchCurrentSearch(...)` and treat `/api/current/search` as the primary source. Cache current search results for schedule/detail display, but do not reintroduce mock catalog filtering as the main user path.
+The planner's manual course search path must call `FRDATA.fetchCurrentSearch(...)` and treat `/api/current/search` as the primary source. It should pass the selected `activeSem` (or four-year-plan picker term), default to courses offered in that term, and require an explicit `includeUnavailable` toggle to show other terms. Cache current search results for schedule/detail display, but do not reintroduce mock catalog filtering as the main user path. Real current rows must never inherit mock course facts.
 
 Course `area` is computed from course ID prefix: `6.` → `cs`, `18.` → `math`, `8.` → `physics`, `7.` → `bio`, HASS-prefix numbers → `hass`.
 

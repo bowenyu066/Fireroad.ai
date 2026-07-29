@@ -26,6 +26,12 @@ function splitRequirements(raw) {
     .filter(Boolean);
 }
 
+function finiteNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
 function formatTime(raw) {
   const value = String(raw || '').trim();
   if (!value) return '';
@@ -111,7 +117,9 @@ function isGenericSpecialTitle(title) {
 }
 
 function normalizeCurrentCourse(raw, options = {}) {
-  const mockCourse = options.mockCourse || findMockCourse(raw && (raw.subject_id || raw.id));
+  // A real catalog row must stay fully grounded in that row. Mock fields are
+  // allowed only when the entire catalog is running in explicit demo mode.
+  const mockCourse = raw ? null : (options.mockCourse || findMockCourse(options.courseId));
   const id = normalizeCourseId((raw && (raw.subject_id || raw.id)) || (mockCourse && mockCourse.id));
   if (!id) return null;
 
@@ -122,15 +130,15 @@ function normalizeCurrentCourse(raw, options = {}) {
     ...asArray(mockCourse && mockCourse.satisfies),
   ].filter((value, index, list) => list.indexOf(value) === index);
 
-  const inClassHours = Number(raw && raw.in_class_hours);
-  const outOfClassHours = Number(raw && raw.out_of_class_hours);
-  const hasHourParts = Number.isFinite(inClassHours) || Number.isFinite(outOfClassHours);
+  const inClassHours = finiteNumber(raw && raw.in_class_hours);
+  const outOfClassHours = finiteNumber(raw && raw.out_of_class_hours);
+  const hasHourParts = inClassHours !== null || outOfClassHours !== null;
   const totalHours = hasHourParts
-    ? Number(((Number.isFinite(inClassHours) ? inClassHours : 0) + (Number.isFinite(outOfClassHours) ? outOfClassHours : 0)).toFixed(2))
+    ? Number(((inClassHours || 0) + (outOfClassHours || 0)).toFixed(2))
     : (mockCourse && mockCourse.hydrant) || null;
 
   const rawSchedule = (raw && raw.schedule) || (mockCourse && mockCourse.schedule) || '';
-  const ratingValue = Number(raw && raw.rating);
+  const ratingValue = finiteNumber(raw && raw.rating);
 
   const name = (raw && raw.title) || (mockCourse && mockCourse.name) || id;
   const isSpecial = /^[A-Z0-9]+\.S\d/i.test(id);
@@ -139,19 +147,19 @@ function normalizeCurrentCourse(raw, options = {}) {
     id,
     name,
     desc: (raw && raw.description) || (mockCourse && mockCourse.desc) || '',
-    units: Number(raw && raw.total_units) || (mockCourse && mockCourse.units) || 0,
+    units: finiteNumber(raw && raw.total_units) ?? (mockCourse && mockCourse.units) ?? 0,
     instructorText: asArray(raw && raw.instructors).join(', ') || (mockCourse && mockCourse.instructor) || '',
     prerequisitesRaw: (raw && raw.prerequisites) || asArray(mockCourse && mockCourse.prereqs).join(', '),
     requirements,
     scheduleRaw: rawSchedule,
     scheduleDisplay: formatSchedule(rawSchedule) || rawSchedule || 'Schedule TBD',
     relatedSubjects: asArray(raw && raw.related_subjects),
-    rating: Number.isFinite(ratingValue)
+    rating: ratingValue !== null
       ? { value: ratingValue, scale: 7, source: 'fireroad' }
       : (mockCourse && mockCourse.rating ? { ...mockCourse.rating, scale: 5, source: 'mock' } : null),
-    enrollmentNumber: raw && raw.enrollment_number ? Number(raw.enrollment_number) : null,
-    inClassHours: Number.isFinite(inClassHours) ? inClassHours : null,
-    outOfClassHours: Number.isFinite(outOfClassHours) ? outOfClassHours : null,
+    enrollmentNumber: finiteNumber(raw && raw.enrollment_number),
+    inClassHours,
+    outOfClassHours,
     totalHours,
     catalogUrl: (raw && raw.url) || null,
     oldId: (raw && raw.old_id) || null,
@@ -165,12 +173,12 @@ function normalizeCurrentCourse(raw, options = {}) {
     hasRealTitle: raw && raw.has_real_title !== undefined
       ? Boolean(raw.has_real_title)
       : !isSpecial || !isGenericSpecialTitle(name),
-    offered: {
-      fall: Boolean(raw && raw.offered_fall),
-      iap: Boolean(raw && raw.offered_IAP),
-      spring: Boolean(raw && raw.offered_spring),
-      summer: Boolean(raw && raw.offered_summer),
-    },
+    offered: raw ? {
+      fall: Boolean(raw.offered_fall),
+      iap: Boolean(raw.offered_IAP),
+      spring: Boolean(raw.offered_spring),
+      summer: Boolean(raw.offered_summer),
+    } : (mockCourse && mockCourse.offered) || null,
     level: (raw && raw.level) || null,
     area: (mockCourse && mockCourse.area) || areaForCourseId(id),
     source: raw ? 'fireroad' : 'mock',

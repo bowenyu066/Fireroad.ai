@@ -140,8 +140,9 @@ const semesterSeason = (semId) => {
 };
 
 const isOfferedInSemester = (course, semId) => {
+  if (!course) return false;
   const season = semesterSeason(semId);
-  return !season || !course?.offered || course.offered[season] !== false;
+  return !season || !course.offered || course.offered[season] !== false;
 };
 
 const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLabel }) => {
@@ -157,7 +158,13 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
     const courseId = String(id || '').trim().toUpperCase();
     if (!courseId || schedule.map((course) => String(course).toUpperCase()).includes(courseId)) return;
     const c = await FRDATA.fetchCurrentCourse(courseId);
-    if (!c) return;
+    if (!c) {
+      setMessages((m) => [...m, {
+        role: 'agent',
+        text: `I couldn't verify ${courseId} in the current catalog, so I did not change your plan. Please try again.`,
+      }]);
+      return;
+    }
     if (!isOfferedInSemester(c, activeSem)) {
       setMessages((m) => [...m, {
         role: 'agent',
@@ -177,7 +184,7 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
   const onRemoveCourse = async (id) => {
     const courseId = String(id || '').trim().toUpperCase();
     if (!schedule.includes(courseId)) return;
-    const c = await FRDATA.fetchCurrentCourse(courseId) || FRDATA.getCourse(courseId) || { id: courseId, name: courseId };
+    const c = await FRDATA.fetchCurrentCourse(courseId) || { id: courseId, name: courseId };
     setSchedule((s) => s.filter((x) => x !== courseId));
     setMessages((m) => [...m, {
       role: 'agent',
@@ -251,11 +258,16 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
       .filter((action) => action.type === 'add_course' || action.type === 'replace_course')
       .map((action) => String(action.courseId || '').trim().toUpperCase())
       .filter(Boolean))];
-    const coursesById = new Map((await Promise.all(addCourseIds.map(async (courseId) => {
+    const coursesById = new Map(await Promise.all(addCourseIds.map(async (courseId) => {
       const course = await FRDATA.fetchCurrentCourse(courseId).catch(() => null);
       return [courseId, course];
-    }))).filter(([, course]) => course));
-    const blockedCourseIds = new Set(addCourseIds.filter((courseId) => !isOfferedInSemester(coursesById.get(courseId), activeSem)));
+    })));
+    const unavailableCourseIds = new Set(addCourseIds.filter((courseId) => !coursesById.get(courseId)));
+    const notOfferedCourseIds = new Set(addCourseIds.filter((courseId) => {
+      const course = coursesById.get(courseId);
+      return course && !isOfferedInSemester(course, activeSem);
+    }));
+    const blockedCourseIds = new Set([...unavailableCourseIds, ...notOfferedCourseIds]);
     const addActions = actions.filter((action) => action.type === 'add_course' || action.type === 'replace_course');
     const lastAdded = addActions.map((action) => String(action.courseId || '').trim().toUpperCase()).filter((courseId) => !blockedCourseIds.has(courseId)).pop() || null;
 
@@ -297,10 +309,17 @@ const Planner = ({ schedule, setSchedule, messages, setMessages, planningTermLab
       setTimeout(() => setJustAddedId(null), 800);
     }
 
-    if (blockedCourseIds.size) {
+    if (unavailableCourseIds.size) {
       setMessages((m) => [...m, {
         role: 'agent',
-        text: `I skipped ${[...blockedCourseIds].join(', ')} because ${blockedCourseIds.size === 1 ? 'it is' : 'they are'} not offered in ${planningTermLabel}.`,
+        text: `I skipped ${[...unavailableCourseIds].join(', ')} because I couldn't verify ${unavailableCourseIds.size === 1 ? 'it' : 'them'} in the current catalog. Please try again.`,
+      }]);
+    }
+
+    if (notOfferedCourseIds.size) {
+      setMessages((m) => [...m, {
+        role: 'agent',
+        text: `I skipped ${[...notOfferedCourseIds].join(', ')} because ${notOfferedCourseIds.size === 1 ? 'it is' : 'they are'} not offered in ${planningTermLabel}.`,
       }]);
     }
 
@@ -778,6 +797,7 @@ const App = () => {
     const courseId = String(id || '').trim().toUpperCase();
     if (!courseId || schedule.map((item) => String(item).toUpperCase()).includes(courseId)) return;
     const course = await FRDATA.fetchCurrentCourse(courseId);
+    if (!course) return;
     if (!isOfferedInSemester(course, activeSem)) return;
     setSchedule((s) => [...s, courseId]);
   };

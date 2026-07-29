@@ -21,7 +21,7 @@
     "start": "npm run history:setup && node server.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {
     "better-sqlite3": "^12.9.0",

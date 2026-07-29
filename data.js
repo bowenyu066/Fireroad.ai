@@ -86,7 +86,9 @@ window.FRDATA = (function (source) {
 
   const toPlannerCourse = (current) => {
     if (!current) return null;
-    const fallback = getCourse(current.id);
+    // Real API rows must never inherit legacy demo facts. The fallback is only
+    // used when the server explicitly reports a DEMO_MODE mock catalog row.
+    const fallback = current.source === 'mock' ? getCourse(current.id) : null;
     const ratingValue = current.rating && typeof current.rating.value === 'number'
       ? (current.rating.scale === 7 ? (current.rating.value / 7) * 5 : current.rating.value)
       : null;
@@ -153,8 +155,19 @@ window.FRDATA = (function (source) {
     }
   };
 
-  const fetchCurrentSearch = async (query = '', maxResults = 20) => {
-    const payload = await fetchJson(`/api/current/search?q=${encodeURIComponent(query)}&max_results=${encodeURIComponent(maxResults)}`);
+  const fetchCurrentSearch = async (query = '', maxResults = 20, filters = {}) => {
+    const params = new URLSearchParams({
+      q: String(query || ''),
+      max_results: String(maxResults),
+    });
+    if (filters.semester) params.set('semester', filters.semester);
+    if (filters.includeUnavailable) params.set('include_unavailable', 'true');
+    if (filters.maxWorkload) params.set('max_workload', String(filters.maxWorkload));
+    ['departments', 'areas', 'requirements'].forEach((key) => {
+      const values = Array.isArray(filters[key]) ? filters[key].filter(Boolean) : [];
+      if (values.length) params.set(key, values.join(','));
+    });
+    const payload = await fetchJson(`/api/current/search?${params.toString()}`);
     return cacheCourses((payload.results || []).map(toPlannerCourse).filter(Boolean));
   };
 

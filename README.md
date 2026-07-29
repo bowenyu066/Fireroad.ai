@@ -6,7 +6,7 @@ The planner treats `fourYearPlan[activeSem]` as the single editable schedule. Re
 
 ## Features
 
-- Active-semester schedule planning with current MIT course data
+- Active-semester schedule planning with term-aware course search and department, requirement, and workload filters
 - AI chat assistant for course search, recommendations, schedule summaries, and validated active-semester changes
 - Current course detail views backed by a normalized local Fireroad catalog snapshot
 - Historical course detail views backed by a local SQLite history database
@@ -18,7 +18,7 @@ The planner treats `fourYearPlan[activeSem]` as the single editable schedule. Re
 
 Requirements:
 
-- Node.js 18 or newer
+- Node.js 20 or newer
 - npm
 - Optional: an OpenRouter API key for AI chat and onboarding prompt routes
 
@@ -160,9 +160,9 @@ Important local data files:
 - `data/history_manifests/`: manual historical offering manifests
 - `data/most_taken.json`: parsed EECSIS "Who's Taken What" data
 
-`window.FRDATA` in `data.js` is the browser data adapter and seed layer. Current catalog UI paths should use server-backed helpers such as `FRDATA.fetchCurrentSearch(...)`, `FRDATA.fetchCurrentCourse(...)`, and `FRDATA.fetchCurrentCatalog()`.
+`window.FRDATA` in `data.js` is the browser data adapter and seed layer. Current catalog UI paths should use server-backed helpers such as `FRDATA.fetchCurrentSearch(query, maxResults, filters)`, `FRDATA.fetchCurrentCourse(...)`, and `FRDATA.fetchCurrentCatalog()`. Search filters support `semester`, `includeUnavailable`, `departments`, `requirements`, `areas`, and `maxWorkload`.
 
-Mock data and legacy match scores are for demos only. Current catalog or agent-facing paths should not silently fall back to mock data unless `DEMO_MODE=true`.
+Mock data and legacy match scores are for demos only. Real current-catalog rows never merge mock requirements, workload, schedule, rating, or other course facts. Current catalog or agent-facing paths should not silently fall back to mock data unless `DEMO_MODE=true`.
 
 Requirement evaluation credits official catalog equivalences for named course slots. Curated petition examples remain advisory because the department decides every petition case by case; they never auto-credit the audit. GIR/HASS counts use only the student's actual unique courses, so aliases cannot inflate subject totals.
 
@@ -184,9 +184,11 @@ The streaming route uses Server-Sent Events. Final assistant text is Markdown, w
 Current catalog:
 
 - `GET /api/current/course/:courseId`
-- `GET /api/current/search?q=...`
+- `GET /api/current/search?q=...&semester=F26&departments=6,18&requirements=REST&max_workload=12`
 - `GET /api/current/catalog`
 - `POST /api/current/recommendations`
+
+Current search filters to the requested semester by default. Set `include_unavailable=true` only when the UI intentionally asks to show courses from other terms.
 
 Requirements:
 
