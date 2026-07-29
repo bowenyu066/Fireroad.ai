@@ -125,6 +125,8 @@ python3 scripts/fetch_special_subjects.py --term "Fall 2026"
 
 Curate topic names in `data/special_subject_names.json`, then rerun the script. Official catalog equivalences count automatically in requirement checks; examples in `data/substitutions.json` remain advisory and never grant automatic credit.
 
+Requirement snapshots come from Fireroad. Narrow corrections for newer official departmental audit charts live in `data/requirement-overrides.json` so refreshing generated snapshots does not silently remove them.
+
 ### Project Shape
 
 There is no frontend build step. The browser loads React, ReactDOM, Babel standalone, and project files directly from ordered script tags in `index.html`.

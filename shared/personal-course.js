@@ -237,6 +237,15 @@
     return plan;
   }
 
+  function requirementCourseIds(profileTaken = [], markdown = '', scheduled = []) {
+    const parsedIds = summarize(markdown).completedCourseIds;
+    return [...new Set([
+      ...(Array.isArray(profileTaken) ? profileTaken : []),
+      ...parsedIds,
+      ...(Array.isArray(scheduled) ? scheduled : []),
+    ].map(normalizeCourseId).filter(Boolean))];
+  }
+
   function summarize(markdown) {
     const courses = parseCourseRows(markdown);
     const coursePreferences = parseCoursePreferences(markdown);
@@ -270,6 +279,7 @@
     parseCourseRows,
     parseCoursePreferences,
     planFromCompletedCourses,
+    requirementCourseIds,
     sectionBody,
     summarize,
     termIdFromLabel,

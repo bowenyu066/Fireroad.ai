@@ -16,6 +16,7 @@ const { expandEquivalents } = require('./equivalence');
 const { getCurrentCatalog } = require('../current/fireroad');
 const { normalizeCourseId } = require('../current/normalize');
 const requirementIndex = require('../../data/reqs.json');
+const requirementOverrides = require('../../data/requirement-overrides.json');
 
 const REQS_DIR = path.join(__dirname, '..', '..', 'data', 'requirements');
 
@@ -74,7 +75,54 @@ function resolveMajorKey(raw) {
 function loadReqJson(majorKey) {
   const file = path.join(REQS_DIR, `${majorKey}.json`);
   if (!fs.existsSync(file)) return null;
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return null; }
+  try {
+    const reqJson = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return applyRequirementOverrides(majorKey, reqJson);
+  } catch {
+    return null;
+  }
+}
+
+function findRequirementNodeByTitle(node, title) {
+  if (!node || typeof node !== 'object') return null;
+  if (node.title === title) return node;
+  for (const child of node.reqs || []) {
+    const match = findRequirementNodeByTitle(child, title);
+    if (match) return match;
+  }
+  return null;
+}
+
+function requirementNodeAtPath(root, targetPath = []) {
+  return targetPath.reduce((node, segment) => (
+    node && Object.prototype.hasOwnProperty.call(node, segment) ? node[segment] : null
+  ), root);
+}
+
+// Fireroad's requirement feed can lag the official departmental audit charts.
+// Keep generated snapshots untouched and apply small, sourced corrections here.
+function applyRequirementOverrides(majorKey, reqJson) {
+  const override = requirementOverrides[majorKey];
+  if (!override || !Array.isArray(override.operations)) return reqJson;
+
+  override.operations.forEach((operation) => {
+    const target = operation.targetTitle
+      ? findRequirementNodeByTitle(reqJson, operation.targetTitle)
+      : requirementNodeAtPath(reqJson, operation.targetPath);
+    if (!target || !Array.isArray(target.reqs)) return;
+
+    const existing = new Set(target.reqs
+      .filter((child) => child && child.req && !child.reqs)
+      .map((child) => normalizeCourseId(child.req)));
+    (operation.addCourses || []).forEach((courseId) => {
+      const normalized = normalizeCourseId(courseId);
+      if (!normalized || existing.has(normalized)) return;
+      target.reqs.push({ req: normalized });
+      existing.add(normalized);
+    });
+  });
+
+  return reqJson;
 }
 
 // Expand taken courses into GIR/HASS attribute codes, building a count map for
@@ -205,6 +253,7 @@ module.exports = {
   evaluateMajorRequirements,
   resolveMajorKey,
   loadReqJson,
+  applyRequirementOverrides,
   expandWithGirCodes,
   buildCatalogSamples,
   resolveMatchedCodes,

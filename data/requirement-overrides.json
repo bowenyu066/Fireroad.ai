@@ -1,0 +1,33 @@
+{
+  "major6-4": {
+    "source": "https://eecsis.mit.edu/degree_requirements.pcgi?program=6-4",
+    "asOf": "Fall 2026",
+    "reason": "The Fireroad major6-4 snapshot predates the current MIT EECS CI-M designation for 6.4610.",
+    "operations": [
+      {
+        "targetTitle": "Course 6 CI-M",
+        "addCourses": ["6.4610"]
+      },
+      {
+        "targetTitle": "Social and Ethical Responsibilities of Computing",
+        "addCourses": ["6.4610"]
+      },
+      {
+        "targetTitle": "Mandatory Application CI-M",
+        "addCourses": ["6.4610"]
+      },
+      {
+        "targetTitle": "AI+D_AUS",
+        "addCourses": ["6.4610"]
+      },
+      {
+        "targetTitle": "Application CI-M",
+        "addCourses": ["6.4610"]
+      },
+      {
+        "targetPath": ["reqs", 4, "reqs", 1, "reqs", 0],
+        "addCourses": ["6.4610"]
+      }
+    ]
+  }
+}

@@ -1356,11 +1356,14 @@ const MajorRequirementSection = ({ majorKey, allCourses, expanded, toggle }) => 
 };
 
 const RequirementsPanel = ({ schedule }) => {
-  const { profile } = useApp();
+  const { profile, personalCourseMarkdown } = useApp();
   const [expanded, setExpanded] = useState({});
 
-  const taken = (profile && profile.taken) || [];
-  const allCourses = [...new Set([...taken, ...schedule])];
+  const allCourses = PersonalCourse.requirementCourseIds(
+    (profile && profile.taken) || [],
+    personalCourseMarkdown || '',
+    schedule,
+  );
   const toggle = (id) => setExpanded((e) => ({ ...e, [id]: !e[id] }));
 
   const majorKey = toMajorKey(profile && profile.major);
