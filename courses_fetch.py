@@ -12,8 +12,7 @@ print(f"Raw: {len(all_courses)} courses")
 courses = [c for c in all_courses if
     not c.get('is_historical', False) and
     (c.get('offered_fall') or c.get('offered_spring')) and
-    c.get('description') and
-    'S' not in c['subject_id'].split('.')[1] 
+    c.get('description')
 ]
 print(f"Filtered: {len(courses)} courses")
 

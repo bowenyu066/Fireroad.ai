@@ -3,7 +3,9 @@ const { summarize: summarizePersonalCourse } = require('../../shared/personal-co
 const { fetchCurrentCourse, searchCurrentCourses } = require('../current/fireroad');
 const { normalizeCourseId } = require('../current/normalize');
 const { createHistoryRepo } = require('../history/repo');
-const { checkMajorRequirements, getRequirementGroupCourses, getCourseRequirementGroups, resolveMajorKey } = require('../requirements');
+const { getRequirementGroupCourses, getCourseRequirementGroups, resolveMajorKey } = require('../requirements');
+const { evaluateMajorRequirements } = require('../requirements/evaluate');
+const { getKnownSubstitutions } = require('../requirements/equivalence');
 const mostTaken = require('../../data/most_taken.json');
 
 const asArray = (value) => (Array.isArray(value) ? value : []);
@@ -106,9 +108,9 @@ function completedCourseIds(profile = {}, personal = { completedCourseIds: [] })
   ].filter(Boolean));
 }
 
-function requirementStatusForProfile(profile = {}, courseIds = []) {
+async function requirementStatusForProfile(profile = {}, courseIds = []) {
   const majorKey = resolveMajorKey(profile.majorKey || profile.major);
-  const checked = checkMajorRequirements(profile.majorKey || profile.major, courseIds);
+  const checked = await evaluateMajorRequirements(profile.majorKey || profile.major, courseIds);
   if (!majorKey || !checked) {
     return {
       available: false,
@@ -169,13 +171,13 @@ function compactPersonalization(profile = {}) {
   };
 }
 
-function buildStudentPlanningContext(context = {}) {
+async function buildStudentPlanningContext(context = {}) {
   const profile = normalizeProfile(context.profile || {});
   const personal = personalSummaryFromContext(context);
   const completed = completedCourseIds(profile, personal);
   const schedule = normalizeSchedule(context.schedule);
   const allCoursesForRequirements = unique([...completed, ...schedule]);
-  const requirementStatus = requirementStatusForProfile(profile, allCoursesForRequirements);
+  const requirementStatus = await requirementStatusForProfile(profile, allCoursesForRequirements);
 
   return {
     profile: {
@@ -410,6 +412,7 @@ function currentCourseSummary(course) {
     rating: course.rating,
     enrollmentNumber: course.enrollmentNumber,
     desc: course.desc,
+    ...(course.isSpecial ? { isSpecial: true, hasRealTitle: course.hasRealTitle, specialTopic: course.specialTopic || null } : {}),
   };
 }
 
@@ -457,7 +460,7 @@ async function summarizeSemesterPlan(args = {}, context = {}) {
   const profile = profileForTool(args, context);
   const personal = personalSummaryFromContext(context);
   const completed = completedCourseIds(profile, personal);
-  const requirementStatus = requirementStatusForProfile(profile, unique([...completed, ...schedule]));
+  const requirementStatus = await requirementStatusForProfile(profile, unique([...completed, ...schedule]));
   const courses = (await Promise.all(schedule.map(fetchCurrentCourse))).filter(Boolean);
   const coveredSet = new Set();
 
@@ -684,7 +687,7 @@ async function recommendCourses(args = {}, context = {}) {
     : null;
   const personal = personalSummaryFromContext(context);
   const completed = completedCourseIds(profile, personal);
-  const requirementStatus = requirementStatusForProfile(profile, unique([...completed, ...schedule]));
+  const requirementStatus = await requirementStatusForProfile(profile, unique([...completed, ...schedule]));
   const targetRequirements = asArray(args.target_requirements).length
     ? asArray(args.target_requirements).map(String)
     : requirementStatus.unsatisfiedGroups.map((group) => group.label);
@@ -944,15 +947,62 @@ async function courseRequirementGroupsTool(args = {}, context = {}) {
   };
 }
 
-function checkRequirementsTool(args = {}, context = {}) {
+async function checkRequirementsTool(args = {}, context = {}) {
   const profile = profileForTool(args, context);
   const schedule = scheduleForTool(args, context);
   const allCourses = unique([...asArray(profile.taken).map(normalizeCourseId), ...schedule]);
-  const result = checkMajorRequirements(args.major || profile.major, allCourses);
+  const result = await evaluateMajorRequirements(args.major || profile.major, allCourses);
   if (!result) {
     return { found: false, reason: `No requirement data for major: ${args.major || profile.major || 'unknown'}` };
   }
   return { found: true, ...result };
+}
+
+// Advisory petition/substitution judgment. Surfaces both courses' context plus any
+// curated example from data/substitutions.json; the model explains the comparison.
+// Does NOT mutate the plan or credit the substitution toward requirements. MIT EECS
+// decides every petition case by case.
+async function evaluateSubstitutionTool(args = {}, context = {}) {
+  const profile = profileForTool(args, context);
+  const proposedId = normalizeCourseId(args.course || args.proposed_course || args.substitute);
+  const targetId = normalizeCourseId(args.for_requirement || args.target_course || args.original_course);
+  if (!proposedId || !targetId) {
+    return {
+      ok: false,
+      reason: 'Provide both `course` (what the student wants to take) and `for_requirement` (the course it would substitute for).',
+    };
+  }
+
+  const [proposed, target] = await Promise.all([fetchCurrentCourse(proposedId), fetchCurrentCourse(targetId)]);
+  const known = getKnownSubstitutions(proposedId).find((entry) =>
+    normalizeCourseId(entry.course) === proposedId
+    && asArray(entry.satisfies).map(normalizeCourseId).includes(targetId));
+
+  const sharedRequirements = proposed && target
+    ? asArray(proposed.requirements).filter((req) => asArray(target.requirements).includes(req))
+    : [];
+
+  return {
+    ok: true,
+    proposedCourse: proposed ? currentCourseSummary(proposed) : { id: proposedId, found: false },
+    targetCourse: target ? currentCourseSummary(target) : { id: targetId, found: false },
+    knownSubstitution: known
+      ? {
+        status: known.approved ? 'prior_approval_recorded' : 'advisory_only',
+        note: known.note || null,
+        source: known.source || 'data/substitutions.json',
+      }
+      : null,
+    comparison: proposed && target ? {
+      proposedUnits: proposed.units,
+      targetUnits: target.units,
+      unitDelta: (Number(proposed.units) || 0) - (Number(target.units) || 0),
+      sharedRequirementAttributes: sharedRequirements,
+      sameArea: proposed.area === target.area,
+    } : null,
+    major: args.major || profile.major || null,
+    advisoryNote: 'Advisory only — MIT EECS decides every petition case by case and documents that no petition is always approved. Explain relevant content, prerequisite, unit, and level differences; do not promise a likelihood, credit the requirement, or mutate the plan. Tell the student to consult their advisor and submit early through the department audit.',
+  };
 }
 
 async function checkScheduleConflictsTool(args = {}, context = {}) {
@@ -987,7 +1037,7 @@ async function checkScheduleConflictsTool(args = {}, context = {}) {
   };
 }
 
-function checkDegreeRequirementsTool(args = {}, context = {}) {
+async function checkDegreeRequirementsTool(args = {}, context = {}) {
   const profile = profileForTool(args, context);
   const personal = personalSummaryFromContext(context);
   const schedule = scheduleForTool(args, context);
@@ -1283,6 +1333,22 @@ const toolSchemas = [
   {
     type: 'function',
     function: {
+      name: 'evaluate_substitution',
+      description: 'Compare one course with a requirement target for a possible departmental petition. Returns both courses\' context, any curated advisory example, and a content comparison. MIT EECS decides every petition case by case; do not promise approval, auto-credit the requirement, or mutate the plan.',
+      parameters: {
+        type: 'object',
+        properties: {
+          course: { type: 'string', description: 'Course the student wants to take or use (e.g. 6.5210)' },
+          for_requirement: { type: 'string', description: 'The course / requirement slot it would substitute for (e.g. 6.1210)' },
+          major: { type: 'string', description: 'Optional major context, e.g. "Course 6-3"' },
+        },
+        required: ['course', 'for_requirement'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name: 'get_course_history_summary',
       description: 'Get read-only historical offering and policy coverage summary for one course. Use as context or risk signal; do not use it to mutate a plan.',
       parameters: {
@@ -1323,6 +1389,7 @@ const toolHandlers = {
   course_satisfies: courseRequirementGroupsTool,
   get_requirement_courses: getRequirementCoursesTool,
   check_requirements: checkRequirementsTool,
+  evaluate_substitution: evaluateSubstitutionTool,
   check_schedule_conflicts: checkScheduleConflictsTool,
   get_course_history_summary: getCourseHistorySummary,
   get_offering_history: getOfferingHistory,

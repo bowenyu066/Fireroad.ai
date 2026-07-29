@@ -81,6 +81,7 @@ Do not commit backend secrets, service account JSON, or private API keys. The br
 ```bash
 npm run dev                       # initialize history DB, then start the server
 npm start                         # same as dev
+npm test                          # requirement/equivalence and catalog normalization tests
 npm run history:setup             # initialize and seed history DB
 npm run history:init              # create/update SQLite schema
 npm run history:seed              # seed demo course rows
@@ -99,6 +100,14 @@ python3 scripts/fetch_courses.py
 ```
 
 That script fetches `https://fireroad.mit.edu/courses/all?full=true`, excludes historical subjects, keeps subjects offered in fall or spring, and writes `data/courses.json`.
+
+Special subjects (numbers with an `S` after the dot, e.g. `6.S062`) use a separate EECS-only overlay because their topic names change every term and the Fireroad API only returns a generic placeholder title. Rebuild it once per semester:
+
+```bash
+python3 scripts/fetch_special_subjects.py --term "Fall 2026"
+```
+
+The script infers the offering season from `--term` (or accepts `--season` explicitly), so a Fall-labeled artifact cannot accidentally include Spring-only subjects. Curate the specific topic names in `data/special_subject_names.json` (the EECS subject-updates page is JS-rendered, so names cannot be scraped reliably from the live URL — hand-edit, or pass `--page` a saved copy of the rendered page). The overlay is merged into the catalog at load time by `server/current/fireroad.js`.
 
 ## Architecture
 
@@ -142,6 +151,9 @@ The active term selector is generated in `data.js` from the current date. Do not
 Important local data files:
 
 - `data/courses.json`: generated current catalog snapshot
+- `data/special_subjects.json`: generated EECS special-subjects overlay (merged into the catalog)
+- `data/special_subject_names.json`: hand-maintained per-term topic names for special subjects
+- `data/substitutions.json`: curated advisory examples for course-substitution petitions
 - `data/reqs.json`: index of MIT requirement programs
 - `data/requirements/`: generated requirement files and parsed JSON
 - `data/course_history.db`: local SQLite history database
@@ -151,6 +163,8 @@ Important local data files:
 `window.FRDATA` in `data.js` is the browser data adapter and seed layer. Current catalog UI paths should use server-backed helpers such as `FRDATA.fetchCurrentSearch(...)`, `FRDATA.fetchCurrentCourse(...)`, and `FRDATA.fetchCurrentCatalog()`.
 
 Mock data and legacy match scores are for demos only. Current catalog or agent-facing paths should not silently fall back to mock data unless `DEMO_MODE=true`.
+
+Requirement evaluation credits official catalog equivalences for named course slots. Curated petition examples remain advisory because the department decides every petition case by case; they never auto-credit the audit. GIR/HASS counts use only the student's actual unique courses, so aliases cannot inflate subject totals.
 
 ## API Overview
 

@@ -106,6 +106,10 @@ function findMockCourse(courseId) {
   return mockData.catalog.find((course) => normalizeCourseId(course.id) === id) || null;
 }
 
+function isGenericSpecialTitle(title) {
+  return /special (subject|studies|problems|laboratory)/i.test(String(title || ''));
+}
+
 function normalizeCurrentCourse(raw, options = {}) {
   const mockCourse = options.mockCourse || findMockCourse(raw && (raw.subject_id || raw.id));
   const id = normalizeCourseId((raw && (raw.subject_id || raw.id)) || (mockCourse && mockCourse.id));
@@ -128,9 +132,12 @@ function normalizeCurrentCourse(raw, options = {}) {
   const rawSchedule = (raw && raw.schedule) || (mockCourse && mockCourse.schedule) || '';
   const ratingValue = Number(raw && raw.rating);
 
+  const name = (raw && raw.title) || (mockCourse && mockCourse.name) || id;
+  const isSpecial = /^[A-Z0-9]+\.S\d/i.test(id);
+
   return {
     id,
-    name: (raw && raw.title) || (mockCourse && mockCourse.name) || id,
+    name,
     desc: (raw && raw.description) || (mockCourse && mockCourse.desc) || '',
     units: Number(raw && raw.total_units) || (mockCourse && mockCourse.units) || 0,
     instructorText: asArray(raw && raw.instructors).join(', ') || (mockCourse && mockCourse.instructor) || '',
@@ -148,6 +155,16 @@ function normalizeCurrentCourse(raw, options = {}) {
     totalHours,
     catalogUrl: (raw && raw.url) || null,
     oldId: (raw && raw.old_id) || null,
+    equivalentSubjects: asArray(raw && raw.equivalent_subjects).map(normalizeCourseId),
+    meetsWithSubjects: asArray(raw && raw.meets_with_subjects).map(normalizeCourseId),
+    // Special subjects (number has an "S" after the dot, e.g. 6.S062). `specialTopic`
+    // is the real per-term topic name when known; otherwise the title stays a generic
+    // placeholder and `hasRealTitle` is false so the UI/agent can say "topic TBA".
+    isSpecial,
+    specialTopic: (raw && raw.special_topic) || null,
+    hasRealTitle: raw && raw.has_real_title !== undefined
+      ? Boolean(raw.has_real_title)
+      : !isSpecial || !isGenericSpecialTitle(name),
     offered: {
       fall: Boolean(raw && raw.offered_fall),
       iap: Boolean(raw && raw.offered_IAP),
@@ -172,5 +189,6 @@ module.exports = {
   formatSchedule,
   normalizeCourseId,
   normalizeCurrentCourse,
+  isGenericSpecialTitle,
   parseDaysTime,
 };

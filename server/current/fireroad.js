@@ -6,6 +6,11 @@ const { findMockCourse, normalizeCourseId, normalizeCurrentCourse } = require('.
 
 const DEFAULT_CATALOG_PATH = path.join(__dirname, '..', '..', 'data', 'courses.json');
 const CURRENT_CATALOG_PATH = process.env.CURRENT_CATALOG_PATH || DEFAULT_CATALOG_PATH;
+// EECS special-subjects overlay (numbers with an "S" after the dot, e.g. 6.S062).
+// Generated once per semester by scripts/fetch_special_subjects.py; carries the
+// canonical Fireroad course records with real per-term topic names merged in.
+const SPECIAL_SUBJECTS_PATH = process.env.SPECIAL_SUBJECTS_PATH
+  || path.join(__dirname, '..', '..', 'data', 'special_subjects.json');
 const CATALOG_TTL_MS = Number(process.env.CURRENT_CATALOG_TTL_MS) || 5 * 60 * 1000;
 const DEMO_MODE = String(process.env.DEMO_MODE || '').toLowerCase() === 'true';
 
@@ -50,14 +55,43 @@ function listRawCourses(raw) {
   throw new Error('Current catalog snapshot must be a JSON array or object.');
 }
 
+// Load the EECS special-subjects overlay, if present. Returns normalized courses.
+// Missing/invalid overlay is non-fatal — the base catalog still loads.
+async function loadSpecialSubjects() {
+  let file;
+  try {
+    file = await fs.readFile(SPECIAL_SUBJECTS_PATH, 'utf8');
+  } catch {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(file);
+    const subjects = Array.isArray(parsed) ? parsed : (parsed.subjects || []);
+    return subjects
+      .filter((course) => course && course.public !== false)
+      .map((course) => normalizeCurrentCourse(course, { mockCourse: findMockCourse(course.subject_id) }))
+      .filter(Boolean);
+  } catch (error) {
+    console.warn('[special subjects] failed to parse overlay:', error.message);
+    return [];
+  }
+}
+
 async function loadLocalCatalogSnapshot() {
   const file = await fs.readFile(CURRENT_CATALOG_PATH, 'utf8');
   const rawCourses = listRawCourses(JSON.parse(file));
 
-  const courses = rawCourses
+  const baseCourses = rawCourses
     .filter((course) => course && course.public !== false)
     .map((course) => normalizeCurrentCourse(course, { mockCourse: findMockCourse(course.subject_id) }))
     .filter(Boolean);
+
+  // Merge the special-subjects overlay: overlay records win by id so real topic
+  // names replace any generic placeholder already in the base snapshot.
+  const overlay = await loadSpecialSubjects();
+  const byId = new Map(baseCourses.map((c) => [c.id, c]));
+  overlay.forEach((c) => byId.set(c.id, c));
+  const courses = [...byId.values()];
 
   return {
     source: 'local_snapshot',
