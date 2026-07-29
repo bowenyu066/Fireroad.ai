@@ -7,6 +7,7 @@ const require = createRequire(import.meta.url);
 const { closeDb } = require('../../server/history/db.js');
 const { normalizeCourseId } = require('../../server/history/normalize.js');
 const { researchCourseHistory } = require('../../server/history/research.js');
+const { hasAiApiKey } = require('../../server/chat/provider.js');
 
 const DEFAULT_COURSES = ['6.1910', '6.1200', '6.4100', '6.3900'];
 const DEFAULT_CONCURRENCY = 2;
@@ -158,8 +159,8 @@ async function main() {
     return;
   }
 
-  if (!process.env.OPENROUTER_API_KEY) {
-    console.error('[history:batch] OPENROUTER_API_KEY is not set; model-guided source selection/extraction will fall back to heuristics.');
+  if (!hasAiApiKey()) {
+    console.error('[history:batch] AI provider API key is not set; model-guided source selection/extraction will fall back to heuristics.');
   }
 
   const startedAt = new Date().toISOString();

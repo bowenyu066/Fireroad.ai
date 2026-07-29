@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { closeDb, getDb } = require('../../server/history/db.js');
 const { buildCourseSeed } = require('../../server/history/research.js');
-const { DEFAULT_MODEL, chatJson } = require('../../server/history/openrouter.js');
+const { DEFAULT_MODEL, chatJson, hasAiApiKey } = require('../../server/history/openrouter.js');
 
 function parseArgs(argv) {
   const options = {
@@ -147,7 +147,7 @@ async function mapLimit(items, concurrency, worker) {
 async function run() {
   const options = parseArgs(process.argv.slice(2));
   if (!options.courseId) throw new Error('Usage: npm run history:rewrite-markdown -- <courseId> [--jobs 4] [--dry-run]');
-  if (!process.env.OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY is required for history markdown rewriting.');
+  if (!hasAiApiKey()) throw new Error('An API key is required for history markdown rewriting.');
 
   const db = getDb();
   const offerings = loadOfferings(db, options.courseId)

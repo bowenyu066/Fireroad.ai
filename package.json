@@ -2,7 +2,7 @@
   "name": "fireroad-ai-prototype",
   "version": "0.1.0",
   "private": true,
-  "description": "Static Fireroad.ai prototype with a tiny OpenRouter-backed course-planning agent server.",
+  "description": "Static Fireroad.ai prototype with a configurable course-planning agent server.",
   "main": "server.js",
   "scripts": {
     "test": "node --test test/*.test.js",

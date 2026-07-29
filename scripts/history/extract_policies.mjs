@@ -6,9 +6,9 @@ const require = createRequire(import.meta.url);
 const { getDb, initDb } = require('../../server/history/db.js');
 const { createHistoryRepo } = require('../../server/history/repo.js');
 const { normalizeTerm } = require('../../server/history/normalize.js');
+const { AI_MODEL, callAi, hasAiApiKey } = require('../../server/chat/provider.js');
 
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const MODEL = process.env.OPENROUTER_MODEL || process.env.HISTORY_EXTRACT_MODEL || 'openai/gpt-4.1-mini';
+const MODEL = process.env.HISTORY_EXTRACT_MODEL || AI_MODEL;
 const PROMPT_VERSION = 'history-policy-v1';
 
 function parseJson(text) {
@@ -32,44 +32,31 @@ function parseJson(text) {
 }
 
 async function callExtractor(document) {
-  if (!process.env.OPENROUTER_API_KEY) {
-    throw new Error('OPENROUTER_API_KEY is required for history extraction.');
+  if (!hasAiApiKey()) {
+    throw new Error('An API key is required for the configured AI provider.');
   }
 
   const text = String(document.rawText || '').slice(0, 18000);
-  const response = await fetch(OPENROUTER_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'http://localhost:3000',
-      'X-Title': 'Fireroad.ai history extraction',
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      messages: [
-        {
-          role: 'system',
-          content: [
-            'Extract course attendance and grading policy from the provided source text.',
-            'Return only JSON.',
-            'Use string values "yes", "no", or "unknown" for unknown/no fields; do not collapse unknown into no.',
-            'Evidence text must be a short exact or near-exact snippet from the source when possible.',
-          ].join(' '),
-        },
-        {
-          role: 'user',
-          content: `Document type: ${document.docType}\nURL: ${document.url || ''}\n\nSource text:\n${text}`,
-        },
-      ],
-      temperature: 0,
-      max_tokens: 900,
-    }),
+  const payload = await callAi({
+    model: MODEL,
+    messages: [
+      {
+        role: 'system',
+        content: [
+          'Extract course attendance and grading policy from the provided source text.',
+          'Return only JSON.',
+          'Use string values "yes", "no", or "unknown" for unknown/no fields; do not collapse unknown into no.',
+          'Evidence text must be a short exact or near-exact snippet from the source when possible.',
+        ].join(' '),
+      },
+      {
+        role: 'user',
+        content: `Document type: ${document.docType}\nURL: ${document.url || ''}\n\nSource text:\n${text}`,
+      },
+    ],
+    temperature: 0,
+    max_tokens: 900,
   });
-
-  const body = await response.text();
-  if (!response.ok) throw new Error(`OpenRouter ${response.status}: ${body.slice(0, 500)}`);
-  const payload = JSON.parse(body);
   const content = payload.choices?.[0]?.message?.content || '';
   try {
     return { rawModelOutput: content, parsed: parseJson(content) };

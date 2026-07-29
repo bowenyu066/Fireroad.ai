@@ -5,7 +5,7 @@ const { DB_PATH, getDb, initDb } = require('./db');
 const { createHistoryRepo } = require('./repo');
 const { normalizeCourseId, normalizeDocType, normalizeTerm } = require('./normalize');
 const { buildCourseHistorySummary, buildOfferingSummary, isDatedPastTerm } = require('./summary');
-const { DEFAULT_MODEL, chatJson } = require('./openrouter');
+const { DEFAULT_MODEL, chatJson, hasAiApiKey } = require('./openrouter');
 
 let pdfParse = null;
 try {
@@ -435,9 +435,9 @@ function normalizeModelCandidateUrls(value) {
 
 async function buildModelSearchPlan(seed, options) {
   const fallbackQueries = buildSearchQueries(seed, options);
-  if (!process.env.OPENROUTER_API_KEY) {
+  if (!hasAiApiKey()) {
     emitTrace(options, 'model.search_plan.skipped', {
-      reason: 'OPENROUTER_API_KEY missing',
+      reason: 'AI provider API key missing',
       fallbackQueries,
     });
     return { queries: fallbackQueries, candidateUrls: [], status: 'heuristic_no_key' };
@@ -678,10 +678,10 @@ function termRankForUrl(url) {
 
 async function selectSourcesWithModel(seed, candidates, options, plan) {
   const fallback = fallbackSourceSelection(candidates, options);
-  if (!process.env.OPENROUTER_API_KEY || candidates.length <= 1) {
+  if (!hasAiApiKey() || candidates.length <= 1) {
     const selected = mergeTermSpecificSources(seed, candidates, fallback, options);
     emitTrace(options, 'model.source_select.skipped', {
-      reason: !process.env.OPENROUTER_API_KEY ? 'OPENROUTER_API_KEY missing' : 'not enough candidates',
+      reason: !hasAiApiKey() ? 'AI provider API key missing' : 'not enough candidates',
       selectedCount: selected.length,
       selected: selected.map((source) => ({ url: source.url, docType: source.docType })),
     });
@@ -1027,11 +1027,11 @@ async function extractSourceResearch(seed, source, fetched, options) {
     };
   }
 
-  if (!process.env.OPENROUTER_API_KEY) {
+  if (!hasAiApiKey()) {
     emitTrace(options, 'model.source_extract.skipped', {
       url: source.url,
       docType: source.docType,
-      reason: 'OPENROUTER_API_KEY missing',
+      reason: 'AI provider API key missing',
       heuristicTerms: fallback.offerings.map((offering) => offering.term),
     });
     return {
@@ -1382,7 +1382,7 @@ async function researchCourseHistory(courseId, options = {}) {
     courseId: seed.id,
     title: seed.title,
     aliases: seed.aliases,
-    hasOpenRouterKey: Boolean(process.env.OPENROUTER_API_KEY),
+    hasAiApiKey: hasAiApiKey(),
     reset: Boolean(settings.reset),
   });
   if (settings.reset) {

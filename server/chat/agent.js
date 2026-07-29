@@ -1,5 +1,5 @@
 const { SYSTEM_PROMPT } = require('./prompt');
-const { OPENROUTER_MODEL, callOpenRouter, callOpenRouterStream, publicErrorMessage } = require('./openrouter');
+const { AI_MODEL, callAi, callAiStream, publicErrorMessage } = require('./provider');
 const {
   asArray,
   buildStudentPlanningContext,
@@ -949,7 +949,7 @@ async function buildLocalActionFallback(body = {}, reason) {
   if (!explicitScheduleChangeRequested(latestText, messages)) return null;
 
   const debug = {
-    model: OPENROUTER_MODEL,
+    model: AI_MODEL,
     toolCalls: [],
     finalActionValidation: [],
     localFallbackReason: reason ? publicErrorMessage(reason) : 'Model unavailable',
@@ -987,7 +987,7 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
   context.latestUserText = latestUserText(messages);
   context.log = log || (() => {});
   const debug = {
-    model: OPENROUTER_MODEL,
+    model: AI_MODEL,
     toolCalls: [],
     finalActionValidation: [],
   };
@@ -1012,7 +1012,7 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
     context.log('model:request', { mode: 'markdown', round, messages: modelMessages.length, tools: toolSchemas.length });
-    const completion = await callOpenRouter({
+    const completion = await callAi({
       messages: modelMessages,
       tools: toolSchemas,
       tool_choice: 'auto',
@@ -1023,7 +1023,7 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
 
     const choice = completion.choices && completion.choices[0];
     const responseMessage = choice && choice.message;
-    if (!responseMessage) throw new Error('OpenRouter returned no assistant message.');
+    if (!responseMessage) throw new Error('The AI provider returned no assistant message.');
 
     const toolCalls = responseMessage.tool_calls || [];
     context.log('model:response', {
@@ -1063,13 +1063,13 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
     content: 'The tool round limit was reached. Return the final answer now as concise Markdown text. Do not output JSON.',
   });
 
-  const completion = await callOpenRouter({
+  const completion = await callAi({
     messages: modelMessages,
     temperature: 0.2,
     max_tokens: 700,
   });
   const responseMessage = completion.choices && completion.choices[0] && completion.choices[0].message;
-  if (!responseMessage) throw new Error('OpenRouter returned no final assistant message.');
+  if (!responseMessage) throw new Error('The AI provider returned no final assistant message.');
   return buildApiResponse(normalizeContentText(responseMessage.content), context, debug, messages);
 }
 
@@ -1079,7 +1079,7 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
   context.latestUserText = latestUserText(messages);
   context.log = body.log || (() => {});
   const debug = {
-    model: OPENROUTER_MODEL,
+    model: AI_MODEL,
     toolCalls: [],
     finalActionValidation: [],
   };
@@ -1109,7 +1109,7 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
     let streamedContent = '';
     let emittedProgressContent = false;
     context.log('model:request', { mode: 'stream', round, messages: modelMessages.length, tools: toolSchemas.length });
-    const completion = await callOpenRouterStream({
+    const completion = await callAiStream({
       messages: modelMessages,
       tools: toolSchemas,
       tool_choice: 'auto',
@@ -1126,7 +1126,7 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
 
     const choice = completion.choices && completion.choices[0];
     const responseMessage = choice && choice.message;
-    if (!responseMessage) throw new Error('OpenRouter returned no assistant message.');
+    if (!responseMessage) throw new Error('The AI provider returned no assistant message.');
 
     const toolCalls = responseMessage.tool_calls || [];
     context.log('model:response', {
@@ -1183,7 +1183,7 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
   });
 
   let finalStreamedContent = '';
-  const completion = await callOpenRouterStream({
+  const completion = await callAiStream({
     messages: modelMessages,
     temperature: 0.2,
     max_tokens: 700,
@@ -1192,7 +1192,7 @@ async function runAgentChatStream(body = {}, onEvent = () => {}) {
     if (chunk && !suppressModelProgressText) emit({ type: 'final_text_delta', text: chunk });
   });
   const responseMessage = completion.choices && completion.choices[0] && completion.choices[0].message;
-  if (!responseMessage) throw new Error('OpenRouter returned no final assistant message.');
+  if (!responseMessage) throw new Error('The AI provider returned no final assistant message.');
   const finalText = normalizeContentText(responseMessage.content) || finalStreamedContent;
   return buildApiResponse(finalText, context, debug, messages);
 }

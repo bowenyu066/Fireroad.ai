@@ -1,7 +1,7 @@
 const fs = require('fs/promises');
 const path = require('path');
 
-const { callOpenRouter } = require('../chat/openrouter');
+const { callAi } = require('../chat/provider');
 
 const ROOT_DIR = path.join(__dirname, '..', '..');
 const MAX_PROMPT_TEXT_CHARS = 45000;
@@ -38,7 +38,7 @@ function stripMarkdownFence(content) {
 async function runPromptFile(promptName, variables) {
   const template = await readPrompt(promptName);
   const prompt = fillTemplate(template, variables);
-  const completion = await callOpenRouter({
+  const completion = await callAi({
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.1,
   });

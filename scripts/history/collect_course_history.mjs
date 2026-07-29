@@ -1,19 +1,23 @@
 import 'dotenv/config';
+import { createRequire } from 'node:module';
 import { importOfferingManifest } from './import_offering_manifest.mjs';
 import { fetchDocumentsForManifest } from './fetch_documents.mjs';
 import { extractPoliciesForManifest } from './extract_policies.mjs';
+
+const require = createRequire(import.meta.url);
+const { hasAiApiKey } = require('../../server/chat/provider.js');
 
 export async function collectCourseHistory(courseOrPath) {
   if (!courseOrPath) throw new Error('Usage: node scripts/history/collect_course_history.mjs <courseId|manifestPath>');
 
   const imported = await importOfferingManifest(courseOrPath);
   const fetched = await fetchDocumentsForManifest(courseOrPath);
-  const extracted = process.env.OPENROUTER_API_KEY
+  const extracted = hasAiApiKey()
     ? await extractPoliciesForManifest(courseOrPath)
     : {
         courseId: imported.courseId,
         extracted: [],
-        skipped: [{ reason: 'OPENROUTER_API_KEY not set; policy extraction skipped.' }],
+        skipped: [{ reason: 'AI provider API key not set; policy extraction skipped.' }],
         failed: [],
       };
 

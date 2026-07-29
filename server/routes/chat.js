@@ -1,6 +1,6 @@
 const express = require('express');
 const { buildLocalActionFallback, publicErrorMessage, runAgentChat, runAgentChatStream } = require('../chat/agent');
-const { OPENROUTER_MODEL } = require('../chat/openrouter');
+const { AI_MODEL, AI_PROVIDER, hasAiApiKey } = require('../chat/provider');
 
 const router = express.Router();
 
@@ -57,21 +57,22 @@ router.post('/', async (req, res) => {
   const startedAt = Date.now();
   log('request:start', {
     path: '/api/chat',
-    model: OPENROUTER_MODEL,
+    provider: AI_PROVIDER,
+    model: AI_MODEL,
     activeSem: req.body && req.body.activeSem,
     schedule: req.body && req.body.schedule,
     messageCount: Array.isArray(req.body && req.body.messages) ? req.body.messages.length : 0,
   });
 
-  if (!process.env.OPENROUTER_API_KEY) {
-    const fallback = await buildLocalActionFallback({ ...(req.body || {}), log }, new Error('OPENROUTER_API_KEY is not set'));
+  if (!hasAiApiKey()) {
+    const fallback = await buildLocalActionFallback({ ...(req.body || {}), log }, new Error('AI provider API key is not set'));
     log('request:no-key', { fallback: Boolean(fallback) });
     if (fallback) return res.json(fallback);
 
     return res.status(503).json({
       message: {
         role: 'agent',
-        text: 'The planner still works, but the chat agent needs OPENROUTER_API_KEY set on the server.',
+        text: 'The planner still works, but the chat agent needs an API key for the configured AI provider.',
         suggestions: [],
       },
       uiActions: [],
@@ -117,7 +118,8 @@ router.post('/stream', async (req, res) => {
   let ended = false;
   log('request:start', {
     path: '/api/chat/stream',
-    model: OPENROUTER_MODEL,
+    provider: AI_PROVIDER,
+    model: AI_MODEL,
     activeSem: req.body && req.body.activeSem,
     schedule: req.body && req.body.schedule,
     messageCount: Array.isArray(req.body && req.body.messages) ? req.body.messages.length : 0,
@@ -148,15 +150,15 @@ router.post('/stream', async (req, res) => {
     res.end();
   };
 
-  if (!process.env.OPENROUTER_API_KEY) {
-    const fallback = await buildLocalActionFallback({ ...(req.body || {}), log }, new Error('OPENROUTER_API_KEY is not set'));
+  if (!hasAiApiKey()) {
+    const fallback = await buildLocalActionFallback({ ...(req.body || {}), log }, new Error('AI provider API key is not set'));
     log('request:no-key', { fallback: Boolean(fallback) });
     if (fallback) return sendFinal(fallback);
 
     sendFinal({
       message: {
         role: 'agent',
-        text: 'The planner still works, but the chat agent needs OPENROUTER_API_KEY set on the server.',
+        text: 'The planner still works, but the chat agent needs an API key for the configured AI provider.',
         suggestions: [],
       },
       uiActions: [],

@@ -1,7 +1,7 @@
 require('dotenv').config({ quiet: true });
 
 const { createApp } = require('./server/app');
-const { OPENROUTER_MODEL } = require('./server/chat/openrouter');
+const { AI_MODEL, AI_PROVIDER } = require('./server/chat/provider');
 
 const PORT = Number(process.env.PORT || 3000);
 const MAX_PORT_ATTEMPTS = 10;
@@ -11,7 +11,7 @@ const expressListen = app.listen.bind(app);
 function listen(port, attemptsLeft = MAX_PORT_ATTEMPTS) {
   const server = expressListen(port, () => {
     console.log(`Fireroad.ai prototype running at http://localhost:${port}`);
-    console.log(`OpenRouter model: ${OPENROUTER_MODEL}`);
+    console.log(`AI provider: ${AI_PROVIDER} (${AI_MODEL})`);
   });
 
   server.on('error', (error) => {

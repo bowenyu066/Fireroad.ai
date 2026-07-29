@@ -34,7 +34,7 @@ FIREBASE_REQUIRE_EMAIL_VERIFICATION=false
 FIREBASE_ALLOW_NON_MIT_EMAILS=false
 ```
 
-Do not add Firebase Admin SDK private keys, service-account JSON, OpenRouter keys, or other backend secrets to `.env`; use a private deployment secret store for those.
+Do not add Firebase Admin SDK private keys, service-account JSON, AI provider keys, or other backend secrets to committed files; keep local secrets in ignored `.env` files and use a private deployment secret store for production.
 
 ## Firestore Shape
 
