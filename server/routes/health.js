@@ -1,14 +1,15 @@
 const express = require('express');
-const { OPENROUTER_MODEL, OPENROUTER_TIMEOUT_MS } = require('../chat/openrouter');
+const { AI_MODEL, AI_PROVIDER, AI_TIMEOUT_MS, hasAiApiKey } = require('../chat/provider');
 
 const router = express.Router();
 
 router.get('/', (req, res) => {
   res.json({
     ok: true,
-    model: OPENROUTER_MODEL,
-    openRouterTimeoutMs: OPENROUTER_TIMEOUT_MS,
-    hasOpenRouterKey: Boolean(process.env.OPENROUTER_API_KEY),
+    provider: AI_PROVIDER,
+    model: AI_MODEL,
+    timeoutMs: AI_TIMEOUT_MS,
+    hasApiKey: hasAiApiKey(),
   });
 });
 

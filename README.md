@@ -81,9 +81,16 @@ Start from `.env.example`.
 
 | Variable | Purpose |
 | --- | --- |
-| `OPENROUTER_API_KEY` | Enables the AI chat assistant and onboarding prompt routes. |
+| `AI_PROVIDER` | Optional provider override: `ppapi`, `openai`, or `openrouter`. If omitted, keys are detected in that order. |
+| `AI_MODEL` | Optional model override shared by the configured provider. |
+| `AI_TIMEOUT_MS` | Optional shared AI request timeout in milliseconds. |
+| `PPAPI_API_KEY` | Enables the AI routes through the OpenAI-compatible PP API. |
+| `PPAPI_BASE_URL` | Required PP API base URL. |
+| `PPAPI_MODEL` | Optional PP API model override. Defaults to `gpt-5.6-terra`. |
+| `OPENAI_API_KEY` | Direct OpenAI fallback when no PP API key is set. |
+| `OPENAI_MODEL` | Optional direct OpenAI model override. |
+| `OPENROUTER_API_KEY` | OpenRouter fallback when neither PP API nor OpenAI is configured. |
 | `OPENROUTER_MODEL` | Optional OpenRouter model override. |
-| `OPENROUTER_TIMEOUT_MS` | Optional OpenRouter timeout in milliseconds. |
 | `OPENROUTER_SITE_URL` | Optional referer URL sent to OpenRouter. |
 | `PORT` | Optional local server port. Defaults to 3000. |
 | `CURRENT_CATALOG_PATH` | Optional path to a local current catalog JSON file. |
@@ -92,7 +99,7 @@ Start from `.env.example`.
 | `HISTORY_DB_PATH` | Optional path to a local SQLite history database. |
 | `FIREBASE_*` | Firebase Web config served to the browser by `/firebase-config.js`. |
 
-If Firebase config is missing, local development uses localStorage-backed mock auth. Do not commit API keys, Firebase service accounts, or private secrets.
+If Firebase config is missing, local development uses localStorage-backed mock auth. `.env` and `.env` copies are ignored by Git; keep only blank placeholders in `.env.example`. Do not commit API keys, Firebase service accounts, or private secrets.
 
 ### Useful Scripts
 
@@ -104,7 +111,7 @@ If Firebase config is missing, local development uses localStorage-backed mock a
 | `npm run history:setup` | Initialize and seed the local history database. |
 | `npm run history:import-manifest -- <courseId>` | Import historical offering metadata from `data/history_manifests/`. |
 | `npm run history:fetch-docs -- <courseId>` | Fetch source documents for imported offerings. |
-| `npm run history:extract-policies -- <courseId>` | Use OpenRouter to extract attendance/grading policy data. |
+| `npm run history:extract-policies -- <courseId>` | Use the configured AI provider to extract attendance/grading policy data. |
 | `npm run history:collect -- <courseId>` | Run the full manual history collection pipeline. |
 
 Refresh the current course catalog:
@@ -137,7 +144,7 @@ Key files:
 | --- | --- |
 | `server.js` | Express entry point. |
 | `server/app.js` | API route mounting and static file serving. |
-| `server/chat/` | OpenRouter assistant, tools, prompts, and streaming. |
+| `server/chat/` | Configurable AI provider, assistant tools, prompts, and streaming. |
 | `server/current/` | Current catalog loading, normalization, search, and recommendations. |
 | `server/history/` | SQLite-backed historical course data. |
 | `server/onboarding/` | PDF extraction and onboarding prompt routes. |

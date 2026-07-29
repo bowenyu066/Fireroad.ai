@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { closeDb, getDb } = require('../../server/history/db.js');
 const { buildCourseSeed } = require('../../server/history/research.js');
-const { DEFAULT_MODEL, chatJson } = require('../../server/history/openrouter.js');
+const { DEFAULT_MODEL, chatJson, hasAiApiKey } = require('../../server/history/openrouter.js');
 
 const VARIANTS = [
   {
@@ -250,8 +250,8 @@ async function mapLimit(items, concurrency, worker) {
 
 async function run() {
   const options = parseArgs(process.argv.slice(2));
-  if (!process.env.OPENROUTER_API_KEY) {
-    throw new Error('OPENROUTER_API_KEY is required for markdown ablation jobs.');
+  if (!hasAiApiKey()) {
+    throw new Error('An API key is required for markdown ablation jobs.');
   }
 
   const samples = loadSamples(options.courseId, options.limit);

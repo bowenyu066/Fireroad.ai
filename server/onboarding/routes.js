@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 
-const { callOpenRouter, publicErrorMessage } = require('../chat/openrouter');
+const { callAi, hasAiApiKey, publicErrorMessage } = require('../chat/provider');
 const { parseCourseRows } = require('./markdown');
 const { extractPdfText } = require('./pdf');
 const { runPromptFile } = require('./prompts');
@@ -438,7 +438,7 @@ router.post('/preferences', asyncRoute(async (req, res) => {
 }));
 
 router.post('/personalization-questions', asyncRoute(async (req, res) => {
-  if (!process.env.OPENROUTER_API_KEY) {
+  if (!hasAiApiKey()) {
     res.json({ ok: true, questions: null, source: 'fallback' });
     return;
   }
@@ -476,7 +476,7 @@ ${JSON.stringify(personalization, null, 2)}
 PERSONAL_COURSE_MD:
 ${personalCourseMarkdown || 'Not provided'}`;
 
-  const completion = await callOpenRouter({
+  const completion = await callAi({
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.4,
     max_tokens: 600,
@@ -495,7 +495,7 @@ router.post('/personalization-followups', asyncRoute(async (req, res) => {
     'Are there any constraints this semester that are not captured by workload hours or commitments?',
   ];
 
-  if (!process.env.OPENROUTER_API_KEY) {
+  if (!hasAiApiKey()) {
     res.json({ ok: true, questions: fallbackQuestions, source: 'fallback' });
     return;
   }
@@ -528,7 +528,7 @@ ${JSON.stringify(personalization, null, 2)}
 PERSONAL_COURSE_MD:
 ${personalCourseMarkdown || 'Not provided'}`;
 
-  const completion = await callOpenRouter({
+  const completion = await callAi({
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.5,
     max_tokens: 500,
@@ -551,12 +551,12 @@ router.post('/personalization-prefill', asyncRoute(async (req, res) => {
     res.json({ ok: true, personalization: null, source: 'empty' });
     return;
   }
-  if (!process.env.OPENROUTER_API_KEY) {
+  if (!hasAiApiKey()) {
     res.json({
       ok: true,
       personalization: null,
       source: 'model_unavailable',
-      warning: 'OPENROUTER_API_KEY is not set, so personalization prefill was skipped.',
+      warning: 'The configured AI provider key is not set, so personalization prefill was skipped.',
     });
     return;
   }
@@ -614,7 +614,7 @@ ${JSON.stringify(profile, null, 2)}
 PERSONAL_COURSE_MD:
 ${personalCourseMarkdown}`;
 
-  const completion = await callOpenRouter({
+  const completion = await callAi({
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.2,
     max_tokens: 1600,
@@ -640,8 +640,8 @@ router.post('/more-preferences', asyncRoute(async (req, res) => {
     : parseJsonField(req.body.normalizedData, {});
   const freeformNotes = normalizeText(req.body.freeformNotes || questionnaire.freeformNotes);
 
-  if (!process.env.OPENROUTER_API_KEY) {
-    res.json(markdownResponse(personalCourseMarkdown, ['OPENROUTER_API_KEY is not set, so personal_course.md was not regenerated.'], {
+  if (!hasAiApiKey()) {
+    res.json(markdownResponse(personalCourseMarkdown, ['The configured AI provider key is not set, so personal_course.md was not regenerated.'], {
       summary: 'Further personalization saved structurally. Markdown regeneration was skipped because the model is unavailable.',
       skippedMarkdownUpdate: true,
     }));

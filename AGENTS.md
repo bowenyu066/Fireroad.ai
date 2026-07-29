@@ -4,14 +4,15 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Running the App
 
-There is no frontend build step. The app is served by a small Node/Express backend that also exposes the OpenRouter-backed chat API and the local history database routes.
+There is no frontend build step. The app is served by a small Node/Express backend that also exposes the configurable AI-backed chat API and the local history database routes.
 
 ```bash
 npm install
-export OPENROUTER_API_KEY="your_openrouter_key"
+export PPAPI_API_KEY="your_pp_api_key"
+export PPAPI_BASE_URL="your_pp_api_base_url"
 # Optional:
-export OPENROUTER_MODEL="openai/gpt-4.1-mini"
-export OPENROUTER_TIMEOUT_MS=120000
+export PPAPI_MODEL="gpt-5.6-terra"
+export AI_TIMEOUT_MS=120000
 # Optional local demo fallback when data/courses.json cannot load:
 export DEMO_MODE=true
 npm run dev
@@ -102,7 +103,7 @@ Course area colors follow the pattern `var(--course-cs)`, `var(--course-math)`, 
 
 The app has a small real backend, while transcript parsing and some student-data persistence remain prototype-level:
 
-- `AgentPanel` (`components/agent.jsx`): calls `POST /api/chat`, including `studentName`, which runs the OpenRouter-backed tool-calling agent from `server/chat/*`.
+- `AgentPanel` (`components/agent.jsx`): calls `POST /api/chat`, including `studentName`, which runs the configurable tool-calling agent from `server/chat/*`. The server prefers PP API, then direct OpenAI, then OpenRouter when `AI_PROVIDER` is not set.
 - `AgentPanel` prefers `POST /api/chat/stream` for Server-Sent Events. The current stream contract separates ephemeral progress from final chat text: `progress_text`, `progress_text_delta`, `tool_activity_start`, `tool_activity_result`, `tool_activity_error`, `final_text_delta`, `trace_summary`, `proposal`, `final`, `error`, and `done`. `delta` is only a backward-compatible alias for final text.
 - Final assistant text is ordinary Markdown, not JSON. Do not ask the model to return `{ text, suggestions, uiActions }`, and do not parse tool calls or plan mutations out of final prose.
 - Tool progress is temporary UI. While streaming, show only the latest interim assistant text and current tool activity. After final, hide the progress block and optionally show the collapsed `Checked: ...` trace with safe tool input/result summaries. Do not send or render full raw tool outputs by default.
@@ -110,7 +111,7 @@ The app has a small real backend, while transcript parsing and some student-data
 - Chat routes emit request-scoped server logs as `[agent <id>] ...`. Preserve this logging when touching agent/tool behavior; it is the primary way to debug model rounds, tool call args/results, trace/proposal generation, and validated UI actions.
 - Agent message text is rendered as a limited Markdown subset in `components/agent.jsx`; keep model-facing prompts aligned so responses use real Markdown lists and no raw HTML.
 - `server/current/*`: normalizes the local `data/courses.json` catalog snapshot for frontend current views, recommendations, and agent tools. Override with `CURRENT_CATALOG_PATH` when needed. If catalog loading fails, current routes fail by default; mock fallback is allowed only with `DEMO_MODE=true`.
-- `server/history/*`: SQLite-backed read-only historical offerings/documents/policies. History research should have the model write the complete display-ready `offering_markdown`; frontend code should render that Markdown directly instead of extracting Course Format/Attendance/Grading fields from prose. Use `npm run history:ablate-markdown -- <courseId> --limit 4 --jobs 4` with `OPENROUTER_API_KEY` to compare prompt variants without writing to the DB, then `npm run history:rewrite-markdown -- <courseId> --jobs 4` to regenerate offering display copy from cached documents without changing source coverage.
+- `server/history/*`: SQLite-backed read-only historical offerings/documents/policies. History research should have the model write the complete display-ready `offering_markdown`; frontend code should render that Markdown directly instead of extracting Course Format/Attendance/Grading fields from prose. Use `npm run history:ablate-markdown -- <courseId> --limit 4 --jobs 4` with a configured AI provider key to compare prompt variants without writing to the DB, then `npm run history:rewrite-markdown -- <courseId> --jobs 4` to regenerate offering display copy from cached documents without changing source coverage.
 - `server/chat/prompt.js`: keep the agent focused on the active semester, final Markdown answers, tool-grounded course facts, and optimistic active-semester mutation proposals with Cancel/Undo. Reject cross-semester roadmap mutations unless a future portfolio proposal flow is explicitly implemented.
 - `server/chat/tools.js`: search, course detail, recommendations, schedule summaries, suggestion sanitization, and UI action validation should resolve courses through `server/current/fireroad.js` first. Mock data must not mask current snapshot load failures unless `DEMO_MODE=true`.
 - `server/requirements/evaluate.js`: single async requirement-evaluation entry point shared by the HTTP route and chat tools. It expands official catalog equivalences for named course slots, while counting GIR/HASS attributes only from the student's actual unique catalog courses. Curated petition examples never auto-credit requirements.
