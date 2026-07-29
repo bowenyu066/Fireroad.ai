@@ -1,0 +1,3 @@
+{
+  "_comment": "Specific topic names for EECS special subjects (numbers with an 'S' after the dot, e.g. 6.S062). The Fireroad API only returns a generic placeholder title for these, so the real per-term topic is curated here by hand or grown from a saved EECS subject-updates page via `python3 scripts/fetch_special_subjects.py --page <saved-page>`. Keys are uppercased course IDs; values are the topic title. Update once per semester, then re-run the script to rebuild data/special_subjects.json."
+}

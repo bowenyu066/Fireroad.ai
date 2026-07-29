@@ -12,7 +12,7 @@ const {
   toolSchemas,
   validateUiAction,
 } = require('./tools');
-const { checkMajorRequirements } = require('../requirements');
+const { evaluateMajorRequirements } = require('../requirements/evaluate');
 
 const MAX_TOOL_ROUNDS = 5;
 
@@ -338,7 +338,7 @@ function summarizeMessage(content) {
   };
 }
 
-function buildContext({ profile, personalization, personalCourseMarkdown, schedule, fourYearPlan, activeSem, planningTermLabel, studentName } = {}) {
+async function buildContext({ profile, personalization, personalCourseMarkdown, schedule, fourYearPlan, activeSem, planningTermLabel, studentName } = {}) {
   const effectiveStudentName = String(studentName || '').trim();
   const nextProfile = profile && typeof profile === 'object' ? { ...profile } : {};
   const nextPreferences = {
@@ -355,7 +355,13 @@ function buildContext({ profile, personalization, personalCourseMarkdown, schedu
     studentName: effectiveStudentName,
     toolHistory: [],
   };
-  context.studentPlanningContext = buildStudentPlanningContext(context);
+  context.studentPlanningContext = await buildStudentPlanningContext(context);
+  // Precompute the compact requirement-progress hints here (async) so buildModelMessages
+  // can stay synchronous. These use the same expanded evaluator as the rich context.
+  context.requirementContext = await buildRequirementContextForMajor(context.profile, context.schedule, 'major');
+  context.requirementContextSecond = context.profile.major2
+    ? await buildRequirementContextForMajor(context.profile, context.schedule, 'major2')
+    : null;
   return context;
 }
 
@@ -371,10 +377,10 @@ function latestAssistantBeforeLastUser(messages) {
   return [...beforeLastUser].reverse().find((message) => message && message.role !== 'user') || null;
 }
 
-function buildRequirementContextForMajor(profile, schedule, majorField) {
+async function buildRequirementContextForMajor(profile, schedule, majorField) {
   try {
     const allCourses = [...new Set([...asArray(profile.taken), ...schedule])];
-    const result = checkMajorRequirements(profile[majorField], allCourses);
+    const result = await evaluateMajorRequirements(profile[majorField], allCourses);
     if (!result) return null;
     return {
       major: result.title,
@@ -389,20 +395,12 @@ function buildRequirementContextForMajor(profile, schedule, majorField) {
   }
 }
 
-function buildRequirementContext(profile, schedule) {
-  return buildRequirementContextForMajor(profile, schedule, 'major');
-}
-
-function buildRequirementContextSecond(profile, schedule) {
-  if (!profile.major2) return null;
-  return buildRequirementContextForMajor(profile, schedule, 'major2');
-}
-
 function buildModelMessages(messages, context) {
   const { profile, schedule, fourYearPlan, activeSem, planningTermLabel, studentName, personalCourseMarkdown, studentPlanningContext } = context;
   const effectiveStudentName = String(studentName || profile.name || '').trim();
-  const reqContext = buildRequirementContext(profile, schedule);
-  const reqContextSecond = buildRequirementContextSecond(profile, schedule);
+  // Computed in buildContext (async) so this function stays synchronous.
+  const reqContext = context.requirementContext;
+  const reqContextSecond = context.requirementContextSecond;
   const dept1 = majorToDepartments(profile.major);
   const dept2 = profile.major2 ? majorToDepartments(profile.major2) : [];
   const relevantDepartments = [...new Set([...dept1, ...dept2])];
@@ -940,7 +938,7 @@ async function buildApiResponse(content, context, debug, requestMessages, option
 async function buildLocalActionFallback(body = {}, reason) {
   const messages = asArray(body.messages);
   const studentName = String(body.studentName || '').trim();
-  const context = buildContext({ ...body, studentName });
+  const context = await buildContext({ ...body, studentName });
   context.latestUserText = latestUserText(messages);
   context.log = body.log || (() => {});
   const latestText = latestUserText(messages);
@@ -985,7 +983,7 @@ async function buildLocalActionFallback(body = {}, reason) {
 }
 
 async function runAgentChat({ messages, profile, personalization, personalCourseMarkdown, schedule, fourYearPlan, activeSem, planningTermLabel, studentName, log }) {
-  const context = buildContext({ profile, personalization, personalCourseMarkdown, schedule, fourYearPlan, activeSem, planningTermLabel, studentName });
+  const context = await buildContext({ profile, personalization, personalCourseMarkdown, schedule, fourYearPlan, activeSem, planningTermLabel, studentName });
   context.latestUserText = latestUserText(messages);
   context.log = log || (() => {});
   const debug = {
@@ -1077,7 +1075,7 @@ async function runAgentChat({ messages, profile, personalization, personalCourse
 
 async function runAgentChatStream(body = {}, onEvent = () => {}) {
   const { messages } = body;
-  const context = buildContext(body);
+  const context = await buildContext(body);
   context.latestUserText = latestUserText(messages);
   context.log = body.log || (() => {});
   const debug = {

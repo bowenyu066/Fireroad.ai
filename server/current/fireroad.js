@@ -6,6 +6,11 @@ const { findMockCourse, normalizeCourseId, normalizeCurrentCourse } = require('.
 
 const DEFAULT_CATALOG_PATH = path.join(__dirname, '..', '..', 'data', 'courses.json');
 const CURRENT_CATALOG_PATH = process.env.CURRENT_CATALOG_PATH || DEFAULT_CATALOG_PATH;
+// EECS special-subjects overlay (numbers with an "S" after the dot, e.g. 6.S062).
+// Generated once per semester by scripts/fetch_special_subjects.py; carries the
+// canonical Fireroad course records with real per-term topic names merged in.
+const SPECIAL_SUBJECTS_PATH = process.env.SPECIAL_SUBJECTS_PATH
+  || path.join(__dirname, '..', '..', 'data', 'special_subjects.json');
 const CATALOG_TTL_MS = Number(process.env.CURRENT_CATALOG_TTL_MS) || 5 * 60 * 1000;
 const DEMO_MODE = String(process.env.DEMO_MODE || '').toLowerCase() === 'true';
 
@@ -25,15 +30,10 @@ function indexCourses(courses) {
   return coursesById;
 }
 
-function getLegacyMockMatchScore(courseId) {
-  const match = mockData.matchScores[normalizeCourseId(courseId)] || mockData.matchScores[courseId] || {};
-  return match.total || 0;
-}
-
 function fallbackCatalog() {
   const courses = mockData.catalog
     .filter((course) => !course._stub)
-    .map((course) => normalizeCurrentCourse({ id: course.id }, { mockCourse: course }))
+    .map((course) => normalizeCurrentCourse(null, { mockCourse: course }))
     .filter(Boolean);
   return {
     source: 'mock',
@@ -50,14 +50,43 @@ function listRawCourses(raw) {
   throw new Error('Current catalog snapshot must be a JSON array or object.');
 }
 
+// Load the EECS special-subjects overlay, if present. Returns normalized courses.
+// Missing/invalid overlay is non-fatal — the base catalog still loads.
+async function loadSpecialSubjects() {
+  let file;
+  try {
+    file = await fs.readFile(SPECIAL_SUBJECTS_PATH, 'utf8');
+  } catch {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(file);
+    const subjects = Array.isArray(parsed) ? parsed : (parsed.subjects || []);
+    return subjects
+      .filter((course) => course && course.public !== false)
+      .map((course) => normalizeCurrentCourse(course))
+      .filter(Boolean);
+  } catch (error) {
+    console.warn('[special subjects] failed to parse overlay:', error.message);
+    return [];
+  }
+}
+
 async function loadLocalCatalogSnapshot() {
   const file = await fs.readFile(CURRENT_CATALOG_PATH, 'utf8');
   const rawCourses = listRawCourses(JSON.parse(file));
 
-  const courses = rawCourses
+  const baseCourses = rawCourses
     .filter((course) => course && course.public !== false)
-    .map((course) => normalizeCurrentCourse(course, { mockCourse: findMockCourse(course.subject_id) }))
+    .map((course) => normalizeCurrentCourse(course))
     .filter(Boolean);
+
+  // Merge the special-subjects overlay: overlay records win by id so real topic
+  // names replace any generic placeholder already in the base snapshot.
+  const overlay = await loadSpecialSubjects();
+  const byId = new Map(baseCourses.map((c) => [c.id, c]));
+  overlay.forEach((c) => byId.set(c.id, c));
+  const courses = [...byId.values()];
 
   return {
     source: 'local_snapshot',
@@ -146,12 +175,26 @@ function expandSearchTokens(tokens) {
 }
 
 function semesterSeason(semId) {
-  if (!semId) return null;
-  if (semId.startsWith('IAP')) return 'iap';
-  if (semId.startsWith('SU')) return 'summer';
-  if (semId.startsWith('F')) return 'fall';
-  if (semId.startsWith('S')) return 'spring';
+  const value = String(semId || '').toUpperCase();
+  if (!value) return null;
+  if (value.startsWith('IAP')) return 'iap';
+  if (value.startsWith('SU')) return 'summer';
+  if (value.startsWith('F')) return 'fall';
+  if (value.startsWith('S')) return 'spring';
   return null;
+}
+
+function booleanOption(value) {
+  return value === true || ['1', 'true', 'yes', 'on'].includes(String(value || '').toLowerCase());
+}
+
+function matchesDepartment(courseId, department) {
+  const id = String(courseId || '').toLowerCase();
+  const prefix = String(department || '').toLowerCase().replace(/\.$/, '');
+  if (!prefix) return true;
+  if (id.startsWith(`${prefix}.`)) return true;
+  // Numeric department filters include lettered sub-departments such as 21A/21H.
+  return /^\d+$/.test(prefix) && id.startsWith(prefix) && /^[a-z]*\./.test(id.slice(prefix.length));
 }
 
 async function searchCurrentCourses(options = {}) {
@@ -159,7 +202,9 @@ async function searchCurrentCourses(options = {}) {
   const tokens = expandSearchTokens(query.split(/\s+/).filter(Boolean));
   const maxResults = Math.max(1, Math.min(Number(options.maxResults || options.max_results) || 10, 50));
   const maxWorkload = Number(options.maxWorkload || options.max_workload) || null;
-  const season = semesterSeason(options.semester || options.activeSem || '');
+  const semester = String(options.semester || options.activeSem || '').toUpperCase();
+  const season = semesterSeason(semester);
+  const includeUnavailable = booleanOption(options.includeUnavailable || options.include_unavailable);
   // Map department numbers to area names in case the agent passes "18" instead of "math"
   const DEPT_TO_AREA = { '6': 'cs', '18': 'math', '8': 'physics', '7': 'bio', '5': 'other', '14': 'hass', '21': 'hass', '24': 'hass' };
   const areas = Array.isArray(options.areas)
@@ -175,11 +220,11 @@ async function searchCurrentCourses(options = {}) {
 
   const catalog = await getCurrentCatalog();
   const results = catalog.courses
-    .filter((course) => !departments.length || departments.some((d) => course.id.toLowerCase().startsWith(`${d}.`)))
+    .filter((course) => !departments.length || departments.some((department) => matchesDepartment(course.id, department)))
     .filter((course) => !areas.length || areas.includes(String(course.area).toLowerCase()))
     .filter((course) => !requirements.length || requirements.some((req) => course.requirements.map((r) => r.toLowerCase()).includes(req)))
-    .filter((course) => !maxWorkload || !course.totalHours || course.totalHours <= maxWorkload)
-    .filter((course) => !season || !course.offered || course.offered[season] !== false)
+    .filter((course) => !maxWorkload || (Number(course.totalHours) > 0 && Number(course.totalHours) <= maxWorkload))
+    .filter((course) => !season || includeUnavailable || !course.offered || course.offered[season] !== false)
     .map((course) => ({ course, searchScore: scoreCourse(course, query, tokens) }))
     .filter((result) => result.searchScore > 0 || !query)
     .sort((a, b) => b.searchScore - a.searchScore || a.course.id.localeCompare(b.course.id))
@@ -187,13 +232,12 @@ async function searchCurrentCourses(options = {}) {
     .map(({ course, searchScore }) => ({
       ...course,
       searchScore,
-      legacyMockMatchScore: getLegacyMockMatchScore(course.id),
     }));
 
   return {
     query,
     source: catalog.source,
-    filters: { areas, requirements, maxWorkload, departments },
+    filters: { semester, season, includeUnavailable, areas, requirements, maxWorkload, departments },
     results,
   };
 }

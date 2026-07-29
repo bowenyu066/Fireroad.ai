@@ -5,6 +5,7 @@
   "description": "Static Fireroad.ai prototype with a tiny OpenRouter-backed course-planning agent server.",
   "main": "server.js",
   "scripts": {
+    "test": "node --test test/*.test.js",
     "dev": "npm run history:setup && node server.js",
     "history:init": "node scripts/history/init_db.mjs",
     "history:seed": "node scripts/history/seed_history_courses.mjs",
@@ -20,7 +21,7 @@
     "start": "npm run history:setup && node server.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {
     "better-sqlite3": "^12.9.0",

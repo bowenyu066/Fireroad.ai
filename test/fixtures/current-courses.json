@@ -1,0 +1,43 @@
+[
+  {
+    "subject_id": "6.1000",
+    "title": "Fall Computing",
+    "description": "A fall-only computing subject.",
+    "total_units": 12,
+    "gir_attribute": "REST",
+    "in_class_hours": 4,
+    "out_of_class_hours": 5,
+    "offered_fall": true,
+    "offered_spring": false
+  },
+  {
+    "subject_id": "18.1000",
+    "title": "Spring Mathematics",
+    "description": "A spring-only mathematics subject.",
+    "total_units": 12,
+    "hass_attribute": "HASS-S",
+    "in_class_hours": 4,
+    "out_of_class_hours": 10,
+    "offered_fall": false,
+    "offered_spring": true
+  },
+  {
+    "subject_id": "21A.100",
+    "title": "Culture and Computation",
+    "description": "A lettered Course 21 subject offered in both terms.",
+    "total_units": 9,
+    "hass_attribute": "HASS-A",
+    "in_class_hours": 3,
+    "out_of_class_hours": 5,
+    "offered_fall": true,
+    "offered_spring": true
+  },
+  {
+    "subject_id": "6.3900",
+    "title": "Introduction to Machine Learning",
+    "description": "A real row that shares an id with legacy demo data.",
+    "total_units": 12,
+    "offered_fall": true,
+    "offered_spring": true
+  }
+]

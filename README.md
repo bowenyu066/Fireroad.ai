@@ -17,7 +17,7 @@ You do not need to install anything. Open the live app and sign in:
 The app can help you:
 
 - Build and edit a schedule for your active semester.
-- Search current MIT courses.
+- Search courses offered in the selected term and filter by department, requirement, and workload.
 - View current course details and historical offering context.
 - Check requirement progress from selected courses.
 - Upload searchable transcript or resume PDFs during onboarding.
@@ -33,7 +33,7 @@ The deployed Vercel app also exposes the same API used by the frontend.
 | Endpoint | Description |
 | --- | --- |
 | `GET /api/health` | Check server status and configured model metadata. |
-| `GET /api/current/search?q=6.100A` | Search current catalog courses. |
+| `GET /api/current/search?q=6.3900&semester=F26` | Search the current catalog, filtered to a semester by default. |
 | `GET /api/current/course/:courseId` | Fetch one normalized current course. |
 | `GET /api/current/catalog` | Fetch a capped current catalog snapshot. |
 | `POST /api/current/recommendations` | Generate course recommendations from a schedule/profile payload. |
@@ -42,6 +42,8 @@ The deployed Vercel app also exposes the same API used by the frontend.
 | `POST /api/chat/stream` | Run the planning assistant over Server-Sent Events. |
 | `GET /api/history/course/:courseId` | Fetch historical course summary and offerings. |
 | `GET /api/history/offering/:offeringId` | Fetch one historical offering with source/policy context. |
+
+Current search also accepts comma-separated `departments`, `areas`, and `requirements`, plus `max_workload`. Set `include_unavailable=true` only when the client intentionally wants results from other terms.
 
 Example:
 
@@ -61,7 +63,7 @@ curl -X POST "https://fireroad-ai-lime.vercel.app/api/requirements/check" \
 
 ### Local Setup
 
-Requires Node.js 18 or newer.
+Requires Node.js 20 or newer.
 
 ```bash
 npm install
@@ -85,6 +87,7 @@ Start from `.env.example`.
 | `OPENROUTER_SITE_URL` | Optional referer URL sent to OpenRouter. |
 | `PORT` | Optional local server port. Defaults to 3000. |
 | `CURRENT_CATALOG_PATH` | Optional path to a local current catalog JSON file. |
+| `SPECIAL_SUBJECTS_PATH` | Optional path to the term-specific special-subject overlay. |
 | `DEMO_MODE` | Set to `true` to allow local mock catalog fallback. |
 | `HISTORY_DB_PATH` | Optional path to a local SQLite history database. |
 | `FIREBASE_*` | Firebase Web config served to the browser by `/firebase-config.js`. |
@@ -97,6 +100,7 @@ If Firebase config is missing, local development uses localStorage-backed mock a
 | --- | --- |
 | `npm run dev` | Initialize history data and start the app locally. |
 | `npm start` | Same startup path as `npm run dev`. |
+| `npm test` | Run catalog normalization, active-term search, and requirement tests. |
 | `npm run history:setup` | Initialize and seed the local history database. |
 | `npm run history:import-manifest -- <courseId>` | Import historical offering metadata from `data/history_manifests/`. |
 | `npm run history:fetch-docs -- <courseId>` | Fetch source documents for imported offerings. |
@@ -109,13 +113,17 @@ Refresh the current course catalog:
 python3 scripts/fetch_courses.py
 ```
 
-The script fetches Fireroad course data from:
+The script fetches Fireroad course data from `https://fireroad.mit.edu/courses/all?full=true` and writes the filtered current snapshot to `data/courses.json`.
 
-```text
-https://fireroad.mit.edu/courses/all?full=true
+Real current-catalog rows never merge legacy mock requirements, workload, schedule, rating, or match scores. Mock catalog facts are available only when `DEMO_MODE=true`.
+
+Special subjects such as `6.S062` use `data/special_subjects.json`, generated once per semester with:
+
+```bash
+python3 scripts/fetch_special_subjects.py --term "Fall 2026"
 ```
 
-and writes the filtered current snapshot to `data/courses.json`.
+Curate topic names in `data/special_subject_names.json`, then rerun the script. Official catalog equivalences count automatically in requirement checks; examples in `data/substitutions.json` remain advisory and never grant automatic credit.
 
 ### Project Shape
 
@@ -133,6 +141,6 @@ Key files:
 | `server/onboarding/` | PDF extraction and onboarding prompt routes. |
 | `server/requirements/` | Requirement parsing and checking. |
 | `components/` | Browser-loaded React components. |
-| `data/` | Course, requirement, and history data snapshots. |
+| `data/` | Course, requirement, special-subject, and history snapshots. |
 
 Deployment is handled by Vercel using `vercel.json`.

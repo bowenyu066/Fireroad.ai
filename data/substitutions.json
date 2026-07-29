@@ -1,0 +1,12 @@
+{
+  "_comment": "Advisory course-substitution (petition) examples. These are NOT official same-course equivalences and never receive automatic requirement credit. MIT EECS handles every departmental petition case by case; students must consult their advisor and submit through the department audit. Official catalog equivalent_subjects / old_id values are handled separately and do receive automatic equivalence credit.",
+  "substitutions": [
+    {
+      "course": "6.5210",
+      "satisfies": ["6.1210"],
+      "approved": false,
+      "note": "Advisory comparison only. The catalog lists 6.1220, which itself requires 6.1210, as a prerequisite for 6.5210; no blanket substitution is documented. Ask an advisor and submit a departmental petition for an individual decision.",
+      "source": "https://www.eecs.mit.edu/academics/undergraduate-programs/resources-for-current-students/degree-audits-and-departmental-petitions/"
+    }
+  ]
+}

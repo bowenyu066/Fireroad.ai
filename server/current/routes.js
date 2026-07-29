@@ -14,6 +14,15 @@ function asyncHandler(handler) {
   };
 }
 
+function queryList(value) {
+  const values = Array.isArray(value) ? value : [value];
+  return values
+    .filter((item) => item !== undefined && item !== null)
+    .flatMap((item) => String(item).split(','))
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 router.get('/course/:courseId', asyncHandler(async (req, res) => {
   const course = await fetchCurrentCourse(req.params.courseId);
   if (!course) return res.status(404).json({ error: `Course ${req.params.courseId} not found in current catalog.` });
@@ -24,6 +33,12 @@ router.get('/search', asyncHandler(async (req, res) => {
   const result = await searchCurrentCourses({
     query: req.query.q || '',
     maxResults: req.query.max_results,
+    semester: req.query.semester || '',
+    includeUnavailable: req.query.include_unavailable,
+    departments: queryList(req.query.departments),
+    areas: queryList(req.query.areas),
+    requirements: queryList(req.query.requirements),
+    maxWorkload: req.query.max_workload,
   });
   res.json(result);
 }));

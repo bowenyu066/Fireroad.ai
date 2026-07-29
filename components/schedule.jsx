@@ -703,10 +703,43 @@ const semSeason = (semId) => {
   return null;
 };
 
+const SEARCH_REQUIREMENTS = [
+  'REST', 'LAB', 'LAB2', 'CI-H', 'CI-HW',
+  'HASS-A', 'HASS-E', 'HASS-H', 'HASS-S',
+  'CAL1', 'CAL2', 'PHY1', 'PHY2', 'CHEM', 'BIOL',
+];
+
+const SEARCH_DEPARTMENTS = [
+  ...Array.from({ length: 24 }, (_, index) => ({ value: String(index + 1), label: `Course ${index + 1}` })),
+  { value: 'CMS', label: 'CMS · Comparative Media Studies' },
+  { value: 'HST', label: 'HST · Health Sciences' },
+  { value: 'STS', label: 'STS · Science, Technology & Society' },
+  { value: 'WGS', label: 'WGS · Women’s & Gender Studies' },
+  { value: 'IDS', label: 'IDS · Data, Systems & Society' },
+  { value: 'MAS', label: 'MAS · Media Arts & Sciences' },
+  { value: 'EC', label: 'EC · Edgerton Center' },
+  { value: 'SCM', label: 'SCM · Supply Chain Management' },
+];
+
+const searchFilterStyle = {
+  height: 30,
+  padding: '0 8px',
+  borderRadius: 7,
+  border: '1px solid var(--border)',
+  background: 'var(--surface)',
+  color: 'var(--text-secondary)',
+  fontSize: 11,
+};
+
 const ManualCourseSearch = ({ schedule, onAddCourse, onOpenCourse, onCoursesLoaded }) => {
   const { activeSem } = useApp();
   const season = semSeason(activeSem);
+  const activeTermLabel = FRDATA.semesterLabels?.[activeSem] || activeSem || 'Active term';
   const [query, setQuery] = useState('');
+  const [department, setDepartment] = useState('');
+  const [requirement, setRequirement] = useState('');
+  const [maxWorkload, setMaxWorkload] = useState('');
+  const [includeUnavailable, setIncludeUnavailable] = useState(false);
   const [results, setResults] = useState([]);
   const [status, setStatus] = useState('loading');
   const [error, setError] = useState('');
@@ -720,7 +753,13 @@ const ManualCourseSearch = ({ schedule, onAddCourse, onOpenCourse, onCoursesLoad
     setError('');
 
     const timer = setTimeout(() => {
-      FRDATA.fetchCurrentSearch(searchText, searchText ? 50 : 80)
+      FRDATA.fetchCurrentSearch(searchText, 50, {
+        semester: activeSem,
+        includeUnavailable,
+        departments: department ? [department] : [],
+        requirements: requirement ? [requirement] : [],
+        maxWorkload,
+      })
         .then((courses) => {
           if (requestId.current !== id) return;
           const list = courses.filter(Boolean);
@@ -737,10 +776,18 @@ const ManualCourseSearch = ({ schedule, onAddCourse, onOpenCourse, onCoursesLoad
     }, 220);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, activeSem, department, requirement, maxWorkload, includeUnavailable]);
 
   const scheduled = new Set(schedule.map((id) => String(id).toUpperCase()));
   const visibleResults = results.filter((course) => course && course.id);
+  const extraFilterCount = [department, requirement, maxWorkload].filter(Boolean).length;
+
+  const resetFilters = () => {
+    setDepartment('');
+    setRequirement('');
+    setMaxWorkload('');
+    setIncludeUnavailable(false);
+  };
 
   return (
     <div style={{
@@ -776,9 +823,75 @@ const ManualCourseSearch = ({ schedule, onAddCourse, onOpenCourse, onCoursesLoad
             </button>
           )}
         </div>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 8 }}>
+          <select
+            aria-label="Department filter"
+            value={department}
+            onChange={(event) => setDepartment(event.target.value)}
+            style={searchFilterStyle}
+          >
+            <option value="">All departments</option>
+            {SEARCH_DEPARTMENTS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+          </select>
+          <select
+            aria-label="Requirement filter"
+            value={requirement}
+            onChange={(event) => setRequirement(event.target.value)}
+            style={searchFilterStyle}
+          >
+            <option value="">All requirements</option>
+            {SEARCH_REQUIREMENTS.map((value) => <option key={value} value={value}>{value}</option>)}
+          </select>
+          <select
+            aria-label="Workload filter"
+            value={maxWorkload}
+            onChange={(event) => setMaxWorkload(event.target.value)}
+            style={searchFilterStyle}
+          >
+            <option value="">Any workload</option>
+            <option value="8">Up to 8 h/wk</option>
+            <option value="10">Up to 10 h/wk</option>
+            <option value="12">Up to 12 h/wk</option>
+            <option value="15">Up to 15 h/wk</option>
+          </select>
+          {extraFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="btn-ghost"
+              style={{ height: 30, padding: '0 7px', color: 'var(--text-tertiary)', fontSize: 10 }}
+            >
+              Reset
+            </button>
+          )}
+        </div>
+
+        <button
+          type="button"
+          aria-pressed={!includeUnavailable}
+          onClick={() => setIncludeUnavailable((value) => !value)}
+          style={{
+            marginTop: 8,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 7,
+            color: includeUnavailable ? 'var(--text-tertiary)' : 'var(--success)',
+            fontSize: 11,
+          }}
+        >
+          <span style={{
+            width: 8,
+            height: 8,
+            borderRadius: 999,
+            background: includeUnavailable ? 'var(--text-tertiary)' : 'var(--success)',
+          }} />
+          {includeUnavailable ? 'Showing all terms' : `${activeTermLabel} offerings only`}
+          <span style={{ color: 'var(--text-tertiary)' }}>· click to toggle</span>
+        </button>
       </div>
 
-      <div style={{ maxHeight: 330, overflowY: 'auto' }}>
+      <div style={{ maxHeight: 380, overflowY: 'auto' }}>
         {status === 'loading' && (
           <div style={{ padding: 16, fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center' }}>
             Searching current catalog...
@@ -793,7 +906,7 @@ const ManualCourseSearch = ({ schedule, onAddCourse, onOpenCourse, onCoursesLoad
 
         {status === 'ready' && visibleResults.length === 0 && (
           <div style={{ padding: 16, fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center' }}>
-            No current courses found
+            No courses match these active-term filters
           </div>
         )}
 
@@ -883,11 +996,11 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
   const { activeSem } = useApp();
   const activeSeason = semSeason(activeSem);
   const [showCoursePicker, setShowCoursePicker] = useState(false);
-  const [courseMap, setCourseMap] = useState(() => Object.fromEntries(FRDATA.catalog.map((course) => [course.id, course])));
+  const [courseMap, setCourseMap] = useState({});
 
   useEffect(() => {
     let cancelled = false;
-    FRDATA.fetchCurrentSearch('', 80).then((courses) => {
+    FRDATA.fetchCurrentSearch('', 50, { semester: activeSem }).then((courses) => {
       if (cancelled) return;
       setCourseMap((current) => ({
         ...current,
@@ -897,7 +1010,7 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
       if (!cancelled) console.warn('[schedule] current catalog preload failed', error);
     });
     return () => { cancelled = true; };
-  }, []);
+  }, [activeSem]);
 
   useEffect(() => {
     let cancelled = false;
@@ -913,7 +1026,7 @@ const SchedulePanel = ({ schedule, setSchedule, justAddedId, onOpenCourse, onAdd
 
   const courses = schedule.map((id) => {
     const courseId = String(id || '').trim().toUpperCase();
-    return courseMap[courseId] || FRDATA.getCourse(courseId) || fallbackScheduleCourse(courseId);
+    return courseMap[courseId] || fallbackScheduleCourse(courseId);
   }).filter((course) => course.id);
   const totalUnits = courses.reduce((s, c) => s + c.units, 0);
   const reqsCovered = new Set();
@@ -1295,9 +1408,7 @@ const FourYearPlanPage = () => {
 
   const totalCourses = Object.values(fourYearPlan).flat().length;
 
-  const [courseMap, setCourseMap] = useState(() =>
-    Object.fromEntries(FRDATA.catalog.map((c) => [c.id, c]))
-  );
+  const [courseMap, setCourseMap] = useState({});
   const [pickerSem, setPickerSem] = useState(null);
   const [pickerQuery, setPickerQuery] = useState('');
   const [pickerResults, setPickerResults] = useState([]);
@@ -1333,7 +1444,7 @@ const FourYearPlanPage = () => {
     const requestQuery = pickerQuery.trim();
     setPickerStatus('loading');
     const timer = setTimeout(() => {
-      FRDATA.fetchCurrentSearch(requestQuery, requestQuery ? 30 : 20)
+      FRDATA.fetchCurrentSearch(requestQuery, requestQuery ? 30 : 20, { semester: pickerSem })
         .then((courses) => {
           setPickerResults(courses.filter(Boolean));
           setCourseMap((current) => ({
@@ -1400,7 +1511,7 @@ const FourYearPlanPage = () => {
     const pickerOpen = pickerSem === sem;
     const courses   = courseIds.map((id) => {
       const courseId = String(id || '').trim().toUpperCase();
-      return courseMap[courseId] || FRDATA.getCourse(courseId) || fallbackScheduleCourse(courseId);
+      return courseMap[courseId] || fallbackScheduleCourse(courseId);
     }).filter((course) => course.id);
     const units     = courses.reduce((s, c) => s + (c.units || 0), 0);
     const isActive  = sem === activeSem;
