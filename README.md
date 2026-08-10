@@ -130,7 +130,7 @@ Special subjects such as `6.S062` use `data/special_subjects.json`, generated on
 python3 scripts/fetch_special_subjects.py --term "Fall 2026"
 ```
 
-Curate topic names in `data/special_subject_names.json`, then rerun the script. Official catalog equivalences count automatically in requirement checks; examples in `data/substitutions.json` remain advisory and never grant automatic credit.
+The script discovers the official [MIT EECS Subject Updates](https://www.eecs.mit.edu/academics/subject-updates/) page for that term and imports current topic names, descriptions, units, prerequisites, instructors, schedules, degree attributes, and source links from its public EECSIS feed. It overlays those term-specific facts on canonical Fireroad records and excludes old `6.S` numbers that the page mentions only as previous numbers. `data/special_subject_names.json` is a curated fallback; use `--page <saved-page> --no-eecs` only for an offline refresh. Official catalog equivalences count automatically in requirement checks; examples in `data/substitutions.json` remain advisory and never grant automatic credit.
 
 Requirement snapshots come from Fireroad. Narrow corrections for newer official departmental audit charts live in `data/requirement-overrides.json` so refreshing generated snapshots does not silently remove them.
 

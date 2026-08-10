@@ -112,6 +112,7 @@ const CourseHero = ({ course, summary, tab, setTab, onBack, onAdd, onRemove, inS
               <HeroChip label="Instructor" value={course.instructorText || 'TBD'} />
               {enrollment && <HeroChip label="Enrollment" value={enrollment} />}
               {course.catalogUrl && <HeroLinkChip label="Catalog" href={course.catalogUrl} value="Open" />}
+              {course.specialSubjectSourceUrl && <HeroLinkChip label="EECS source" href={course.specialSubjectSourceUrl} value="Open" />}
               {offeringCount > 0 && <HeroChip label="Past offerings" value={String(offeringCount)} />}
             </div>
           </div>
