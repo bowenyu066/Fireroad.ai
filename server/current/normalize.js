@@ -170,6 +170,9 @@ function normalizeCurrentCourse(raw, options = {}) {
     // placeholder and `hasRealTitle` is false so the UI/agent can say "topic TBA".
     isSpecial,
     specialTopic: (raw && raw.special_topic) || null,
+    specialSubjectTerm: (raw && raw.special_subject_term) || null,
+    specialSubjectSourceUrl: (raw && raw.special_subject_source_url) || null,
+    specialSubjectDetails: (raw && raw.special_subject_details) || null,
     hasRealTitle: raw && raw.has_real_title !== undefined
       ? Boolean(raw.has_real_title)
       : !isSpecial || !isGenericSpecialTitle(name),

@@ -8,7 +8,8 @@ const DEFAULT_CATALOG_PATH = path.join(__dirname, '..', '..', 'data', 'courses.j
 const CURRENT_CATALOG_PATH = process.env.CURRENT_CATALOG_PATH || DEFAULT_CATALOG_PATH;
 // EECS special-subjects overlay (numbers with an "S" after the dot, e.g. 6.S062).
 // Generated once per semester by scripts/fetch_special_subjects.py; carries the
-// canonical Fireroad course records with real per-term topic names merged in.
+// canonical Fireroad course records with official per-term topic names,
+// descriptions, metadata, and source links merged in.
 const SPECIAL_SUBJECTS_PATH = process.env.SPECIAL_SUBJECTS_PATH
   || path.join(__dirname, '..', '..', 'data', 'special_subjects.json');
 const CATALOG_TTL_MS = Number(process.env.CURRENT_CATALOG_TTL_MS) || 5 * 60 * 1000;
@@ -50,25 +51,52 @@ function listRawCourses(raw) {
   throw new Error('Current catalog snapshot must be a JSON array or object.');
 }
 
-// Load the EECS special-subjects overlay, if present. Returns normalized courses.
-// Missing/invalid overlay is non-fatal — the base catalog still loads.
+function applyAuthoritativeSpecialAvailability(courses, overlay) {
+  if (!overlay.authoritative || !overlay.season || !overlay.departments.length) return courses;
+
+  const officialIds = new Set(overlay.subjects.map((course) => course.id));
+  const departments = new Set(overlay.departments.map(String));
+
+  return courses.map((course) => {
+    const department = String(course.id || '').split('.', 1)[0];
+    if (!course.isSpecial || !departments.has(department) || officialIds.has(course.id)) return course;
+
+    return {
+      ...course,
+      offered: {
+        ...(course.offered || {}),
+        [overlay.season]: false,
+      },
+    };
+  });
+}
+
+// Load the EECS special-subjects overlay, if present. Missing/invalid overlay is
+// non-fatal — the base catalog still loads without authoritative term filtering.
 async function loadSpecialSubjects() {
   let file;
   try {
     file = await fs.readFile(SPECIAL_SUBJECTS_PATH, 'utf8');
   } catch {
-    return [];
+    return { subjects: [], authoritative: false, season: null, departments: [] };
   }
   try {
     const parsed = JSON.parse(file);
     const subjects = Array.isArray(parsed) ? parsed : (parsed.subjects || []);
-    return subjects
-      .filter((course) => course && course.public !== false)
-      .map((course) => normalizeCurrentCourse(course))
-      .filter(Boolean);
+    return {
+      subjects: subjects
+        .filter((course) => course && course.public !== false)
+        .map((course) => normalizeCurrentCourse(course))
+        .filter(Boolean),
+      authoritative: !Array.isArray(parsed) && Boolean(parsed.official_feed),
+      season: !Array.isArray(parsed) ? String(parsed.season || '').toLowerCase() : null,
+      departments: !Array.isArray(parsed) && Array.isArray(parsed.departments)
+        ? parsed.departments.map(String)
+        : [],
+    };
   } catch (error) {
     console.warn('[special subjects] failed to parse overlay:', error.message);
-    return [];
+    return { subjects: [], authoritative: false, season: null, departments: [] };
   }
 }
 
@@ -76,7 +104,7 @@ async function loadLocalCatalogSnapshot() {
   const file = await fs.readFile(CURRENT_CATALOG_PATH, 'utf8');
   const rawCourses = listRawCourses(JSON.parse(file));
 
-  const baseCourses = rawCourses
+  let baseCourses = rawCourses
     .filter((course) => course && course.public !== false)
     .map((course) => normalizeCurrentCourse(course))
     .filter(Boolean);
@@ -84,8 +112,9 @@ async function loadLocalCatalogSnapshot() {
   // Merge the special-subjects overlay: overlay records win by id so real topic
   // names replace any generic placeholder already in the base snapshot.
   const overlay = await loadSpecialSubjects();
+  baseCourses = applyAuthoritativeSpecialAvailability(baseCourses, overlay);
   const byId = new Map(baseCourses.map((c) => [c.id, c]));
-  overlay.forEach((c) => byId.set(c.id, c));
+  overlay.subjects.forEach((c) => byId.set(c.id, c));
   const courses = [...byId.values()];
 
   return {
@@ -244,6 +273,7 @@ async function searchCurrentCourses(options = {}) {
 
 module.exports = {
   DEMO_MODE,
+  applyAuthoritativeSpecialAvailability,
   fetchCurrentCourse,
   getCurrentCatalog,
   searchCurrentCourses,
